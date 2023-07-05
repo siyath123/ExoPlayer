@@ -30,6 +30,7 @@ public class MediaMetadataTest {
   private static final String EXTRAS_KEY = "exampleKey";
   private static final String EXTRAS_VALUE = "exampleValue";
 
+  @SuppressWarnings("deprecation") // Testing deprecated field.
   @Test
   public void builder_minimal_correctDefaults() {
     MediaMetadata mediaMetadata = new MediaMetadata.Builder().build();
@@ -49,6 +50,7 @@ public class MediaMetadataTest {
     assertThat(mediaMetadata.trackNumber).isNull();
     assertThat(mediaMetadata.totalTrackCount).isNull();
     assertThat(mediaMetadata.folderType).isNull();
+    assertThat(mediaMetadata.isBrowsable).isNull();
     assertThat(mediaMetadata.isPlayable).isNull();
     assertThat(mediaMetadata.recordingYear).isNull();
     assertThat(mediaMetadata.recordingMonth).isNull();
@@ -64,6 +66,7 @@ public class MediaMetadataTest {
     assertThat(mediaMetadata.genre).isNull();
     assertThat(mediaMetadata.compilation).isNull();
     assertThat(mediaMetadata.station).isNull();
+    assertThat(mediaMetadata.mediaType).isNull();
     assertThat(mediaMetadata.extras).isNull();
   }
 
@@ -105,15 +108,95 @@ public class MediaMetadataTest {
   }
 
   @Test
-  public void roundTripViaBundle_yieldsEqualInstance() {
-    MediaMetadata mediaMetadata = getFullyPopulatedMediaMetadata();
+  public void toBundleSkipsDefaultValues_fromBundleRestoresThem() {
+    MediaMetadata mediaMetadata = new MediaMetadata.Builder().build();
 
-    MediaMetadata fromBundle = MediaMetadata.CREATOR.fromBundle(mediaMetadata.toBundle());
-    assertThat(fromBundle).isEqualTo(mediaMetadata);
+    Bundle mediaMetadataBundle = mediaMetadata.toBundle();
+
+    // Check that default values are skipped when bundling.
+    assertThat(mediaMetadataBundle.keySet()).isEmpty();
+
+    MediaMetadata mediaMetadataFromBundle = MediaMetadata.CREATOR.fromBundle(mediaMetadataBundle);
+
+    assertThat(mediaMetadataFromBundle).isEqualTo(mediaMetadata);
     // Extras is not implemented in MediaMetadata.equals(Object o).
-    assertThat(fromBundle.extras.getString(EXTRAS_KEY)).isEqualTo(EXTRAS_VALUE);
+    assertThat(mediaMetadataFromBundle.extras).isNull();
   }
 
+  @Test
+  public void createFullyPopulatedMediaMetadata_roundTripViaBundle_yieldsEqualInstance() {
+    MediaMetadata mediaMetadata = getFullyPopulatedMediaMetadata();
+
+    MediaMetadata mediaMetadataFromBundle =
+        MediaMetadata.CREATOR.fromBundle(mediaMetadata.toBundle());
+
+    assertThat(mediaMetadataFromBundle).isEqualTo(mediaMetadata);
+    // Extras is not implemented in MediaMetadata.equals(Object o).
+    assertThat(mediaMetadataFromBundle.extras.getString(EXTRAS_KEY)).isEqualTo(EXTRAS_VALUE);
+  }
+
+  @SuppressWarnings("deprecation") // Testing deprecated setter.
+  @Test
+  public void builderSetFolderType_toNone_setsIsBrowsableToFalse() {
+    MediaMetadata mediaMetadata =
+        new MediaMetadata.Builder().setFolderType(MediaMetadata.FOLDER_TYPE_NONE).build();
+
+    assertThat(mediaMetadata.isBrowsable).isFalse();
+  }
+
+  @SuppressWarnings("deprecation") // Testing deprecated setter.
+  @Test
+  public void builderSetFolderType_toNotNone_setsIsBrowsableToTrueAndMatchingMediaType() {
+    MediaMetadata mediaMetadata =
+        new MediaMetadata.Builder().setFolderType(MediaMetadata.FOLDER_TYPE_PLAYLISTS).build();
+
+    assertThat(mediaMetadata.isBrowsable).isTrue();
+    assertThat(mediaMetadata.mediaType).isEqualTo(MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS);
+  }
+
+  @SuppressWarnings("deprecation") // Testing deprecated setter.
+  @Test
+  public void
+      builderSetFolderType_toNotNoneWithManualMediaType_setsIsBrowsableToTrueAndDoesNotOverrideMediaType() {
+    MediaMetadata mediaMetadata =
+        new MediaMetadata.Builder()
+            .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS)
+            .setFolderType(MediaMetadata.FOLDER_TYPE_PLAYLISTS)
+            .build();
+
+    assertThat(mediaMetadata.isBrowsable).isTrue();
+    assertThat(mediaMetadata.mediaType).isEqualTo(MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS);
+  }
+
+  @SuppressWarnings("deprecation") // Testing deprecated field.
+  @Test
+  public void builderSetIsBrowsable_toTrueWithoutMediaType_setsFolderTypeToMixed() {
+    MediaMetadata mediaMetadata = new MediaMetadata.Builder().setIsBrowsable(true).build();
+
+    assertThat(mediaMetadata.folderType).isEqualTo(MediaMetadata.FOLDER_TYPE_MIXED);
+  }
+
+  @SuppressWarnings("deprecation") // Testing deprecated field.
+  @Test
+  public void builderSetIsBrowsable_toTrueWithMediaType_setsFolderTypeToMatchMediaType() {
+    MediaMetadata mediaMetadata =
+        new MediaMetadata.Builder()
+            .setIsBrowsable(true)
+            .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS)
+            .build();
+
+    assertThat(mediaMetadata.folderType).isEqualTo(MediaMetadata.FOLDER_TYPE_ARTISTS);
+  }
+
+  @SuppressWarnings("deprecation") // Testing deprecated field.
+  @Test
+  public void builderSetFolderType_toFalse_setsFolderTypeToNone() {
+    MediaMetadata mediaMetadata = new MediaMetadata.Builder().setIsBrowsable(false).build();
+
+    assertThat(mediaMetadata.folderType).isEqualTo(MediaMetadata.FOLDER_TYPE_NONE);
+  }
+
+  @SuppressWarnings("deprecation") // Setting deprecated fields.
   private static MediaMetadata getFullyPopulatedMediaMetadata() {
     Bundle extras = new Bundle();
     extras.putString(EXTRAS_KEY, EXTRAS_VALUE);
@@ -134,6 +217,7 @@ public class MediaMetadataTest {
         .setTrackNumber(4)
         .setTotalTrackCount(12)
         .setFolderType(MediaMetadata.FOLDER_TYPE_PLAYLISTS)
+        .setIsBrowsable(true)
         .setIsPlayable(true)
         .setRecordingYear(2000)
         .setRecordingMonth(11)
@@ -149,6 +233,7 @@ public class MediaMetadataTest {
         .setGenre("Pop")
         .setCompilation("Amazing songs.")
         .setStation("radio station")
+        .setMediaType(MediaMetadata.MEDIA_TYPE_MIXED)
         .setExtras(extras)
         .build();
   }

@@ -15,6 +15,9 @@
  */
 package com.google.android.exoplayer2.source.rtsp.reader;
 
+import static com.google.android.exoplayer2.source.rtsp.reader.RtpReaderUtils.toSampleTimeUs;
+import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
+import static com.google.android.exoplayer2.util.Assertions.checkState;
 import static com.google.android.exoplayer2.util.Assertions.checkStateNotNull;
 
 import com.google.android.exoplayer2.C;
@@ -29,11 +32,17 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 /**
  * Parses a H263 byte stream carried on RTP packets, and extracts H263 frames as defined in RFC4629.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 /* package */ final class RtpH263Reader implements RtpPayloadReader {
   private static final String TAG = "RtpH263Reader";
 
-  private static final long MEDIA_CLOCK_FREQUENCY = 90_000;
+  private static final int MEDIA_CLOCK_FREQUENCY = 90_000;
 
   /** I-frame VOP unit type. */
   private static final int I_VOP = 0;
@@ -61,6 +70,12 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   private boolean isKeyFrame;
   private boolean isOutputFormatSet;
   private long startTimeOffsetUs;
+  private long fragmentedSampleTimeUs;
+  /**
+   * Whether the first packet of a H263 frame is received, it mark the start of a H263 partition. A
+   * H263 frame can be split into multiple RTP packets.
+   */
+  private boolean gotFirstPacketOfH263Frame;
 
   /** Creates an instance. */
   public RtpH263Reader(RtpPayloadFormat payloadFormat) {
@@ -76,7 +91,10 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   @Override
-  public void onReceivingFirstPacket(long timestamp, int sequenceNumber) {}
+  public void onReceivingFirstPacket(long timestamp, int sequenceNumber) {
+    checkState(firstReceivedTimestamp == C.TIME_UNSET);
+    firstReceivedTimestamp = timestamp;
+  }
 
   @Override
   public void consume(
@@ -103,6 +121,12 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
 
     if (pBitIsSet) {
+      if (gotFirstPacketOfH263Frame && fragmentedSampleSizeBytes > 0) {
+        // Received new H263 fragment, output data of previous fragment to decoder.
+        outputSampleMetadataForFragmentedPackets();
+      }
+      gotFirstPacketOfH263Frame = true;
+
       int payloadStartCode = data.peekUnsignedByte() & 0xFC;
       // Packets that begin with a Picture Start Code(100000). Refer RFC4629 Section 6.1.
       if (payloadStartCode < PICTURE_START_CODE) {
@@ -113,10 +137,10 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       data.getData()[currentPosition] = 0;
       data.getData()[currentPosition + 1] = 0;
       data.setPosition(currentPosition);
-    } else {
+    } else if (gotFirstPacketOfH263Frame) {
       // Check that this packet is in the sequence of the previous packet.
       int expectedSequenceNumber = RtpPacket.getNextSequenceNumber(previousSequenceNumber);
-      if (sequenceNumber != expectedSequenceNumber) {
+      if (sequenceNumber < expectedSequenceNumber) {
         Log.w(
             TAG,
             Util.formatInvariant(
@@ -125,6 +149,12 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
                 expectedSequenceNumber, sequenceNumber));
         return;
       }
+    } else {
+      Log.w(
+          TAG,
+          "First payload octet of the H263 packet is not the beginning of a new H263 partition,"
+              + " Dropping current packet.");
+      return;
     }
 
     if (fragmentedSampleSizeBytes == 0) {
@@ -141,20 +171,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     // Write the video sample.
     trackOutput.sampleData(data, fragmentSize);
     fragmentedSampleSizeBytes += fragmentSize;
+    fragmentedSampleTimeUs =
+        toSampleTimeUs(startTimeOffsetUs, timestamp, firstReceivedTimestamp, MEDIA_CLOCK_FREQUENCY);
 
     if (rtpMarker) {
-      if (firstReceivedTimestamp == C.TIME_UNSET) {
-        firstReceivedTimestamp = timestamp;
-      }
-      long timeUs = toSampleUs(startTimeOffsetUs, timestamp, firstReceivedTimestamp);
-      trackOutput.sampleMetadata(
-          timeUs,
-          isKeyFrame ? C.BUFFER_FLAG_KEY_FRAME : 0,
-          fragmentedSampleSizeBytes,
-          /* offset= */ 0,
-          /* cryptoData= */ null);
-      fragmentedSampleSizeBytes = 0;
-      isKeyFrame = false;
+      outputSampleMetadataForFragmentedPackets();
     }
     previousSequenceNumber = sequenceNumber;
   }
@@ -167,8 +188,8 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   /**
-   * Parses and set VOP Coding type and resolution. The {@link ParsableByteArray#position} is
-   * preserved.
+   * Parses and set VOP Coding type and resolution. The {@linkplain ParsableByteArray#getPosition()
+   * position} is preserved.
    */
   private void parseVopHeader(ParsableByteArray data, boolean gotResolution) {
     // Picture Segment Packets (RFC4629 Section 6.1).
@@ -211,12 +232,22 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     isKeyFrame = false;
   }
 
-  private static long toSampleUs(
-      long startTimeOffsetUs, long rtpTimestamp, long firstReceivedRtpTimestamp) {
-    return startTimeOffsetUs
-        + Util.scaleLargeTimestamp(
-            (rtpTimestamp - firstReceivedRtpTimestamp),
-            /* multiplier= */ C.MICROS_PER_SECOND,
-            /* divisor= */ MEDIA_CLOCK_FREQUENCY);
+  /**
+   * Outputs sample metadata of the received fragmented packets.
+   *
+   * <p>Call this method only after receiving an end of a H263 partition.
+   */
+  private void outputSampleMetadataForFragmentedPackets() {
+    checkNotNull(trackOutput)
+        .sampleMetadata(
+            fragmentedSampleTimeUs,
+            isKeyFrame ? C.BUFFER_FLAG_KEY_FRAME : 0,
+            fragmentedSampleSizeBytes,
+            /* offset= */ 0,
+            /* cryptoData= */ null);
+    fragmentedSampleSizeBytes = 0;
+    fragmentedSampleTimeUs = C.TIME_UNSET;
+    isKeyFrame = false;
+    gotFirstPacketOfH263Frame = false;
   }
 }

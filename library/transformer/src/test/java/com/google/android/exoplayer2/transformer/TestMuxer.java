@@ -15,10 +15,11 @@
  */
 package com.google.android.exoplayer2.transformer;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.testutil.DumpableFormat;
 import com.google.android.exoplayer2.testutil.Dumper;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,11 +36,9 @@ public final class TestMuxer implements Muxer, Dumper.Dumpable {
   private final List<Dumper.Dumpable> dumpables;
 
   /** Creates a new test muxer. */
-  public TestMuxer(String path, String outputMimeType, Muxer.Factory muxerFactory)
-      throws IOException {
-    muxer = muxerFactory.create(path, outputMimeType);
+  public TestMuxer(String path, Muxer.Factory muxerFactory) throws MuxerException {
+    muxer = muxerFactory.create(path);
     dumpables = new ArrayList<>();
-    dumpables.add(dumper -> dumper.add("containerMimeType", outputMimeType));
   }
 
   // Muxer implementation.
@@ -53,16 +52,32 @@ public final class TestMuxer implements Muxer, Dumper.Dumpable {
 
   @Override
   public void writeSampleData(
-      int trackIndex, ByteBuffer data, boolean isKeyFrame, long presentationTimeUs)
+      int trackIndex, ByteBuffer data, long presentationTimeUs, @C.BufferFlags int flags)
       throws MuxerException {
-    dumpables.add(new DumpableSample(trackIndex, data, isKeyFrame, presentationTimeUs));
-    muxer.writeSampleData(trackIndex, data, isKeyFrame, presentationTimeUs);
+    dumpables.add(
+        new DumpableSample(
+            trackIndex,
+            data,
+            (flags & C.BUFFER_FLAG_KEY_FRAME) == C.BUFFER_FLAG_KEY_FRAME,
+            presentationTimeUs));
+    muxer.writeSampleData(trackIndex, data, presentationTimeUs, flags);
+  }
+
+  @Override
+  public void addMetadata(Metadata metadata) {
+    dumpables.add(dumper -> dumper.add("container metadata", metadata));
+    muxer.addMetadata(metadata);
   }
 
   @Override
   public void release(boolean forCancellation) throws MuxerException {
     dumpables.add(dumper -> dumper.add("released", true));
     muxer.release(forCancellation);
+  }
+
+  @Override
+  public long getMaxDelayBetweenSamplesMs() {
+    return muxer.getMaxDelayBetweenSamplesMs();
   }
 
   // Dumper.Dumpable implementation.

@@ -27,9 +27,19 @@ import java.util.regex.Pattern;
 /**
  * Parser for color expressions found in styling formats, e.g. TTML and CSS.
  *
- * @see <a href="https://w3c.github.io/webvtt/#styling">WebVTT CSS Styling</a>
- * @see <a href="https://www.w3.org/TR/ttml2/">Timed Text Markup Language 2 (TTML2) - 10.3.5</a>
+ * <p>See also:
+ *
+ * <ul>
+ *   <li><a href="https://w3c.github.io/webvtt/#styling">WebVTT CSS Styling</a>
+ *   <li><a href="https://www.w3.org/TR/ttml2/">Timed Text Markup Language 2 (TTML2) - 10.3.5</a>
+ * </ul>
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class ColorParser {
 
   private static final String RGB = "rgb";

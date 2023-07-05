@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-apply from: "$gradle.ext.exoplayerSettingsDir/common_library_config.gradle"
+ apply from: "$gradle.ext.exoplayerSettingsDir/common_library_config.gradle"
 
 android.defaultConfig.minSdkVersion 21
 
@@ -19,6 +19,7 @@ dependencies {
     implementation project(modulePrefix + 'library-common')
     implementation project(modulePrefix + 'library-datasource')
     implementation 'androidx.annotation:annotation:' + androidxAnnotationVersion
+    compileOnly 'com.google.errorprone:error_prone_annotations:' + errorProneVersion
     compileOnly 'org.checkerframework:checker-qual:' + checkerframeworkVersion
     compileOnly 'org.jetbrains.kotlin:kotlin-annotations-jvm:' + kotlinAnnotationsVersion
     testImplementation project(modulePrefix + 'testutils')
@@ -33,7 +34,7 @@ ext {
 apply from: '../../javadoc_library.gradle'
 
 ext {
-    releaseArtifactId = 'extension-okhttp'
-    releaseDescription = 'OkHttp extension for ExoPlayer.'
+ releaseArtifactId = 'extension-okhttp'
+ releaseDescription = 'OkHttp extension for ExoPlayer.'
 }
 apply from: '../../publish.gradle'

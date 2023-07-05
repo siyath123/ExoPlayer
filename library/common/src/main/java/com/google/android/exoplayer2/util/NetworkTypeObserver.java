@@ -44,7 +44,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * type changes.
  *
  * <p>The current network type can also be {@link #getNetworkType queried} without registration.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class NetworkTypeObserver {
 
   /** A listener for network type changes. */
@@ -93,7 +99,7 @@ public final class NetworkTypeObserver {
     networkType = C.NETWORK_TYPE_UNKNOWN;
     IntentFilter filter = new IntentFilter();
     filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-    context.registerReceiver(/* receiver= */ new Receiver(), filter);
+    context.registerReceiver(new Receiver(), filter);
   }
 
   /**

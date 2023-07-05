@@ -12,17 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 def rootDir = file(".")
-if (!gradle.ext.has('exoplayerSettingsDir')) {
-    gradle.ext.exoplayerSettingsDir = rootDir.getCanonicalPath()
-}
+ if (!gradle.ext.has('exoplayerSettingsDir')) {
+     gradle.ext.exoplayerSettingsDir = rootDir.getCanonicalPath()
+ }
 
 def modulePrefix = ':'
-if (gradle.ext.has('exoplayerModulePrefix')) {
-    modulePrefix += gradle.ext.exoplayerModulePrefix
-}
+ if (gradle.ext.has('exoplayerModulePrefix')) {
+     modulePrefix += gradle.ext.exoplayerModulePrefix
+ }
 
 include modulePrefix + 'library-common'
 project(modulePrefix + 'library-common').projectDir = new File(rootDir, 'library/common')
+
+include modulePrefix + 'library-container'
+project(modulePrefix + 'library-container').projectDir = new File(rootDir, 'library/container')
 
 include modulePrefix + 'extension-mediasession'
 project(modulePrefix + 'extension-mediasession').projectDir = new File(rootDir, 'extensions/mediasession')
@@ -81,6 +84,12 @@ project(modulePrefix + 'library-extractor').projectDir = new File(rootDir, 'libr
 
 include modulePrefix + 'extension-cast'
 project(modulePrefix + 'extension-cast').projectDir = new File(rootDir, 'extensions/cast')
+
+include modulePrefix + 'library-effect'
+project(modulePrefix + 'library-effect').projectDir = new File(rootDir, 'library/effect')
+
+include modulePrefix + 'library-muxer'
+project(modulePrefix + 'library-muxer').projectDir = new File(rootDir, 'library/muxer')
 
 include modulePrefix + 'library-transformer'
 project(modulePrefix + 'library-transformer').projectDir = new File(rootDir, 'library/transformer')

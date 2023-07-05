@@ -31,9 +31,18 @@ import com.google.android.exoplayer2.metadata.id3.TextInformationFrame;
 import com.google.android.exoplayer2.metadata.mp4.MdtaMetadataEntry;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.ParsableByteArray;
+import com.google.common.collect.ImmutableList;
 import org.checkerframework.checker.nullness.compatqual.NullableType;
 
-/** Utilities for handling metadata in MP4. */
+/**
+ * Utilities for handling metadata in MP4.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 /* package */ final class MetadataUtil {
 
   private static final String TAG = "MetadataUtil";
@@ -298,17 +307,20 @@ import org.checkerframework.checker.nullness.compatqual.NullableType;
       if (udtaMetaMetadata != null) {
         formatMetadata = udtaMetaMetadata;
       }
-    } else if (trackType == C.TRACK_TYPE_VIDEO) {
-      // Populate only metadata keys that are known to be specific to video.
-      if (mdtaMetadata != null) {
-        for (int i = 0; i < mdtaMetadata.length(); i++) {
-          Metadata.Entry entry = mdtaMetadata.get(i);
-          if (entry instanceof MdtaMetadataEntry) {
-            MdtaMetadataEntry mdtaMetadataEntry = (MdtaMetadataEntry) entry;
-            if (MdtaMetadataEntry.KEY_ANDROID_CAPTURE_FPS.equals(mdtaMetadataEntry.key)) {
-              formatMetadata = new Metadata(mdtaMetadataEntry);
-              break;
+    }
+
+    if (mdtaMetadata != null) {
+      for (int i = 0; i < mdtaMetadata.length(); i++) {
+        Metadata.Entry entry = mdtaMetadata.get(i);
+        if (entry instanceof MdtaMetadataEntry) {
+          MdtaMetadataEntry mdtaMetadataEntry = (MdtaMetadataEntry) entry;
+          // This key is present in the container level meta box.
+          if (mdtaMetadataEntry.key.equals(MdtaMetadataEntry.KEY_ANDROID_CAPTURE_FPS)) {
+            if (trackType == C.TRACK_TYPE_VIDEO) {
+              formatMetadata = formatMetadata.copyWithAppendedEntries(mdtaMetadataEntry);
             }
+          } else {
+            formatMetadata = formatMetadata.copyWithAppendedEntries(mdtaMetadataEntry);
           }
         }
       }
@@ -452,7 +464,7 @@ import org.checkerframework.checker.nullness.compatqual.NullableType;
     if (atomType == Atom.TYPE_data) {
       data.skipBytes(8); // version (1), flags (3), empty (4)
       String value = data.readNullTerminatedString(atomSize - 16);
-      return new TextInformationFrame(id, /* description= */ null, value);
+      return new TextInformationFrame(id, /* description= */ null, ImmutableList.of(value));
     }
     Log.w(TAG, "Failed to parse text attribute: " + Atom.getAtomTypeString(type));
     return null;
@@ -484,7 +496,8 @@ import org.checkerframework.checker.nullness.compatqual.NullableType;
     }
     if (value >= 0) {
       return isTextInformationFrame
-          ? new TextInformationFrame(id, /* description= */ null, Integer.toString(value))
+          ? new TextInformationFrame(
+              id, /* description= */ null, ImmutableList.of(Integer.toString(value)))
           : new CommentFrame(C.LANGUAGE_UNDETERMINED, id, Integer.toString(value));
     }
     Log.w(TAG, "Failed to parse uint8 attribute: " + Atom.getAtomTypeString(type));
@@ -505,7 +518,8 @@ import org.checkerframework.checker.nullness.compatqual.NullableType;
         if (count > 0) {
           value += "/" + count;
         }
-        return new TextInformationFrame(attributeName, /* description= */ null, value);
+        return new TextInformationFrame(
+            attributeName, /* description= */ null, ImmutableList.of(value));
       }
     }
     Log.w(TAG, "Failed to parse index/count attribute: " + Atom.getAtomTypeString(type));
@@ -521,7 +535,8 @@ import org.checkerframework.checker.nullness.compatqual.NullableType;
             ? STANDARD_GENRES[genreCode - 1]
             : null;
     if (genreString != null) {
-      return new TextInformationFrame("TCON", /* description= */ null, genreString);
+      return new TextInformationFrame(
+          "TCON", /* description= */ null, ImmutableList.of(genreString));
     }
     Log.w(TAG, "Failed to parse standard genre code");
     return null;

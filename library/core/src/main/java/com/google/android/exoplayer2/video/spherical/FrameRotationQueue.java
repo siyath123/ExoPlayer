@@ -16,6 +16,7 @@
 package com.google.android.exoplayer2.video.spherical;
 
 import android.opengl.Matrix;
+import com.google.android.exoplayer2.util.GlUtil;
 import com.google.android.exoplayer2.util.TimedValueQueue;
 
 /**
@@ -26,7 +27,13 @@ import com.google.android.exoplayer2.util.TimedValueQueue;
  *   <li>Converts the metadata to rotation matrices in OpenGl coordinate system.
  *   <li>Recenters the rotations to componsate the yaw of the initial rotation.
  * </ul>
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 /* package */ final class FrameRotationQueue {
   private final float[] recenterMatrix;
   private final float[] rotationMatrix;
@@ -96,7 +103,7 @@ import com.google.android.exoplayer2.util.TimedValueQueue;
     //             | 0         1    0          0|
     // recenter =  | temp[8]   0    temp[10]   0|
     //             | 0         0    0          1|
-    Matrix.setIdentityM(recenterMatrix, 0);
+    GlUtil.setToIdentity(recenterMatrix);
     float normRowSqr =
         rotationMatrix[10] * rotationMatrix[10] + rotationMatrix[8] * rotationMatrix[8];
     float normRow = (float) Math.sqrt(normRowSqr);
@@ -118,7 +125,7 @@ import com.google.android.exoplayer2.util.TimedValueQueue;
       float angleDeg = (float) Math.toDegrees(angleRad);
       Matrix.setRotateM(matrix, 0, angleDeg, x / angleRad, y / angleRad, z / angleRad);
     } else {
-      Matrix.setIdentityM(matrix, 0);
+      GlUtil.setToIdentity(matrix);
     }
   }
 }

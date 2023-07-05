@@ -21,6 +21,7 @@ import androidx.annotation.IntDef;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.IOException;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -35,7 +36,13 @@ import java.lang.annotation.Target;
  * the default behavior is to create {@link SynchronousMediaCodecAdapter} instances. The factory
  * offers APIs to force the creation of {@link AsynchronousMediaCodecAdapter} (applicable for
  * devices with API &gt;= 23) or {@link SynchronousMediaCodecAdapter} instances.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class DefaultMediaCodecAdapterFactory implements MediaCodecAdapter.Factory {
 
   @Documented
@@ -64,6 +71,7 @@ public final class DefaultMediaCodecAdapterFactory implements MediaCodecAdapter.
    *
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaCodecAdapterFactory forceEnableAsynchronous() {
     asynchronousMode = MODE_ENABLED;
     return this;
@@ -74,6 +82,7 @@ public final class DefaultMediaCodecAdapterFactory implements MediaCodecAdapter.
    *
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaCodecAdapterFactory forceDisableAsynchronous() {
     asynchronousMode = MODE_DISABLED;
     return this;

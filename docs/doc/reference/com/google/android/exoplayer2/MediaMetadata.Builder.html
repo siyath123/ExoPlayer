@@ -25,7 +25,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":42,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":42};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":42,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":42,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":42};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -312,7 +312,10 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setFolderType(java.lang.Integer)">setFolderType</a></span>&#8203;(<a href="MediaMetadata.FolderType.html" title="annotation in com.google.android.exoplayer2">@FolderType</a> <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;folderType)</code></th>
 <td class="colLast">
-<div class="block">Sets the <a href="MediaMetadata.FolderType.html" title="annotation in com.google.android.exoplayer2"><code>MediaMetadata.FolderType</code></a>.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#setIsBrowsable(java.lang.Boolean)"><code>setIsBrowsable(java.lang.Boolean)</code></a> to indicate if an item is a browsable folder and use
+     <a href="#setMediaType(java.lang.Integer)"><code>setMediaType(java.lang.Integer)</code></a> to indicate the type of the folder.</div>
+</div>
 </td>
 </tr>
 <tr id="i19" class="rowColor">
@@ -324,117 +327,131 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 </tr>
 <tr id="i20" class="altColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setIsBrowsable(java.lang.Boolean)">setIsBrowsable</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Boolean.html" title="class or interface in java.lang" class="externalLink" target="_top">Boolean</a>&nbsp;isBrowsable)</code></th>
+<td class="colLast">
+<div class="block">Sets whether the media is a browsable folder.</div>
+</td>
+</tr>
+<tr id="i21" class="rowColor">
+<td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setIsPlayable(java.lang.Boolean)">setIsPlayable</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Boolean.html" title="class or interface in java.lang" class="externalLink" target="_top">Boolean</a>&nbsp;isPlayable)</code></th>
 <td class="colLast">
 <div class="block">Sets whether the media is playable.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i22" class="altColor">
+<td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setMediaType(java.lang.Integer)">setMediaType</a></span>&#8203;(<a href="MediaMetadata.MediaType.html" title="annotation in com.google.android.exoplayer2">@MediaType</a> <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;mediaType)</code></th>
+<td class="colLast">
+<div class="block">Sets the <a href="MediaMetadata.MediaType.html" title="annotation in com.google.android.exoplayer2"><code>MediaMetadata.MediaType</code></a>.</div>
+</td>
+</tr>
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setOverallRating(com.google.android.exoplayer2.Rating)">setOverallRating</a></span>&#8203;(<a href="Rating.html" title="class in com.google.android.exoplayer2">Rating</a>&nbsp;overallRating)</code></th>
 <td class="colLast">
 <div class="block">Sets the overall <a href="Rating.html" title="class in com.google.android.exoplayer2"><code>Rating</code></a>.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setRecordingDay(java.lang.Integer)">setRecordingDay</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;recordingDay)</code></th>
 <td class="colLast">
 <div class="block">Sets the day of the recording date.</div>
 </td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setRecordingMonth(java.lang.Integer)">setRecordingMonth</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;recordingMonth)</code></th>
 <td class="colLast">
 <div class="block">Sets the month of the recording date.</div>
 </td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i26" class="altColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setRecordingYear(java.lang.Integer)">setRecordingYear</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;recordingYear)</code></th>
 <td class="colLast">
 <div class="block">Sets the year of the recording date.</div>
 </td>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i27" class="rowColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setReleaseDay(java.lang.Integer)">setReleaseDay</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;releaseDay)</code></th>
 <td class="colLast">
 <div class="block">Sets the day of the release date.</div>
 </td>
 </tr>
-<tr id="i26" class="altColor">
+<tr id="i28" class="altColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setReleaseMonth(java.lang.Integer)">setReleaseMonth</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;releaseMonth)</code></th>
 <td class="colLast">
 <div class="block">Sets the month of the release date.</div>
 </td>
 </tr>
-<tr id="i27" class="rowColor">
+<tr id="i29" class="rowColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setReleaseYear(java.lang.Integer)">setReleaseYear</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;releaseYear)</code></th>
 <td class="colLast">
 <div class="block">Sets the year of the release date.</div>
 </td>
 </tr>
-<tr id="i28" class="altColor">
+<tr id="i30" class="altColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setStation(java.lang.CharSequence)">setStation</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;station)</code></th>
 <td class="colLast">
 <div class="block">Sets the name of the station streaming the media.</div>
 </td>
 </tr>
-<tr id="i29" class="rowColor">
+<tr id="i31" class="rowColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setSubtitle(java.lang.CharSequence)">setSubtitle</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;subtitle)</code></th>
 <td class="colLast">
 <div class="block">Sets the subtitle.</div>
 </td>
 </tr>
-<tr id="i30" class="altColor">
+<tr id="i32" class="altColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTitle(java.lang.CharSequence)">setTitle</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;title)</code></th>
 <td class="colLast">
 <div class="block">Sets the title.</div>
 </td>
 </tr>
-<tr id="i31" class="rowColor">
+<tr id="i33" class="rowColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTotalDiscCount(java.lang.Integer)">setTotalDiscCount</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;totalDiscCount)</code></th>
 <td class="colLast">
 <div class="block">Sets the total number of discs.</div>
 </td>
 </tr>
-<tr id="i32" class="altColor">
+<tr id="i34" class="altColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTotalTrackCount(java.lang.Integer)">setTotalTrackCount</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;totalTrackCount)</code></th>
 <td class="colLast">
 <div class="block">Sets the total number of tracks.</div>
 </td>
 </tr>
-<tr id="i33" class="rowColor">
+<tr id="i35" class="rowColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTrackNumber(java.lang.Integer)">setTrackNumber</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;trackNumber)</code></th>
 <td class="colLast">
 <div class="block">Sets the track number.</div>
 </td>
 </tr>
-<tr id="i34" class="altColor">
+<tr id="i36" class="altColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setUserRating(com.google.android.exoplayer2.Rating)">setUserRating</a></span>&#8203;(<a href="Rating.html" title="class in com.google.android.exoplayer2">Rating</a>&nbsp;userRating)</code></th>
 <td class="colLast">
 <div class="block">Sets the user <a href="Rating.html" title="class in com.google.android.exoplayer2"><code>Rating</code></a>.</div>
 </td>
 </tr>
-<tr id="i35" class="rowColor">
+<tr id="i37" class="rowColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setWriter(java.lang.CharSequence)">setWriter</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;writer)</code></th>
 <td class="colLast">
 <div class="block">Sets the writer.</div>
 </td>
 </tr>
-<tr id="i36" class="altColor">
+<tr id="i38" class="altColor">
 <td class="colFirst"><code><a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setYear(java.lang.Integer)">setYear</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;year)</code></th>
 <td class="colLast">
@@ -492,7 +509,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>setTitle</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setTitle&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setTitle&#8203;(@Nullable
                                       <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;title)</pre>
 <div class="block">Sets the title.</div>
 </li>
@@ -503,7 +521,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>setArtist</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setArtist&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setArtist&#8203;(@Nullable
                                        <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;artist)</pre>
 <div class="block">Sets the artist.</div>
 </li>
@@ -514,7 +533,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>setAlbumTitle</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setAlbumTitle&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setAlbumTitle&#8203;(@Nullable
                                            <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;albumTitle)</pre>
 <div class="block">Sets the album title.</div>
 </li>
@@ -525,7 +545,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>setAlbumArtist</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setAlbumArtist&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setAlbumArtist&#8203;(@Nullable
                                             <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;albumArtist)</pre>
 <div class="block">Sets the album artist.</div>
 </li>
@@ -536,7 +557,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>setDisplayTitle</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setDisplayTitle&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setDisplayTitle&#8203;(@Nullable
                                              <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;displayTitle)</pre>
 <div class="block">Sets the display title.</div>
 </li>
@@ -547,7 +569,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>setSubtitle</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setSubtitle&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setSubtitle&#8203;(@Nullable
                                          <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;subtitle)</pre>
 <div class="block">Sets the subtitle.
 
@@ -560,7 +583,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>setDescription</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setDescription&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setDescription&#8203;(@Nullable
                                             <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;description)</pre>
 <div class="block">Sets the description.</div>
 </li>
@@ -571,7 +595,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>setUserRating</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setUserRating&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setUserRating&#8203;(@Nullable
                                            <a href="Rating.html" title="class in com.google.android.exoplayer2">Rating</a>&nbsp;userRating)</pre>
 <div class="block">Sets the user <a href="Rating.html" title="class in com.google.android.exoplayer2"><code>Rating</code></a>.</div>
 </li>
@@ -582,7 +607,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>setOverallRating</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setOverallRating&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setOverallRating&#8203;(@Nullable
                                               <a href="Rating.html" title="class in com.google.android.exoplayer2">Rating</a>&nbsp;overallRating)</pre>
 <div class="block">Sets the overall <a href="Rating.html" title="class in com.google.android.exoplayer2"><code>Rating</code></a>.</div>
 </li>
@@ -593,7 +619,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>setArtworkData</h4>
-<pre class="methodSignature"><a href="https://developer.android.com/reference/java/lang/Deprecated.html" title="class or interface in java.lang" class="externalLink" target="_top">@Deprecated</a>
+<pre class="methodSignature">@CanIgnoreReturnValue
+<a href="https://developer.android.com/reference/java/lang/Deprecated.html" title="class or interface in java.lang" class="externalLink" target="_top">@Deprecated</a>
 public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setArtworkData&#8203;(@Nullable
                                             byte[]&nbsp;artworkData)</pre>
 <div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span>
@@ -607,7 +634,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setArtworkData</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setArtworkData&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setArtworkData&#8203;(@Nullable
                                             byte[]&nbsp;artworkData,
                                             @Nullable <a href="MediaMetadata.PictureType.html" title="annotation in com.google.android.exoplayer2">@PictureType</a>
                                             <a href="MediaMetadata.PictureType.html" title="annotation in com.google.android.exoplayer2">@PictureType</a> <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;artworkDataType)</pre>
@@ -620,7 +648,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>maybeSetArtworkData</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;maybeSetArtworkData&#8203;(byte[]&nbsp;artworkData,
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;maybeSetArtworkData&#8203;(byte[]&nbsp;artworkData,
                                                  <a href="MediaMetadata.PictureType.html" title="annotation in com.google.android.exoplayer2">@PictureType</a>
                                                  @com.google.android.exoplayer2.MediaMetadata.PictureType int&nbsp;artworkDataType)</pre>
 <div class="block">Sets the artwork data as a compressed byte array in the event that the associated <a href="MediaMetadata.PictureType.html" title="annotation in com.google.android.exoplayer2"><code>MediaMetadata.PictureType</code></a> is <a href="MediaMetadata.html#PICTURE_TYPE_FRONT_COVER"><code>MediaMetadata.PICTURE_TYPE_FRONT_COVER</code></a>, the existing <a href="MediaMetadata.PictureType.html" title="annotation in com.google.android.exoplayer2"><code>MediaMetadata.PictureType</code></a> is not
@@ -636,7 +665,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setArtworkUri</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setArtworkUri&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setArtworkUri&#8203;(@Nullable
                                            <a href="https://developer.android.com/reference/android/net/Uri.html" title="class or interface in android.net" class="externalLink" target="_top">Uri</a>&nbsp;artworkUri)</pre>
 <div class="block">Sets the artwork <a href="https://developer.android.com/reference/android/net/Uri.html" title="class or interface in android.net" class="externalLink" target="_top"><code>Uri</code></a>.</div>
 </li>
@@ -647,7 +677,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setTrackNumber</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setTrackNumber&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setTrackNumber&#8203;(@Nullable
                                             <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;trackNumber)</pre>
 <div class="block">Sets the track number.</div>
 </li>
@@ -658,7 +689,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setTotalTrackCount</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setTotalTrackCount&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setTotalTrackCount&#8203;(@Nullable
                                                 <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;totalTrackCount)</pre>
 <div class="block">Sets the total number of tracks.</div>
 </li>
@@ -669,9 +701,27 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setFolderType</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setFolderType&#8203;(@Nullable <a href="MediaMetadata.FolderType.html" title="annotation in com.google.android.exoplayer2">@FolderType</a>
+<pre class="methodSignature"><a href="https://developer.android.com/reference/java/lang/Deprecated.html" title="class or interface in java.lang" class="externalLink" target="_top">@Deprecated</a>
+@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setFolderType&#8203;(@Nullable <a href="MediaMetadata.FolderType.html" title="annotation in com.google.android.exoplayer2">@FolderType</a>
                                            <a href="MediaMetadata.FolderType.html" title="annotation in com.google.android.exoplayer2">@FolderType</a> <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;folderType)</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#setIsBrowsable(java.lang.Boolean)"><code>setIsBrowsable(java.lang.Boolean)</code></a> to indicate if an item is a browsable folder and use
+     <a href="#setMediaType(java.lang.Integer)"><code>setMediaType(java.lang.Integer)</code></a> to indicate the type of the folder.</div>
+</div>
 <div class="block">Sets the <a href="MediaMetadata.FolderType.html" title="annotation in com.google.android.exoplayer2"><code>MediaMetadata.FolderType</code></a>.</div>
+</li>
+</ul>
+<a id="setIsBrowsable(java.lang.Boolean)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setIsBrowsable</h4>
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setIsBrowsable&#8203;(@Nullable
+                                            <a href="https://developer.android.com/reference/java/lang/Boolean.html" title="class or interface in java.lang" class="externalLink" target="_top">Boolean</a>&nbsp;isBrowsable)</pre>
+<div class="block">Sets whether the media is a browsable folder.</div>
 </li>
 </ul>
 <a id="setIsPlayable(java.lang.Boolean)">
@@ -680,7 +730,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setIsPlayable</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setIsPlayable&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setIsPlayable&#8203;(@Nullable
                                            <a href="https://developer.android.com/reference/java/lang/Boolean.html" title="class or interface in java.lang" class="externalLink" target="_top">Boolean</a>&nbsp;isPlayable)</pre>
 <div class="block">Sets whether the media is playable.</div>
 </li>
@@ -691,7 +742,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setYear</h4>
-<pre class="methodSignature"><a href="https://developer.android.com/reference/java/lang/Deprecated.html" title="class or interface in java.lang" class="externalLink" target="_top">@Deprecated</a>
+<pre class="methodSignature">@CanIgnoreReturnValue
+<a href="https://developer.android.com/reference/java/lang/Deprecated.html" title="class or interface in java.lang" class="externalLink" target="_top">@Deprecated</a>
 public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setYear&#8203;(@Nullable
                                      <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;year)</pre>
 <div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span>
@@ -705,7 +757,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setRecordingYear</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setRecordingYear&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setRecordingYear&#8203;(@Nullable
                                               <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;recordingYear)</pre>
 <div class="block">Sets the year of the recording date.</div>
 </li>
@@ -716,7 +769,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setRecordingMonth</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setRecordingMonth&#8203;(@Nullable @IntRange(from=1L,to=12L)
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setRecordingMonth&#8203;(@Nullable @IntRange(from=1L,to=12L)
                                                <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;recordingMonth)</pre>
 <div class="block">Sets the month of the recording date.
 
@@ -729,7 +783,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setRecordingDay</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setRecordingDay&#8203;(@Nullable @IntRange(from=1L,to=31L)
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setRecordingDay&#8203;(@Nullable @IntRange(from=1L,to=31L)
                                              <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;recordingDay)</pre>
 <div class="block">Sets the day of the recording date.
 
@@ -742,7 +797,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setReleaseYear</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setReleaseYear&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setReleaseYear&#8203;(@Nullable
                                             <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;releaseYear)</pre>
 <div class="block">Sets the year of the release date.</div>
 </li>
@@ -753,7 +809,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setReleaseMonth</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setReleaseMonth&#8203;(@Nullable @IntRange(from=1L,to=12L)
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setReleaseMonth&#8203;(@Nullable @IntRange(from=1L,to=12L)
                                              <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;releaseMonth)</pre>
 <div class="block">Sets the month of the release date.
 
@@ -766,7 +823,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setReleaseDay</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setReleaseDay&#8203;(@Nullable @IntRange(from=1L,to=31L)
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setReleaseDay&#8203;(@Nullable @IntRange(from=1L,to=31L)
                                            <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;releaseDay)</pre>
 <div class="block">Sets the day of the release date.
 
@@ -779,7 +837,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setWriter</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setWriter&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setWriter&#8203;(@Nullable
                                        <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;writer)</pre>
 <div class="block">Sets the writer.</div>
 </li>
@@ -790,7 +849,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setComposer</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setComposer&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setComposer&#8203;(@Nullable
                                          <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;composer)</pre>
 <div class="block">Sets the composer.</div>
 </li>
@@ -801,7 +861,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setConductor</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setConductor&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setConductor&#8203;(@Nullable
                                           <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;conductor)</pre>
 <div class="block">Sets the conductor.</div>
 </li>
@@ -812,7 +873,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setDiscNumber</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setDiscNumber&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setDiscNumber&#8203;(@Nullable
                                            <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;discNumber)</pre>
 <div class="block">Sets the disc number.</div>
 </li>
@@ -823,7 +885,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setTotalDiscCount</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setTotalDiscCount&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setTotalDiscCount&#8203;(@Nullable
                                                <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;totalDiscCount)</pre>
 <div class="block">Sets the total number of discs.</div>
 </li>
@@ -834,7 +897,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setGenre</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setGenre&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setGenre&#8203;(@Nullable
                                       <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;genre)</pre>
 <div class="block">Sets the genre.</div>
 </li>
@@ -845,7 +909,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setCompilation</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setCompilation&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setCompilation&#8203;(@Nullable
                                             <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;compilation)</pre>
 <div class="block">Sets the compilation.</div>
 </li>
@@ -856,9 +921,22 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setStation</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setStation&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setStation&#8203;(@Nullable
                                         <a href="https://developer.android.com/reference/java/lang/CharSequence.html" title="class or interface in java.lang" class="externalLink" target="_top">CharSequence</a>&nbsp;station)</pre>
 <div class="block">Sets the name of the station streaming the media.</div>
+</li>
+</ul>
+<a id="setMediaType(java.lang.Integer)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setMediaType</h4>
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setMediaType&#8203;(@Nullable
+                                          <a href="MediaMetadata.MediaType.html" title="annotation in com.google.android.exoplayer2">@MediaType</a> <a href="https://developer.android.com/reference/java/lang/Integer.html" title="class or interface in java.lang" class="externalLink" target="_top">Integer</a>&nbsp;mediaType)</pre>
+<div class="block">Sets the <a href="MediaMetadata.MediaType.html" title="annotation in com.google.android.exoplayer2"><code>MediaMetadata.MediaType</code></a>.</div>
 </li>
 </ul>
 <a id="setExtras(android.os.Bundle)">
@@ -867,7 +945,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setExtras</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setExtras&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;setExtras&#8203;(@Nullable
                                        <a href="https://developer.android.com/reference/android/os/Bundle.html" title="class or interface in android.os" class="externalLink" target="_top">Bundle</a>&nbsp;extras)</pre>
 <div class="block">Sets the extras <a href="https://developer.android.com/reference/android/os/Bundle.html" title="class or interface in android.os" class="externalLink" target="_top"><code>Bundle</code></a>.</div>
 </li>
@@ -878,7 +957,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>populateFromMetadata</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;populateFromMetadata&#8203;(<a href="metadata/Metadata.html" title="class in com.google.android.exoplayer2.metadata">Metadata</a>&nbsp;metadata)</pre>
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;populateFromMetadata&#8203;(<a href="metadata/Metadata.html" title="class in com.google.android.exoplayer2.metadata">Metadata</a>&nbsp;metadata)</pre>
 <div class="block">Sets all fields supported by the <a href="metadata/Metadata.Entry.html" title="interface in com.google.android.exoplayer2.metadata"><code>entries</code></a> within the <a href="metadata/Metadata.html" title="class in com.google.android.exoplayer2.metadata"><code>Metadata</code></a>.
 
  <p>Fields are only set if the <a href="metadata/Metadata.Entry.html" title="interface in com.google.android.exoplayer2.metadata"><code>Metadata.Entry</code></a> has an implementation for <a href="metadata/Metadata.Entry.html#populateMediaMetadata(com.google.android.exoplayer2.MediaMetadata.Builder)"><code>Metadata.Entry.populateMediaMetadata(Builder)</code></a>.
@@ -893,7 +973,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>populateFromMetadata</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;populateFromMetadata&#8203;(<a href="https://developer.android.com/reference/java/util/List.html" title="class or interface in java.util" class="externalLink">List</a>&lt;<a href="metadata/Metadata.html" title="class in com.google.android.exoplayer2.metadata" target="_top">Metadata</a>&gt;&nbsp;metadataList)</pre>
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;populateFromMetadata&#8203;(<a href="https://developer.android.com/reference/java/util/List.html" title="class or interface in java.util" class="externalLink">List</a>&lt;<a href="metadata/Metadata.html" title="class in com.google.android.exoplayer2.metadata" target="_top">Metadata</a>&gt;&nbsp;metadataList)</pre>
 <div class="block">Sets all fields supported by the <a href="metadata/Metadata.Entry.html" title="interface in com.google.android.exoplayer2.metadata"><code>entries</code></a> within the list of <a href="metadata/Metadata.html" title="class in com.google.android.exoplayer2.metadata"><code>Metadata</code></a>.
 
  <p>Fields are only set if the <a href="metadata/Metadata.Entry.html" title="interface in com.google.android.exoplayer2.metadata"><code>Metadata.Entry</code></a> has an implementation for <a href="metadata/Metadata.Entry.html#populateMediaMetadata(com.google.android.exoplayer2.MediaMetadata.Builder)"><code>Metadata.Entry.populateMediaMetadata(Builder)</code></a>.
@@ -907,7 +988,8 @@ public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>populate</h4>
-<pre class="methodSignature">public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;populate&#8203;(@Nullable
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="MediaMetadata.Builder.html" title="class in com.google.android.exoplayer2">MediaMetadata.Builder</a>&nbsp;populate&#8203;(@Nullable
                                       <a href="MediaMetadata.html" title="class in com.google.android.exoplayer2">MediaMetadata</a>&nbsp;mediaMetadata)</pre>
 <div class="block">Populates all the fields from <code>mediaMetadata</code>, provided they are non-null.</div>
 </li>

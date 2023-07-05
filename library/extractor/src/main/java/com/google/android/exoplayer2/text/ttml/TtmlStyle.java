@@ -22,12 +22,21 @@ import android.text.Layout;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.text.span.TextAnnotation;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Style object of a <code>TtmlNode</code> */
+/**
+ * Style object of a <code>TtmlNode</code>
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 /* package */ final class TtmlStyle {
 
   public static final int UNSPECIFIED = -1;
@@ -125,6 +134,7 @@ import java.lang.annotation.Target;
     return linethrough == ON;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setLinethrough(boolean linethrough) {
     this.linethrough = linethrough ? ON : OFF;
     return this;
@@ -134,16 +144,19 @@ import java.lang.annotation.Target;
     return underline == ON;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setUnderline(boolean underline) {
     this.underline = underline ? ON : OFF;
     return this;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setBold(boolean bold) {
     this.bold = bold ? ON : OFF;
     return this;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setItalic(boolean italic) {
     this.italic = italic ? ON : OFF;
     return this;
@@ -154,6 +167,7 @@ import java.lang.annotation.Target;
     return fontFamily;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setFontFamily(@Nullable String fontFamily) {
     this.fontFamily = fontFamily;
     return this;
@@ -166,6 +180,7 @@ import java.lang.annotation.Target;
     return fontColor;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setFontColor(int fontColor) {
     this.fontColor = fontColor;
     hasFontColor = true;
@@ -183,6 +198,7 @@ import java.lang.annotation.Target;
     return backgroundColor;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setBackgroundColor(int backgroundColor) {
     this.backgroundColor = backgroundColor;
     hasBackgroundColor = true;
@@ -193,6 +209,7 @@ import java.lang.annotation.Target;
     return hasBackgroundColor;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setShearPercentage(float shearPercentage) {
     this.shearPercentage = shearPercentage;
     return this;
@@ -208,6 +225,7 @@ import java.lang.annotation.Target;
    *
    * @param ancestor the referential style to inherit from
    */
+  @CanIgnoreReturnValue
   public TtmlStyle chain(@Nullable TtmlStyle ancestor) {
     return inherit(ancestor, true);
   }
@@ -219,10 +237,12 @@ import java.lang.annotation.Target;
    *
    * @param ancestor the ancestor style to inherit from
    */
+  @CanIgnoreReturnValue
   public TtmlStyle inherit(@Nullable TtmlStyle ancestor) {
     return inherit(ancestor, false);
   }
 
+  @CanIgnoreReturnValue
   private TtmlStyle inherit(@Nullable TtmlStyle ancestor, boolean chaining) {
     if (ancestor != null) {
       if (!hasFontColor && ancestor.hasFontColor) {
@@ -276,6 +296,7 @@ import java.lang.annotation.Target;
     return this;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setId(@Nullable String id) {
     this.id = id;
     return this;
@@ -286,6 +307,7 @@ import java.lang.annotation.Target;
     return id;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setRubyType(@RubyType int rubyType) {
     this.rubyType = rubyType;
     return this;
@@ -295,6 +317,7 @@ import java.lang.annotation.Target;
     return rubyType;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setRubyPosition(@TextAnnotation.Position int position) {
     this.rubyPosition = position;
     return this;
@@ -309,6 +332,7 @@ import java.lang.annotation.Target;
     return textAlign;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setTextAlign(@Nullable Layout.Alignment textAlign) {
     this.textAlign = textAlign;
     return this;
@@ -319,6 +343,7 @@ import java.lang.annotation.Target;
     return multiRowAlign;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setMultiRowAlign(@Nullable Layout.Alignment multiRowAlign) {
     this.multiRowAlign = multiRowAlign;
     return this;
@@ -329,6 +354,7 @@ import java.lang.annotation.Target;
     return textCombine == ON;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setTextCombine(boolean combine) {
     this.textCombine = combine ? ON : OFF;
     return this;
@@ -339,16 +365,19 @@ import java.lang.annotation.Target;
     return textEmphasis;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setTextEmphasis(@Nullable TextEmphasis textEmphasis) {
     this.textEmphasis = textEmphasis;
     return this;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setFontSize(float fontSize) {
     this.fontSize = fontSize;
     return this;
   }
 
+  @CanIgnoreReturnValue
   public TtmlStyle setFontSizeUnit(int fontSizeUnit) {
     this.fontSizeUnit = fontSizeUnit;
     return this;

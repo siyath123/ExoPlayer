@@ -2,6 +2,10 @@
 title: Downloading media
 ---
 
+This documentation may be out-of-date. Please refer to the
+[documentation for the latest ExoPlayer release][] on developer.android.com.
+{:.info}
+
 ExoPlayer provides functionality to download media for offline playback. In most
 use cases it's desirable for downloads to continue even when your app is in the
 background. For these use cases your app should subclass `DownloadService`, and
@@ -386,7 +390,7 @@ follows these steps:
 Playback of downloaded adaptive content requires configuring the player and
 passing the corresponding `MediaItem`, as described above.
 
-When building the `MediaItem`, `MediaItem.playbackProperties.streamKeys` must be
+When building the `MediaItem`, `MediaItem.localConfiguration.streamKeys` must be
 set to match those in the `DownloadRequest` so that the player only tries to
 play the subset of tracks that have been downloaded. Using
 `Download.request.toMediaItem` and `DownloadRequest.toMediaItem` to build the
@@ -397,6 +401,7 @@ adaptive content, the most likely cause is that the player is trying to adapt to
 a track that was not downloaded. Ensure you've set the stream keys correctly.
 {:.info}
 
+[documentation for the latest ExoPlayer release]: https://developer.android.com/guide/topics/media/exoplayer/downloading-media
 [JobScheduler]: {{ site.android_sdk }}/android/app/job/JobScheduler
 [PlatformScheduler]: {{ site.exo_sdk }}/scheduler/PlatformScheduler.html
 [WorkManager]: https://developer.android.com/topic/libraries/architecture/workmanager/

@@ -19,6 +19,7 @@ import static com.google.android.exoplayer2.util.GlUtil.checkGlError;
 
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
+import android.util.Log;
 import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.GlProgram;
@@ -29,7 +30,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 /**
  * Utility class to render spherical meshes for video or images. Call {@link #init()} on the GL
  * thread when ready.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 /* package */ final class ProjectionRenderer {
 
   /**
@@ -44,6 +51,8 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         && rightMesh.getSubMeshCount() == 1
         && rightMesh.getSubMesh(0).textureId == Projection.SubMesh.VIDEO_TEXTURE_ID;
   }
+
+  private static final String TAG = "ProjectionRenderer";
 
   // Basic vertex & fragment shaders to render a mesh with 3D position & 2D texture data.
   private static final String VERTEX_SHADER =
@@ -115,12 +124,16 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
   /** Initializes of the GL components. */
   public void init() {
-    program = new GlProgram(VERTEX_SHADER, FRAGMENT_SHADER);
-    mvpMatrixHandle = program.getUniformLocation("uMvpMatrix");
-    uTexMatrixHandle = program.getUniformLocation("uTexMatrix");
-    positionHandle = program.getAttributeArrayLocationAndEnable("aPosition");
-    texCoordsHandle = program.getAttributeArrayLocationAndEnable("aTexCoords");
-    textureHandle = program.getUniformLocation("uTexture");
+    try {
+      program = new GlProgram(VERTEX_SHADER, FRAGMENT_SHADER);
+      mvpMatrixHandle = program.getUniformLocation("uMvpMatrix");
+      uTexMatrixHandle = program.getUniformLocation("uTexMatrix");
+      positionHandle = program.getAttributeArrayLocationAndEnable("aPosition");
+      texCoordsHandle = program.getAttributeArrayLocationAndEnable("aTexCoords");
+      textureHandle = program.getUniformLocation("uTexture");
+    } catch (GlUtil.GlException e) {
+      Log.e(TAG, "Failed to initialize the program", e);
+    }
   }
 
   /**
@@ -154,7 +167,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
     GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
     GLES20.glUniform1i(textureHandle, 0);
-    checkGlError();
+    try {
+      checkGlError();
+    } catch (GlUtil.GlException e) {
+      Log.e(TAG, "Failed to bind uniforms", e);
+    }
 
     // Load position data.
     GLES20.glVertexAttribPointer(
@@ -164,7 +181,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         false,
         Projection.POSITION_COORDS_PER_VERTEX * C.BYTES_PER_FLOAT,
         meshData.vertexBuffer);
-    checkGlError();
+    try {
+      checkGlError();
+    } catch (GlUtil.GlException e) {
+      Log.e(TAG, "Failed to load position data", e);
+    }
 
     // Load texture data.
     GLES20.glVertexAttribPointer(
@@ -174,17 +195,29 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         false,
         Projection.TEXTURE_COORDS_PER_VERTEX * C.BYTES_PER_FLOAT,
         meshData.textureBuffer);
-    checkGlError();
+    try {
+      checkGlError();
+    } catch (GlUtil.GlException e) {
+      Log.e(TAG, "Failed to load texture data", e);
+    }
 
     // Render.
     GLES20.glDrawArrays(meshData.drawMode, /* first= */ 0, meshData.vertexCount);
-    checkGlError();
+    try {
+      checkGlError();
+    } catch (GlUtil.GlException e) {
+      Log.e(TAG, "Failed to render", e);
+    }
   }
 
   /** Cleans up GL resources. */
   public void shutdown() {
     if (program != null) {
-      program.delete();
+      try {
+        program.delete();
+      } catch (GlUtil.GlException e) {
+        Log.e(TAG, "Failed to delete the shader program", e);
+      }
     }
   }
 

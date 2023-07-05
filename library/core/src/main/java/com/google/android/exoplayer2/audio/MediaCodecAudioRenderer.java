@@ -23,13 +23,16 @@ import static java.lang.Math.max;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.MediaCodec;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.os.Handler;
 import androidx.annotation.CallSuper;
+import androidx.annotation.DoNotInline;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -81,7 +84,13 @@ import java.util.List;
  *       message payload should be a session ID {@link Integer} that will be attached to the
  *       underlying audio track.
  * </ul>
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public class MediaCodecAudioRenderer extends MediaCodecRenderer implements MediaClock {
 
   private static final String TAG = "MediaCodecAudioRenderer";
@@ -97,6 +106,7 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
 
   private int codecMaxInputSize;
   private boolean codecNeedsDiscardChannelsWorkaround;
+  @Nullable private Format inputFormat;
   /** Codec used for DRM decryption only in passthrough and offload. */
   @Nullable private Format decryptOnlyCodecFormat;
 
@@ -389,20 +399,8 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
         return ImmutableList.of(codecInfo);
       }
     }
-    List<MediaCodecInfo> decoderInfos =
-        mediaCodecSelector.getDecoderInfos(
-            mimeType, requiresSecureDecoder, /* requiresTunnelingDecoder= */ false);
-    @Nullable String alternativeMimeType = MediaCodecUtil.getAlternativeCodecMimeType(format);
-    if (alternativeMimeType == null) {
-      return ImmutableList.copyOf(decoderInfos);
-    }
-    List<MediaCodecInfo> alternativeDecoderInfos =
-        mediaCodecSelector.getDecoderInfos(
-            alternativeMimeType, requiresSecureDecoder, /* requiresTunnelingDecoder= */ false);
-    return ImmutableList.<MediaCodecInfo>builder()
-        .addAll(decoderInfos)
-        .addAll(alternativeDecoderInfos)
-        .build();
+    return MediaCodecUtil.getDecoderInfosSoftMatch(
+        mediaCodecSelector, format, requiresSecureDecoder, /* requiresTunnelingDecoder= */ false);
   }
 
   @Override
@@ -435,6 +433,11 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
     DecoderReuseEvaluation evaluation = codecInfo.canReuseCodec(oldFormat, newFormat);
 
     @DecoderDiscardReasons int discardReasons = evaluation.discardReasons;
+    if (isBypassPossible(newFormat)) {
+      // We prefer direct audio playback so that for multi-channel tracks the audio is not downmixed
+      // to stereo.
+      discardReasons |= DecoderReuseEvaluation.DISCARD_REASON_AUDIO_BYPASS_POSSIBLE;
+    }
     if (getCodecMaxInputSize(codecInfo, newFormat) > codecMaxInputSize) {
       discardReasons |= DISCARD_REASON_MAX_INPUT_SIZE_EXCEEDED;
     }
@@ -492,8 +495,9 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
   @Nullable
   protected DecoderReuseEvaluation onInputFormatChanged(FormatHolder formatHolder)
       throws ExoPlaybackException {
+    inputFormat = checkNotNull(formatHolder.format);
     @Nullable DecoderReuseEvaluation evaluation = super.onInputFormatChanged(formatHolder);
-    eventDispatcher.inputFormatChanged(formatHolder.format, evaluation);
+    eventDispatcher.inputFormatChanged(inputFormat, evaluation);
     return evaluation;
   }
 
@@ -596,6 +600,7 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
   @Override
   protected void onDisabled() {
     audioSinkNeedsReset = true;
+    inputFormat = null;
     try {
       audioSink.flush();
     } finally {
@@ -617,6 +622,11 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
         audioSink.reset();
       }
     }
+  }
+
+  @Override
+  protected void onRelease() {
+    audioSink.release();
   }
 
   @Override
@@ -703,7 +713,7 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
       fullyConsumed = audioSink.handleBuffer(buffer, bufferPresentationTimeUs, sampleCount);
     } catch (InitializationException e) {
       throw createRendererException(
-          e, e.format, e.isRecoverable, PlaybackException.ERROR_CODE_AUDIO_TRACK_INIT_FAILED);
+          e, inputFormat, e.isRecoverable, PlaybackException.ERROR_CODE_AUDIO_TRACK_INIT_FAILED);
     } catch (WriteException e) {
       throw createRendererException(
           e, format, e.isRecoverable, PlaybackException.ERROR_CODE_AUDIO_TRACK_WRITE_FAILED);
@@ -731,6 +741,11 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
   }
 
   @Override
+  protected void onOutputStreamOffsetUsChanged(long outputStreamOffsetUs) {
+    audioSink.setOutputStreamOffsetUs(outputStreamOffsetUs);
+  }
+
+  @Override
   public void handleMessage(@MessageType int messageType, @Nullable Object message)
       throws ExoPlaybackException {
     switch (messageType) {
@@ -744,6 +759,11 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
       case MSG_SET_AUX_EFFECT_INFO:
         AuxEffectInfo auxEffectInfo = (AuxEffectInfo) message;
         audioSink.setAuxEffectInfo(auxEffectInfo);
+        break;
+      case MSG_SET_PREFERRED_AUDIO_DEVICE:
+        if (Util.SDK_INT >= 23) {
+          Api23.setAudioSinkPreferredDevice(audioSink, message);
+        }
         break;
       case MSG_SET_SKIP_SILENCE_ENABLED:
         audioSink.setSkipSilenceEnabled((Boolean) message);
@@ -936,6 +956,23 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
     public void onAudioSinkError(Exception audioSinkError) {
       Log.e(TAG, "Audio sink error", audioSinkError);
       eventDispatcher.audioSinkError(audioSinkError);
+    }
+
+    @Override
+    public void onAudioCapabilitiesChanged() {
+      MediaCodecAudioRenderer.this.onRendererCapabilitiesChanged();
+    }
+  }
+
+  @RequiresApi(23)
+  private static final class Api23 {
+    private Api23() {}
+
+    @DoNotInline
+    public static void setAudioSinkPreferredDevice(
+        AudioSink audioSink, @Nullable Object messagePayload) {
+      @Nullable AudioDeviceInfo audioDeviceInfo = (AudioDeviceInfo) messagePayload;
+      audioSink.setPreferredDevice(audioDeviceInfo);
     }
   }
 }

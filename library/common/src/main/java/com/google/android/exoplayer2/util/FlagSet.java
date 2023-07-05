@@ -20,6 +20,7 @@ import static com.google.android.exoplayer2.util.Assertions.checkState;
 
 import android.util.SparseBooleanArray;
 import androidx.annotation.Nullable;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 
 /**
  * A set of integer flags.
@@ -28,7 +29,13 @@ import androidx.annotation.Nullable;
  * by an IntDef.
  *
  * <p>Instances are immutable.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class FlagSet {
 
   /** A builder for {@link FlagSet} instances. */
@@ -50,6 +57,7 @@ public final class FlagSet {
      * @return This builder.
      * @throws IllegalStateException If {@link #build()} has already been called.
      */
+    @CanIgnoreReturnValue
     public Builder add(int flag) {
       checkState(!buildCalled);
       flags.append(flag, /* value= */ true);
@@ -64,6 +72,7 @@ public final class FlagSet {
      * @return This builder.
      * @throws IllegalStateException If {@link #build()} has already been called.
      */
+    @CanIgnoreReturnValue
     public Builder addIf(int flag, boolean condition) {
       if (condition) {
         return add(flag);
@@ -78,6 +87,7 @@ public final class FlagSet {
      * @return This builder.
      * @throws IllegalStateException If {@link #build()} has already been called.
      */
+    @CanIgnoreReturnValue
     public Builder addAll(int... flags) {
       for (int flag : flags) {
         add(flag);
@@ -92,6 +102,7 @@ public final class FlagSet {
      * @return This builder.
      * @throws IllegalStateException If {@link #build()} has already been called.
      */
+    @CanIgnoreReturnValue
     public Builder addAll(FlagSet flags) {
       for (int i = 0; i < flags.size(); i++) {
         add(flags.get(i));
@@ -106,6 +117,7 @@ public final class FlagSet {
      * @return This builder.
      * @throws IllegalStateException If {@link #build()} has already been called.
      */
+    @CanIgnoreReturnValue
     public Builder remove(int flag) {
       checkState(!buildCalled);
       flags.delete(flag);
@@ -120,6 +132,7 @@ public final class FlagSet {
      * @return This builder.
      * @throws IllegalStateException If {@link #build()} has already been called.
      */
+    @CanIgnoreReturnValue
     public Builder removeIf(int flag, boolean condition) {
       if (condition) {
         return remove(flag);
@@ -134,6 +147,7 @@ public final class FlagSet {
      * @return This builder.
      * @throws IllegalStateException If {@link #build()} has already been called.
      */
+    @CanIgnoreReturnValue
     public Builder removeAll(int... flags) {
       for (int flag : flags) {
         remove(flag);

@@ -21,10 +21,19 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.ArrayList;
 import java.util.List;
 
-/** The standard implementation of {@link HandlerWrapper}. */
+/**
+ * The standard implementation of {@link HandlerWrapper}.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 /* package */ final class SystemHandlerWrapper implements HandlerWrapper {
 
   private static final int MAX_POOL_SIZE = 50;
@@ -136,6 +145,7 @@ import java.util.List;
     @Nullable private android.os.Message message;
     @Nullable private SystemHandlerWrapper handler;
 
+    @CanIgnoreReturnValue
     public SystemMessage setMessage(android.os.Message message, SystemHandlerWrapper handler) {
       this.message = message;
       this.handler = handler;

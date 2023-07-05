@@ -15,6 +15,7 @@
  */
 package com.google.android.exoplayer2.source.rtsp.reader;
 
+import static com.google.android.exoplayer2.source.rtsp.reader.RtpReaderUtils.toSampleTimeUs;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 
 import com.google.android.exoplayer2.C;
@@ -30,7 +31,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 /**
  * Parses a AAC byte stream carried on RTP packets and extracts individual samples. Interleaving
  * mode is not supported.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 /* package */ final class RtpAacReader implements RtpPayloadReader {
 
   /** AAC low bit rate mode, RFC3640 Section 3.3.5. */
@@ -152,15 +159,5 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   private static void outputSampleMetadata(TrackOutput trackOutput, long sampleTimeUs, int size) {
     trackOutput.sampleMetadata(
         sampleTimeUs, C.BUFFER_FLAG_KEY_FRAME, size, /* offset= */ 0, /* cryptoData= */ null);
-  }
-
-  /** Returns the correct sample time from RTP timestamp, accounting for the AAC sampling rate. */
-  private static long toSampleTimeUs(
-      long startTimeOffsetUs, long rtpTimestamp, long firstReceivedRtpTimestamp, int sampleRate) {
-    return startTimeOffsetUs
-        + Util.scaleLargeTimestamp(
-            rtpTimestamp - firstReceivedRtpTimestamp,
-            /* multiplier= */ C.MICROS_PER_SECOND,
-            /* divisor= */ sampleRate);
   }
 }

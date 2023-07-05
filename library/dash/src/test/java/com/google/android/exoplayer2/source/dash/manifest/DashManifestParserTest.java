@@ -139,7 +139,7 @@ public class DashManifestParserTest {
                 ApplicationProvider.getApplicationContext(), SAMPLE_MPD_EVENT_STREAM));
 
     Period period = manifest.getPeriod(0);
-    assertThat(period.eventStreams).hasSize(3);
+    assertThat(period.eventStreams).hasSize(4);
 
     // assert text-only event stream
     EventStream eventStream1 = period.eventStreams.get(0);
@@ -150,10 +150,18 @@ public class DashManifestParserTest {
     assertThat(eventStream1.events[0]).isEqualTo(expectedEvent1);
     assertThat(eventStream1.presentationTimesUs[0]).isEqualTo(0);
 
-    // assert CData-structured event stream
+    // assert event stream with presentationTimeOffset
     EventStream eventStream2 = period.eventStreams.get(1);
     assertThat(eventStream2.events.length).isEqualTo(1);
     EventMessage expectedEvent2 =
+        new EventMessage("urn:uuid:with-pto", "pto-4s", 10000, 0, "pt=1s".getBytes(Charsets.UTF_8));
+    assertThat(eventStream2.events[0]).isEqualTo(expectedEvent2);
+    assertThat(eventStream2.presentationTimesUs[0]).isEqualTo(1000000);
+
+    // assert CData-structured event stream
+    EventStream eventStream3 = period.eventStreams.get(2);
+    assertThat(eventStream3.events.length).isEqualTo(1);
+    EventMessage expectedEvent3 =
         new EventMessage(
             "urn:dvb:iptv:cpm:2014",
             "",
@@ -173,13 +181,13 @@ public class DashManifestParserTest {
                     + "      </InstanceDescription>\n"
                     + "      </BroadcastEvent>]]>"));
 
-    assertThat(eventStream2.events[0]).isEqualTo(expectedEvent2);
-    assertThat(eventStream2.presentationTimesUs[0]).isEqualTo(300000000);
+    assertThat(eventStream3.events[0]).isEqualTo(expectedEvent3);
+    assertThat(eventStream3.presentationTimesUs[0]).isEqualTo(300000000);
 
     // assert xml-structured event stream
-    EventStream eventStream3 = period.eventStreams.get(2);
-    assertThat(eventStream3.events.length).isEqualTo(1);
-    EventMessage expectedEvent3 =
+    EventStream eventStream4 = period.eventStreams.get(3);
+    assertThat(eventStream4.events.length).isEqualTo(1);
+    EventMessage expectedEvent4 =
         new EventMessage(
             "urn:scte:scte35:2014:xml+bin",
             "",
@@ -191,8 +199,8 @@ public class DashManifestParserTest {
                     + "         /DAIAAAAAAAAAAAQAAZ/I0VniQAQAgBDVUVJQAAAAH+cAAAAAA==\n"
                     + "         </scte35:Binary>\n"
                     + "       </scte35:Signal>"));
-    assertThat(eventStream3.events[0]).isEqualTo(expectedEvent3);
-    assertThat(eventStream3.presentationTimesUs[0]).isEqualTo(1000000000);
+    assertThat(eventStream4.events[0]).isEqualTo(expectedEvent4);
+    assertThat(eventStream4.presentationTimesUs[0]).isEqualTo(1000000000);
   }
 
   @Test
@@ -244,11 +252,19 @@ public class DashManifestParserTest {
                 ApplicationProvider.getApplicationContext(), SAMPLE_MPD_IMAGES));
 
     AdaptationSet adaptationSet = manifest.getPeriod(0).adaptationSets.get(0);
-    Format format = adaptationSet.representations.get(0).format;
+    Format format0 = adaptationSet.representations.get(0).format;
+    Format format1 = adaptationSet.representations.get(1).format;
 
-    assertThat(format.sampleMimeType).isEqualTo("image/jpeg");
-    assertThat(format.width).isEqualTo(320);
-    assertThat(format.height).isEqualTo(180);
+    assertThat(format0.sampleMimeType).isEqualTo("image/jpeg");
+    assertThat(format0.width).isEqualTo(320);
+    assertThat(format0.height).isEqualTo(180);
+    assertThat(format0.tileCountHorizontal).isEqualTo(12);
+    assertThat(format0.tileCountVertical).isEqualTo(16);
+    assertThat(format1.sampleMimeType).isEqualTo("image/jpeg");
+    assertThat(format1.width).isEqualTo(640);
+    assertThat(format1.height).isEqualTo(360);
+    assertThat(format1.tileCountHorizontal).isEqualTo(2);
+    assertThat(format1.tileCountVertical).isEqualTo(4);
   }
 
   @Test

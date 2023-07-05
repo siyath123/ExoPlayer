@@ -26,13 +26,22 @@ import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/** Defines content to be downloaded. */
+/**
+ * Defines content to be downloaded.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class DownloadRequest implements Parcelable {
 
   /** Thrown when the encoded request data belongs to an unsupported request type. */
@@ -55,30 +64,35 @@ public final class DownloadRequest implements Parcelable {
     }
 
     /** Sets the {@link DownloadRequest#mimeType}. */
+    @CanIgnoreReturnValue
     public Builder setMimeType(@Nullable String mimeType) {
       this.mimeType = mimeType;
       return this;
     }
 
     /** Sets the {@link DownloadRequest#streamKeys}. */
+    @CanIgnoreReturnValue
     public Builder setStreamKeys(@Nullable List<StreamKey> streamKeys) {
       this.streamKeys = streamKeys;
       return this;
     }
 
     /** Sets the {@link DownloadRequest#keySetId}. */
+    @CanIgnoreReturnValue
     public Builder setKeySetId(@Nullable byte[] keySetId) {
       this.keySetId = keySetId;
       return this;
     }
 
     /** Sets the {@link DownloadRequest#customCacheKey}. */
+    @CanIgnoreReturnValue
     public Builder setCustomCacheKey(@Nullable String customCacheKey) {
       this.customCacheKey = customCacheKey;
       return this;
     }
 
     /** Sets the {@link DownloadRequest#data}. */
+    @CanIgnoreReturnValue
     public Builder setData(@Nullable byte[] data) {
       this.data = data;
       return this;

@@ -244,7 +244,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 </td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code>static <a href="https://guava.dev/releases/31.0.1-android/api/docs/com/google/common/collect/ImmutableList.html?is-external=true" title="class or interface in com.google.common.collect" class="externalLink">ImmutableList</a>&lt;<a href="ExtractorAsserts.SimulationConfig.html" title="class in com.google.android.exoplayer2.testutil">ExtractorAsserts.SimulationConfig</a>&gt;</code></td>
+<td class="colFirst"><code>static <a href="https://guava.dev/releases/31.1-android/api/docs/com/google/common/collect/ImmutableList.html?is-external=true" title="class or interface in com.google.common.collect" class="externalLink">ImmutableList</a>&lt;<a href="ExtractorAsserts.SimulationConfig.html" title="class in com.google.android.exoplayer2.testutil">ExtractorAsserts.SimulationConfig</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#configs()">configs</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Returns a list of arrays containing <a href="ExtractorAsserts.SimulationConfig.html" title="class in com.google.android.exoplayer2.testutil"><code>ExtractorAsserts.SimulationConfig</code></a> objects to exercise different
@@ -289,7 +289,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>configs</h4>
-<pre class="methodSignature">public static&nbsp;<a href="https://guava.dev/releases/31.0.1-android/api/docs/com/google/common/collect/ImmutableList.html?is-external=true" title="class or interface in com.google.common.collect" class="externalLink">ImmutableList</a>&lt;<a href="ExtractorAsserts.SimulationConfig.html" title="class in com.google.android.exoplayer2.testutil">ExtractorAsserts.SimulationConfig</a>&gt;&nbsp;configs()</pre>
+<pre class="methodSignature">public static&nbsp;<a href="https://guava.dev/releases/31.1-android/api/docs/com/google/common/collect/ImmutableList.html?is-external=true" title="class or interface in com.google.common.collect" class="externalLink">ImmutableList</a>&lt;<a href="ExtractorAsserts.SimulationConfig.html" title="class in com.google.android.exoplayer2.testutil">ExtractorAsserts.SimulationConfig</a>&gt;&nbsp;configs()</pre>
 <div class="block">Returns a list of arrays containing <a href="ExtractorAsserts.SimulationConfig.html" title="class in com.google.android.exoplayer2.testutil"><code>ExtractorAsserts.SimulationConfig</code></a> objects to exercise different
  extractor paths.
 
@@ -432,6 +432,9 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
  <p>The output of the extractor is compared against prerecorded dump files.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>factory</code> - An <a href="ExtractorAsserts.ExtractorFactory.html" title="interface in com.google.android.exoplayer2.testutil"><code>ExtractorAsserts.ExtractorFactory</code></a> which creates instances of the <a href="../extractor/Extractor.html" title="interface in com.google.android.exoplayer2.extractor"><code>Extractor</code></a>
+     class which is to be tested.</dd>
+<dd><code>file</code> - The input file to pass to the extractor.</dd>
 <dd><code>assertionConfig</code> - Details of how to read and process the source and dump files.</dd>
 <dd><code>simulationConfig</code> - Details on the environment to simulate and behaviours to assert.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>

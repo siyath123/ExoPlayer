@@ -25,8 +25,8 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
+var data = {"i0":42};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -87,7 +87,7 @@ loadScripts(document, 'script');</script>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li><a href="#nested.class.summary">Nested</a>&nbsp;|&nbsp;</li>
-<li>Field&nbsp;|&nbsp;</li>
+<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
@@ -138,8 +138,14 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd><code><a href="../../../offline/Downloader.html" title="interface in com.google.android.exoplayer2.offline">Downloader</a></code></dd>
 </dl>
 <hr>
-<pre>public final class <span class="typeNameLabel">DashDownloader</span>
+<pre><a href="https://developer.android.com/reference/java/lang/Deprecated.html" title="class or interface in java.lang" class="externalLink" target="_top">@Deprecated</a>
+public final class <span class="typeNameLabel">DashDownloader</span>
 extends <a href="../../../offline/SegmentDownloader.html" title="class in com.google.android.exoplayer2.offline">SegmentDownloader</a>&lt;<a href="../manifest/DashManifest.html" title="class in com.google.android.exoplayer2.source.dash.manifest">DashManifest</a>&gt;</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+     contains the same ExoPlayer code). See <a href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+     migration guide</a> for more details, including a script to help with the migration.</div>
+</div>
 <div class="block">A downloader for DASH streams.
 
  <p>Example usage:
@@ -195,6 +201,23 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
 </li>
 </ul>
 </section>
+<!-- =========== FIELD SUMMARY =========== -->
+<section role="region">
+<ul class="blockList">
+<li class="blockList"><a id="field.summary">
+<!--   -->
+</a>
+<h3>Field Summary</h3>
+<ul class="blockList">
+<li class="blockList"><a id="fields.inherited.from.class.com.google.android.exoplayer2.offline.SegmentDownloader">
+<!--   -->
+</a>
+<h3>Fields inherited from class&nbsp;com.google.android.exoplayer2.offline.<a href="../../../offline/SegmentDownloader.html" title="class in com.google.android.exoplayer2.offline">SegmentDownloader</a></h3>
+<code><a href="../../../offline/SegmentDownloader.html#DEFAULT_MAX_MERGED_SEGMENT_START_TIME_DIFF_MS">DEFAULT_MAX_MERGED_SEGMENT_START_TIME_DIFF_MS</a></code></li>
+</ul>
+</li>
+</ul>
+</section>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
 <section role="region">
 <ul class="blockList">
@@ -212,6 +235,7 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(com.google.android.exoplayer2.MediaItem,com.google.android.exoplayer2.upstream.cache.CacheDataSource.Factory)">DashDownloader</a></span>&#8203;(<a href="../../../MediaItem.html" title="class in com.google.android.exoplayer2">MediaItem</a>&nbsp;mediaItem,
               <a href="../../../upstream/cache/CacheDataSource.Factory.html" title="class in com.google.android.exoplayer2.upstream.cache">CacheDataSource.Factory</a>&nbsp;cacheDataSourceFactory)</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Creates a new instance.</div>
 </td>
 </tr>
@@ -220,6 +244,7 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
               <a href="../../../upstream/cache/CacheDataSource.Factory.html" title="class in com.google.android.exoplayer2.upstream.cache">CacheDataSource.Factory</a>&nbsp;cacheDataSourceFactory,
               <a href="https://developer.android.com/reference/java/util/concurrent/Executor.html" title="class or interface in java.util.concurrent" class="externalLink" target="_top">Executor</a>&nbsp;executor)</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Creates a new instance.</div>
 </td>
 </tr>
@@ -229,6 +254,20 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
               <a href="../../../upstream/cache/CacheDataSource.Factory.html" title="class in com.google.android.exoplayer2.upstream.cache">CacheDataSource.Factory</a>&nbsp;cacheDataSourceFactory,
               <a href="https://developer.android.com/reference/java/util/concurrent/Executor.html" title="class or interface in java.util.concurrent" class="externalLink" target="_top">Executor</a>&nbsp;executor)</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#%3Cinit%3E(com.google.android.exoplayer2.MediaItem,com.google.android.exoplayer2.upstream.ParsingLoadable.Parser,com.google.android.exoplayer2.upstream.cache.CacheDataSource.Factory,java.util.concurrent.Executor,long)"><code>DashDownloader(MediaItem, Parser,
+     CacheDataSource.Factory, Executor, long)</code></a> instead.</div>
+</div>
+</td>
+</tr>
+<tr class="rowColor">
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(com.google.android.exoplayer2.MediaItem,com.google.android.exoplayer2.upstream.ParsingLoadable.Parser,com.google.android.exoplayer2.upstream.cache.CacheDataSource.Factory,java.util.concurrent.Executor,long)">DashDownloader</a></span>&#8203;(<a href="../../../MediaItem.html" title="class in com.google.android.exoplayer2">MediaItem</a>&nbsp;mediaItem,
+              <a href="../../../upstream/ParsingLoadable.Parser.html" title="interface in com.google.android.exoplayer2.upstream">ParsingLoadable.Parser</a>&lt;<a href="../manifest/DashManifest.html" title="class in com.google.android.exoplayer2.source.dash.manifest">DashManifest</a>&gt;&nbsp;manifestParser,
+              <a href="../../../upstream/cache/CacheDataSource.Factory.html" title="class in com.google.android.exoplayer2.upstream.cache">CacheDataSource.Factory</a>&nbsp;cacheDataSourceFactory,
+              <a href="https://developer.android.com/reference/java/util/concurrent/Executor.html" title="class or interface in java.util.concurrent" class="externalLink" target="_top">Executor</a>&nbsp;executor,
+              long&nbsp;maxMergedSegmentStartTimeDiffMs)</code></th>
+<td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Creates a new instance.</div>
 </td>
 </tr>
@@ -244,7 +283,7 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t6" class="tableTab"><span><a href="javascript:show(32);">Deprecated Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colSecond" scope="col">Method</th>
@@ -256,6 +295,7 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
            <a href="../manifest/DashManifest.html" title="class in com.google.android.exoplayer2.source.dash.manifest">DashManifest</a>&nbsp;manifest,
            boolean&nbsp;removing)</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Returns a list of all downloadable <a href="../../../offline/SegmentDownloader.Segment.html" title="class in com.google.android.exoplayer2.offline"><code>SegmentDownloader.Segment</code></a>s for a given manifest.</div>
 </td>
 </tr>
@@ -298,6 +338,7 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
 <h4>DashDownloader</h4>
 <pre>public&nbsp;DashDownloader&#8203;(<a href="../../../MediaItem.html" title="class in com.google.android.exoplayer2">MediaItem</a>&nbsp;mediaItem,
                       <a href="../../../upstream/cache/CacheDataSource.Factory.html" title="class in com.google.android.exoplayer2.upstream.cache">CacheDataSource.Factory</a>&nbsp;cacheDataSourceFactory)</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Creates a new instance.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -316,6 +357,7 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
 <pre>public&nbsp;DashDownloader&#8203;(<a href="../../../MediaItem.html" title="class in com.google.android.exoplayer2">MediaItem</a>&nbsp;mediaItem,
                       <a href="../../../upstream/cache/CacheDataSource.Factory.html" title="class in com.google.android.exoplayer2.upstream.cache">CacheDataSource.Factory</a>&nbsp;cacheDataSourceFactory,
                       <a href="https://developer.android.com/reference/java/util/concurrent/Executor.html" title="class or interface in java.util.concurrent" class="externalLink" target="_top">Executor</a>&nbsp;executor)</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Creates a new instance.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -331,13 +373,32 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
 <a id="&lt;init&gt;(com.google.android.exoplayer2.MediaItem,com.google.android.exoplayer2.upstream.ParsingLoadable.Parser,com.google.android.exoplayer2.upstream.cache.CacheDataSource.Factory,java.util.concurrent.Executor)">
 <!--   -->
 </a>
+<ul class="blockList">
+<li class="blockList">
+<h4>DashDownloader</h4>
+<pre><a href="https://developer.android.com/reference/java/lang/Deprecated.html" title="class or interface in java.lang" class="externalLink" target="_top">@Deprecated</a>
+public&nbsp;DashDownloader&#8203;(<a href="../../../MediaItem.html" title="class in com.google.android.exoplayer2">MediaItem</a>&nbsp;mediaItem,
+                      <a href="../../../upstream/ParsingLoadable.Parser.html" title="interface in com.google.android.exoplayer2.upstream">ParsingLoadable.Parser</a>&lt;<a href="../manifest/DashManifest.html" title="class in com.google.android.exoplayer2.source.dash.manifest">DashManifest</a>&gt;&nbsp;manifestParser,
+                      <a href="../../../upstream/cache/CacheDataSource.Factory.html" title="class in com.google.android.exoplayer2.upstream.cache">CacheDataSource.Factory</a>&nbsp;cacheDataSourceFactory,
+                      <a href="https://developer.android.com/reference/java/util/concurrent/Executor.html" title="class or interface in java.util.concurrent" class="externalLink" target="_top">Executor</a>&nbsp;executor)</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#%3Cinit%3E(com.google.android.exoplayer2.MediaItem,com.google.android.exoplayer2.upstream.ParsingLoadable.Parser,com.google.android.exoplayer2.upstream.cache.CacheDataSource.Factory,java.util.concurrent.Executor,long)"><code>DashDownloader(MediaItem, Parser,
+     CacheDataSource.Factory, Executor, long)</code></a> instead.</div>
+</div>
+</li>
+</ul>
+<a id="&lt;init&gt;(com.google.android.exoplayer2.MediaItem,com.google.android.exoplayer2.upstream.ParsingLoadable.Parser,com.google.android.exoplayer2.upstream.cache.CacheDataSource.Factory,java.util.concurrent.Executor,long)">
+<!--   -->
+</a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>DashDownloader</h4>
 <pre>public&nbsp;DashDownloader&#8203;(<a href="../../../MediaItem.html" title="class in com.google.android.exoplayer2">MediaItem</a>&nbsp;mediaItem,
                       <a href="../../../upstream/ParsingLoadable.Parser.html" title="interface in com.google.android.exoplayer2.upstream">ParsingLoadable.Parser</a>&lt;<a href="../manifest/DashManifest.html" title="class in com.google.android.exoplayer2.source.dash.manifest">DashManifest</a>&gt;&nbsp;manifestParser,
                       <a href="../../../upstream/cache/CacheDataSource.Factory.html" title="class in com.google.android.exoplayer2.upstream.cache">CacheDataSource.Factory</a>&nbsp;cacheDataSourceFactory,
-                      <a href="https://developer.android.com/reference/java/util/concurrent/Executor.html" title="class or interface in java.util.concurrent" class="externalLink" target="_top">Executor</a>&nbsp;executor)</pre>
+                      <a href="https://developer.android.com/reference/java/util/concurrent/Executor.html" title="class or interface in java.util.concurrent" class="externalLink" target="_top">Executor</a>&nbsp;executor,
+                      long&nbsp;maxMergedSegmentStartTimeDiffMs)</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Creates a new instance.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -348,6 +409,9 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
 <dd><code>executor</code> - An <a href="https://developer.android.com/reference/java/util/concurrent/Executor.html" title="class or interface in java.util.concurrent" class="externalLink" target="_top"><code>Executor</code></a> used to make requests for the media being downloaded.
      Providing an <a href="https://developer.android.com/reference/java/util/concurrent/Executor.html" title="class or interface in java.util.concurrent" class="externalLink" target="_top"><code>Executor</code></a> that uses multiple threads will speed up the download by
      allowing parts of it to be executed in parallel.</dd>
+<dd><code>maxMergedSegmentStartTimeDiffMs</code> - The maximum difference of the start time of two
+     segments, up to which the segments (of the same URI) should be merged into a single
+     download segment, in milliseconds.</dd>
 </dl>
 </li>
 </ul>
@@ -372,6 +436,7 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
                                                       boolean&nbsp;removing)
                                                throws <a href="https://developer.android.com/reference/java/io/IOException.html" title="class or interface in java.io" class="externalLink" target="_top">IOException</a>,
                                                       <a href="https://developer.android.com/reference/java/lang/InterruptedException.html" title="class or interface in java.lang" class="externalLink" target="_top">InterruptedException</a></pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../../offline/SegmentDownloader.html#getSegments(com.google.android.exoplayer2.upstream.DataSource,M,boolean)">SegmentDownloader</a></code></span></div>
 <div class="block">Returns a list of all downloadable <a href="../../../offline/SegmentDownloader.Segment.html" title="class in com.google.android.exoplayer2.offline"><code>SegmentDownloader.Segment</code></a>s for a given manifest. Any required data
  should be loaded using <a href="../../../offline/SegmentDownloader.html#getManifest(com.google.android.exoplayer2.upstream.DataSource,com.google.android.exoplayer2.upstream.DataSpec,boolean)"><code>SegmentDownloader.getManifest(com.google.android.exoplayer2.upstream.DataSource, com.google.android.exoplayer2.upstream.DataSpec, boolean)</code></a> or <a href="../../../offline/SegmentDownloader.html#execute(com.google.android.exoplayer2.util.RunnableFutureTask,boolean)"><code>SegmentDownloader.execute(com.google.android.exoplayer2.util.RunnableFutureTask&lt;T, ?&gt;, boolean)</code></a>.</div>
@@ -445,7 +510,7 @@ extends <a href="../../../offline/SegmentDownloader.html" title="class in com.go
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li><a href="#nested.class.summary">Nested</a>&nbsp;|&nbsp;</li>
-<li>Field&nbsp;|&nbsp;</li>
+<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>

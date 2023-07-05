@@ -24,6 +24,7 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.ParsableByteArray;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.math.IntMath;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.nio.ByteBuffer;
 
 /**
@@ -54,7 +55,13 @@ import java.nio.ByteBuffer;
  *    3                   2                   1
  *  1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
  * </pre>
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class RtpPacket {
 
   /** Builder class for an {@link RtpPacket} */
@@ -69,24 +76,28 @@ public final class RtpPacket {
     private byte[] payloadData = EMPTY;
 
     /** Sets the {@link RtpPacket#padding}. The default is false. */
+    @CanIgnoreReturnValue
     public Builder setPadding(boolean padding) {
       this.padding = padding;
       return this;
     }
 
     /** Sets {@link RtpPacket#marker}. The default is false. */
+    @CanIgnoreReturnValue
     public Builder setMarker(boolean marker) {
       this.marker = marker;
       return this;
     }
 
     /** Sets {@link RtpPacket#payloadType}. The default is 0. */
+    @CanIgnoreReturnValue
     public Builder setPayloadType(byte payloadType) {
       this.payloadType = payloadType;
       return this;
     }
 
     /** Sets {@link RtpPacket#sequenceNumber}. The default is 0. */
+    @CanIgnoreReturnValue
     public Builder setSequenceNumber(int sequenceNumber) {
       checkArgument(sequenceNumber >= MIN_SEQUENCE_NUMBER && sequenceNumber <= MAX_SEQUENCE_NUMBER);
       this.sequenceNumber = sequenceNumber & 0xFFFF;
@@ -94,18 +105,21 @@ public final class RtpPacket {
     }
 
     /** Sets {@link RtpPacket#timestamp}. The default is 0. */
+    @CanIgnoreReturnValue
     public Builder setTimestamp(long timestamp) {
       this.timestamp = timestamp;
       return this;
     }
 
     /** Sets {@link RtpPacket#ssrc}. The default is 0. */
+    @CanIgnoreReturnValue
     public Builder setSsrc(int ssrc) {
       this.ssrc = ssrc;
       return this;
     }
 
     /** Sets {@link RtpPacket#csrc}. The default is an empty byte array. */
+    @CanIgnoreReturnValue
     public Builder setCsrc(byte[] csrc) {
       checkNotNull(csrc);
       this.csrc = csrc;
@@ -113,6 +127,7 @@ public final class RtpPacket {
     }
 
     /** Sets {@link RtpPacket#payloadData}. The default is an empty byte array. */
+    @CanIgnoreReturnValue
     public Builder setPayloadData(byte[] payloadData) {
       checkNotNull(payloadData);
       this.payloadData = payloadData;

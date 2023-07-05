@@ -50,18 +50,28 @@ import com.google.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
 import com.google.android.exoplayer2.source.hls.playlist.HlsPlaylistParserFactory;
 import com.google.android.exoplayer2.source.hls.playlist.HlsPlaylistTracker;
 import com.google.android.exoplayer2.upstream.Allocator;
+import com.google.android.exoplayer2.upstream.CmcdConfiguration;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultLoadErrorHandlingPolicy;
 import com.google.android.exoplayer2.upstream.LoadErrorHandlingPolicy;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.IOException;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.List;
 
-/** An HLS {@link MediaSource}. */
+/**
+ * An HLS {@link MediaSource}.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class HlsMediaSource extends BaseMediaSource
     implements HlsPlaylistTracker.PrimaryPlaylistListener {
 
@@ -102,12 +112,14 @@ public final class HlsMediaSource extends BaseMediaSource
     private HlsPlaylistParserFactory playlistParserFactory;
     private HlsPlaylistTracker.Factory playlistTrackerFactory;
     private CompositeSequenceableLoaderFactory compositeSequenceableLoaderFactory;
+    @Nullable private CmcdConfiguration.Factory cmcdConfigurationFactory;
     private DrmSessionManagerProvider drmSessionManagerProvider;
     private LoadErrorHandlingPolicy loadErrorHandlingPolicy;
     private boolean allowChunklessPreparation;
     private @MetadataType int metadataType;
     private boolean useSessionKeys;
     private long elapsedRealTimeOffsetMs;
+    private long timestampAdjusterInitializationTimeoutMs;
 
     /**
      * Creates a new factory for {@link HlsMediaSource}s.
@@ -169,12 +181,14 @@ public final class HlsMediaSource extends BaseMediaSource
      *     segments.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setExtractorFactory(@Nullable HlsExtractorFactory extractorFactory) {
       this.extractorFactory =
           extractorFactory != null ? extractorFactory : HlsExtractorFactory.DEFAULT;
       return this;
     }
 
+    @CanIgnoreReturnValue
     @Override
     public Factory setLoadErrorHandlingPolicy(LoadErrorHandlingPolicy loadErrorHandlingPolicy) {
       this.loadErrorHandlingPolicy =
@@ -192,6 +206,7 @@ public final class HlsMediaSource extends BaseMediaSource
      * @param playlistParserFactory An {@link HlsPlaylistParserFactory}.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setPlaylistParserFactory(HlsPlaylistParserFactory playlistParserFactory) {
       this.playlistParserFactory =
           checkNotNull(
@@ -208,6 +223,7 @@ public final class HlsMediaSource extends BaseMediaSource
      * @param playlistTrackerFactory A factory for {@link HlsPlaylistTracker} instances.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setPlaylistTrackerFactory(HlsPlaylistTracker.Factory playlistTrackerFactory) {
       this.playlistTrackerFactory =
           checkNotNull(
@@ -227,6 +243,7 @@ public final class HlsMediaSource extends BaseMediaSource
      *     audio etc...).
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setCompositeSequenceableLoaderFactory(
         CompositeSequenceableLoaderFactory compositeSequenceableLoaderFactory) {
       this.compositeSequenceableLoaderFactory =
@@ -246,6 +263,7 @@ public final class HlsMediaSource extends BaseMediaSource
      * @param allowChunklessPreparation Whether chunkless preparation is allowed.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setAllowChunklessPreparation(boolean allowChunklessPreparation) {
       this.allowChunklessPreparation = allowChunklessPreparation;
       return this;
@@ -270,6 +288,7 @@ public final class HlsMediaSource extends BaseMediaSource
      * @param metadataType The type of metadata to extract.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setMetadataType(@MetadataType int metadataType) {
       this.metadataType = metadataType;
       return this;
@@ -284,11 +303,20 @@ public final class HlsMediaSource extends BaseMediaSource
      * @param useSessionKeys Whether to use #EXT-X-SESSION-KEY tags.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setUseSessionKeys(boolean useSessionKeys) {
       this.useSessionKeys = useSessionKeys;
       return this;
     }
 
+    @CanIgnoreReturnValue
+    @Override
+    public Factory setCmcdConfigurationFactory(CmcdConfiguration.Factory cmcdConfigurationFactory) {
+      this.cmcdConfigurationFactory = checkNotNull(cmcdConfigurationFactory);
+      return this;
+    }
+
+    @CanIgnoreReturnValue
     @Override
     public Factory setDrmSessionManagerProvider(
         DrmSessionManagerProvider drmSessionManagerProvider) {
@@ -302,6 +330,21 @@ public final class HlsMediaSource extends BaseMediaSource
     }
 
     /**
+     * Sets the timeout for the loading thread to wait for the timestamp adjuster to initialize, in
+     * milliseconds.The default value is zero, which is interpreted as an infinite timeout.
+     *
+     * @param timestampAdjusterInitializationTimeoutMs The timeout in milliseconds. A timeout of
+     *     zero is interpreted as an infinite timeout.
+     * @return This factory, for convenience.
+     */
+    @CanIgnoreReturnValue
+    public Factory setTimestampAdjusterInitializationTimeoutMs(
+        long timestampAdjusterInitializationTimeoutMs) {
+      this.timestampAdjusterInitializationTimeoutMs = timestampAdjusterInitializationTimeoutMs;
+      return this;
+    }
+
+    /**
      * Sets the offset between {@link SystemClock#elapsedRealtime()} and the time since the Unix
      * epoch. By default, is it set to {@link C#TIME_UNSET}.
      *
@@ -309,6 +352,7 @@ public final class HlsMediaSource extends BaseMediaSource
      *     the time since the Unix epoch, in milliseconds.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     @VisibleForTesting
     /* package */ Factory setElapsedRealTimeOffsetMs(long elapsedRealTimeOffsetMs) {
       this.elapsedRealTimeOffsetMs = elapsedRealTimeOffsetMs;
@@ -331,12 +375,18 @@ public final class HlsMediaSource extends BaseMediaSource
         playlistParserFactory =
             new FilteringHlsPlaylistParserFactory(playlistParserFactory, streamKeys);
       }
+      @Nullable
+      CmcdConfiguration cmcdConfiguration =
+          cmcdConfigurationFactory == null
+              ? null
+              : cmcdConfigurationFactory.createCmcdConfiguration(mediaItem);
 
       return new HlsMediaSource(
           mediaItem,
           hlsDataSourceFactory,
           extractorFactory,
           compositeSequenceableLoaderFactory,
+          cmcdConfiguration,
           drmSessionManagerProvider.get(mediaItem),
           loadErrorHandlingPolicy,
           playlistTrackerFactory.createTracker(
@@ -344,11 +394,12 @@ public final class HlsMediaSource extends BaseMediaSource
           elapsedRealTimeOffsetMs,
           allowChunklessPreparation,
           metadataType,
-          useSessionKeys);
+          useSessionKeys,
+          timestampAdjusterInitializationTimeoutMs);
     }
 
     @Override
-    public int[] getSupportedTypes() {
+    public @C.ContentType int[] getSupportedTypes() {
       return new int[] {C.CONTENT_TYPE_HLS};
     }
   }
@@ -357,6 +408,7 @@ public final class HlsMediaSource extends BaseMediaSource
   private final MediaItem.LocalConfiguration localConfiguration;
   private final HlsDataSourceFactory dataSourceFactory;
   private final CompositeSequenceableLoaderFactory compositeSequenceableLoaderFactory;
+  @Nullable private final CmcdConfiguration cmcdConfiguration;
   private final DrmSessionManager drmSessionManager;
   private final LoadErrorHandlingPolicy loadErrorHandlingPolicy;
   private final boolean allowChunklessPreparation;
@@ -365,6 +417,7 @@ public final class HlsMediaSource extends BaseMediaSource
   private final HlsPlaylistTracker playlistTracker;
   private final long elapsedRealTimeOffsetMs;
   private final MediaItem mediaItem;
+  private final long timestampAdjusterInitializationTimeoutMs;
 
   private MediaItem.LiveConfiguration liveConfiguration;
   @Nullable private TransferListener mediaTransferListener;
@@ -374,19 +427,22 @@ public final class HlsMediaSource extends BaseMediaSource
       HlsDataSourceFactory dataSourceFactory,
       HlsExtractorFactory extractorFactory,
       CompositeSequenceableLoaderFactory compositeSequenceableLoaderFactory,
+      @Nullable CmcdConfiguration cmcdConfiguration,
       DrmSessionManager drmSessionManager,
       LoadErrorHandlingPolicy loadErrorHandlingPolicy,
       HlsPlaylistTracker playlistTracker,
       long elapsedRealTimeOffsetMs,
       boolean allowChunklessPreparation,
       @MetadataType int metadataType,
-      boolean useSessionKeys) {
+      boolean useSessionKeys,
+      long timestampAdjusterInitializationTimeoutMs) {
     this.localConfiguration = checkNotNull(mediaItem.localConfiguration);
     this.mediaItem = mediaItem;
     this.liveConfiguration = mediaItem.liveConfiguration;
     this.dataSourceFactory = dataSourceFactory;
     this.extractorFactory = extractorFactory;
     this.compositeSequenceableLoaderFactory = compositeSequenceableLoaderFactory;
+    this.cmcdConfiguration = cmcdConfiguration;
     this.drmSessionManager = drmSessionManager;
     this.loadErrorHandlingPolicy = loadErrorHandlingPolicy;
     this.playlistTracker = playlistTracker;
@@ -394,6 +450,7 @@ public final class HlsMediaSource extends BaseMediaSource
     this.allowChunklessPreparation = allowChunklessPreparation;
     this.metadataType = metadataType;
     this.useSessionKeys = useSessionKeys;
+    this.timestampAdjusterInitializationTimeoutMs = timestampAdjusterInitializationTimeoutMs;
   }
 
   @Override
@@ -404,9 +461,9 @@ public final class HlsMediaSource extends BaseMediaSource
   @Override
   protected void prepareSourceInternal(@Nullable TransferListener mediaTransferListener) {
     this.mediaTransferListener = mediaTransferListener;
-    drmSessionManager.prepare();
     drmSessionManager.setPlayer(
         /* playbackLooper= */ checkNotNull(Looper.myLooper()), getPlayerId());
+    drmSessionManager.prepare();
     MediaSourceEventListener.EventDispatcher eventDispatcher =
         createEventDispatcher(/* mediaPeriodId= */ null);
     playlistTracker.start(
@@ -427,6 +484,7 @@ public final class HlsMediaSource extends BaseMediaSource
         playlistTracker,
         dataSourceFactory,
         mediaTransferListener,
+        cmcdConfiguration,
         drmSessionManager,
         drmEventDispatcher,
         loadErrorHandlingPolicy,
@@ -436,7 +494,8 @@ public final class HlsMediaSource extends BaseMediaSource
         allowChunklessPreparation,
         metadataType,
         useSessionKeys,
-        getPlayerId());
+        getPlayerId(),
+        timestampAdjusterInitializationTimeoutMs);
   }
 
   @Override

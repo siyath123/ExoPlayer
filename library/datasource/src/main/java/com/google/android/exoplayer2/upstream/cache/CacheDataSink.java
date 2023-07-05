@@ -27,6 +27,7 @@ import com.google.android.exoplayer2.upstream.cache.Cache.CacheException;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.Util;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,7 +40,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
  * <p>If the {@link DataSpec} passed to {@link #open(DataSpec)} has the {@code length} field set to
  * {@link C#LENGTH_UNSET} and {@link DataSpec#FLAG_DONT_CACHE_IF_LENGTH_UNKNOWN} set, then {@link
  * #write(byte[], int, int)} calls are ignored.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class CacheDataSink implements DataSink {
 
   /** {@link DataSink.Factory} for {@link CacheDataSink} instances. */
@@ -63,6 +70,7 @@ public final class CacheDataSink implements DataSink {
      * @param cache The cache to which data will be written.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setCache(Cache cache) {
       this.cache = cache;
       return this;
@@ -81,6 +89,7 @@ public final class CacheDataSink implements DataSink {
      *     fragmentation.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setFragmentSize(long fragmentSize) {
       this.fragmentSize = fragmentSize;
       return this;
@@ -95,6 +104,7 @@ public final class CacheDataSink implements DataSink {
      * @param bufferSize The buffer size in bytes.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setBufferSize(int bufferSize) {
       this.bufferSize = bufferSize;
       return this;

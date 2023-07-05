@@ -17,6 +17,8 @@ package com.google.android.exoplayer2.source.rtsp;
 
 import static com.google.android.exoplayer2.source.rtsp.MediaDescription.MEDIA_TYPE_AUDIO;
 import static com.google.android.exoplayer2.source.rtsp.RtpPayloadFormat.getMimeTypeFromRtpMediaType;
+import static com.google.android.exoplayer2.source.rtsp.RtspHeaders.CONTENT_BASE;
+import static com.google.android.exoplayer2.source.rtsp.RtspHeaders.CONTENT_LOCATION;
 import static com.google.android.exoplayer2.source.rtsp.SessionDescription.ATTR_CONTROL;
 import static com.google.android.exoplayer2.util.Assertions.checkArgument;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
@@ -24,21 +26,32 @@ import static com.google.android.exoplayer2.util.NalUnitUtil.NAL_START_CODE;
 import static com.google.android.exoplayer2.util.Util.castNonNull;
 
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Pair;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.ParserException;
 import com.google.android.exoplayer2.audio.AacUtil;
 import com.google.android.exoplayer2.util.CodecSpecificDataUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.NalUnitUtil;
+import com.google.android.exoplayer2.util.ParsableBitArray;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-/** Represents a media track in an RTSP playback. */
+/**
+ * Represents a media track in an RTSP playback.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 /* package */ final class RtspMediaTrack {
   // Format specific parameter names.
   private static final String PARAMETER_PROFILE_LEVEL_ID = "profile-level-id";
@@ -50,7 +63,8 @@ import com.google.common.collect.ImmutableMap;
   private static final String PARAMETER_H265_SPROP_PPS = "sprop-pps";
   private static final String PARAMETER_H265_SPROP_VPS = "sprop-vps";
   private static final String PARAMETER_H265_SPROP_MAX_DON_DIFF = "sprop-max-don-diff";
-  private static final String PARAMETER_MP4V_CONFIG = "config";
+  private static final String PARAMETER_MP4A_CONFIG = "config";
+  private static final String PARAMETER_MP4A_C_PRESENT = "cpresent";
 
   /** Prefix for the RFC6381 codecs string for AAC formats. */
   private static final String AAC_CODECS_PREFIX = "mp4a.40.";
@@ -150,13 +164,18 @@ import com.google.common.collect.ImmutableMap;
   /**
    * Creates a new instance from a {@link MediaDescription}.
    *
+   * @param rtspHeaders The {@link RtspHeaders} from the session's DESCRIBE response.
    * @param mediaDescription The {@link MediaDescription} of this track.
    * @param sessionUri The {@link Uri} of the RTSP playback session.
    */
-  public RtspMediaTrack(MediaDescription mediaDescription, Uri sessionUri) {
-    checkArgument(mediaDescription.attributes.containsKey(ATTR_CONTROL));
+  public RtspMediaTrack(
+      RtspHeaders rtspHeaders, MediaDescription mediaDescription, Uri sessionUri) {
+    checkArgument(
+        mediaDescription.attributes.containsKey(ATTR_CONTROL), "missing attribute control");
     payloadFormat = generatePayloadFormat(mediaDescription);
-    uri = extractTrackUri(sessionUri, castNonNull(mediaDescription.attributes.get(ATTR_CONTROL)));
+    uri =
+        extractTrackUri(
+            rtspHeaders, sessionUri, castNonNull(mediaDescription.attributes.get(ATTR_CONTROL)));
   }
 
   @Override
@@ -205,8 +224,26 @@ import com.google.common.collect.ImmutableMap;
     switch (mimeType) {
       case MimeTypes.AUDIO_AAC:
         checkArgument(channelCount != C.INDEX_UNSET);
-        checkArgument(!fmtpParameters.isEmpty());
-        processAacFmtpAttribute(formatBuilder, fmtpParameters, channelCount, clockRate);
+        checkArgument(!fmtpParameters.isEmpty(), "missing attribute fmtp");
+        if (mediaEncoding.equals(RtpPayloadFormat.RTP_MEDIA_MPEG4_LATM_AUDIO)) {
+          // cpresent is defined in RFC3016 Section 5.3. cpresent=0 means the config fmtp parameter
+          // must exist.
+          checkArgument(
+              fmtpParameters.containsKey(PARAMETER_MP4A_C_PRESENT)
+                  && fmtpParameters.get(PARAMETER_MP4A_C_PRESENT).equals("0"),
+              "Only supports cpresent=0 in AAC audio.");
+          @Nullable String config = fmtpParameters.get(PARAMETER_MP4A_CONFIG);
+          checkNotNull(config, "AAC audio stream must include config fmtp parameter");
+          // config is a hex string.
+          checkArgument(config.length() % 2 == 0, "Malformat MPEG4 config: " + config);
+          AacUtil.Config aacConfig = parseAacStreamMuxConfig(config);
+          formatBuilder
+              .setSampleRate(aacConfig.sampleRateHz)
+              .setChannelCount(aacConfig.channelCount)
+              .setCodecs(aacConfig.codecs);
+        }
+        processAacFmtpAttribute(
+            formatBuilder, fmtpParameters, mediaEncoding, channelCount, clockRate);
         break;
       case MimeTypes.AUDIO_AMR_NB:
       case MimeTypes.AUDIO_AMR_WB:
@@ -237,11 +274,11 @@ import com.google.common.collect.ImmutableMap;
         formatBuilder.setWidth(DEFAULT_H263_WIDTH).setHeight(DEFAULT_H263_HEIGHT);
         break;
       case MimeTypes.VIDEO_H264:
-        checkArgument(!fmtpParameters.isEmpty());
+        checkArgument(!fmtpParameters.isEmpty(), "missing attribute fmtp");
         processH264FmtpAttribute(formatBuilder, fmtpParameters);
         break;
       case MimeTypes.VIDEO_H265:
-        checkArgument(!fmtpParameters.isEmpty());
+        checkArgument(!fmtpParameters.isEmpty(), "missing attribute fmtp");
         processH265FmtpAttribute(formatBuilder, fmtpParameters);
         break;
       case MimeTypes.VIDEO_VP8:
@@ -265,7 +302,8 @@ import com.google.common.collect.ImmutableMap;
     }
 
     checkArgument(clockRate > 0);
-    return new RtpPayloadFormat(formatBuilder.build(), rtpPayloadType, clockRate, fmtpParameters);
+    return new RtpPayloadFormat(
+        formatBuilder.build(), rtpPayloadType, clockRate, fmtpParameters, mediaEncoding);
   }
 
   private static int inferChannelCount(int encodingParameter, String mimeType) {
@@ -287,10 +325,17 @@ import com.google.common.collect.ImmutableMap;
   private static void processAacFmtpAttribute(
       Format.Builder formatBuilder,
       ImmutableMap<String, String> fmtpAttributes,
+      String mediaEncoding,
       int channelCount,
       int sampleRate) {
-    checkArgument(fmtpAttributes.containsKey(PARAMETER_PROFILE_LEVEL_ID));
-    String profileLevel = checkNotNull(fmtpAttributes.get(PARAMETER_PROFILE_LEVEL_ID));
+    @Nullable String profileLevel = fmtpAttributes.get(PARAMETER_PROFILE_LEVEL_ID);
+    if (profileLevel == null && mediaEncoding.equals(RtpPayloadFormat.RTP_MEDIA_MPEG4_LATM_AUDIO)) {
+      // As defined in RFC3016 Section 5.3 for MPEG4-LATM, if profile-level-id is not specified,
+      // then a default value of 30 should be used.
+      profileLevel = "30";
+    }
+    checkArgument(
+        profileLevel != null && !profileLevel.isEmpty(), "missing profile-level-id param");
     formatBuilder.setCodecs(AAC_CODECS_PREFIX + profileLevel);
     formatBuilder.setInitializationData(
         ImmutableList.of(
@@ -298,9 +343,29 @@ import com.google.common.collect.ImmutableMap;
             AacUtil.buildAacLcAudioSpecificConfig(sampleRate, channelCount)));
   }
 
+  /**
+   * Returns the {@link AacUtil.Config} by parsing the MPEG4 Audio Stream Mux configuration.
+   *
+   * <p>fmtp attribute {@code config} includes the MPEG4 Audio Stream Mux configuration
+   * (ISO/IEC14496-3, Chapter 1.7.3).
+   */
+  private static AacUtil.Config parseAacStreamMuxConfig(String streamMuxConfig) {
+    ParsableBitArray config = new ParsableBitArray(Util.getBytesFromHexString(streamMuxConfig));
+    checkArgument(config.readBits(1) == 0, "Only supports audio mux version 0.");
+    checkArgument(config.readBits(1) == 1, "Only supports allStreamsSameTimeFraming.");
+    config.skipBits(6);
+    checkArgument(config.readBits(4) == 0, "Only supports one program.");
+    checkArgument(config.readBits(3) == 0, "Only supports one numLayer.");
+    try {
+      return AacUtil.parseAudioSpecificConfig(config, false);
+    } catch (ParserException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
   private static void processMPEG4FmtpAttribute(
       Format.Builder formatBuilder, ImmutableMap<String, String> fmtpAttributes) {
-    @Nullable String configInput = fmtpAttributes.get(PARAMETER_MP4V_CONFIG);
+    @Nullable String configInput = fmtpAttributes.get(PARAMETER_MP4A_CONFIG);
     if (configInput != null) {
       byte[] configBuffer = Util.getBytesFromHexString(configInput);
       formatBuilder.setInitializationData(ImmutableList.of(configBuffer));
@@ -337,10 +402,10 @@ import com.google.common.collect.ImmutableMap;
 
   private static void processH264FmtpAttribute(
       Format.Builder formatBuilder, ImmutableMap<String, String> fmtpAttributes) {
-    checkArgument(fmtpAttributes.containsKey(PARAMETER_SPROP_PARAMS));
+    checkArgument(fmtpAttributes.containsKey(PARAMETER_SPROP_PARAMS), "missing sprop parameter");
     String spropParameterSets = checkNotNull(fmtpAttributes.get(PARAMETER_SPROP_PARAMS));
     String[] parameterSets = Util.split(spropParameterSets, ",");
-    checkArgument(parameterSets.length == 2);
+    checkArgument(parameterSets.length == 2, "empty sprop value");
     ImmutableList<byte[]> initializationData =
         ImmutableList.of(
             getInitializationDataFromParameterSet(parameterSets[0]),
@@ -375,11 +440,14 @@ import com.google.common.collect.ImmutableMap;
           maxDonDiff == 0, "non-zero sprop-max-don-diff " + maxDonDiff + " is not supported");
     }
 
-    checkArgument(fmtpAttributes.containsKey(PARAMETER_H265_SPROP_VPS));
+    checkArgument(
+        fmtpAttributes.containsKey(PARAMETER_H265_SPROP_VPS), "missing sprop-vps parameter");
     String spropVPS = checkNotNull(fmtpAttributes.get(PARAMETER_H265_SPROP_VPS));
-    checkArgument(fmtpAttributes.containsKey(PARAMETER_H265_SPROP_SPS));
+    checkArgument(
+        fmtpAttributes.containsKey(PARAMETER_H265_SPROP_SPS), "missing sprop-sps parameter");
     String spropSPS = checkNotNull(fmtpAttributes.get(PARAMETER_H265_SPROP_SPS));
-    checkArgument(fmtpAttributes.containsKey(PARAMETER_H265_SPROP_PPS));
+    checkArgument(
+        fmtpAttributes.containsKey(PARAMETER_H265_SPROP_PPS), "missing sprop-pps parameter");
     String spropPPS = checkNotNull(fmtpAttributes.get(PARAMETER_H265_SPROP_PPS));
     ImmutableList<byte[]> initializationData =
         ImmutableList.of(
@@ -411,15 +479,25 @@ import com.google.common.collect.ImmutableMap;
    *
    * <p>The processing logic is specified in RFC2326 Section C.1.1.
    *
+   * @param rtspHeaders The {@link RtspHeaders} from the session's DESCRIBE response.
    * @param sessionUri The session URI.
    * @param controlAttributeString The control attribute from the track's {@link MediaDescription}.
    * @return The extracted track URI.
    */
-  private static Uri extractTrackUri(Uri sessionUri, String controlAttributeString) {
+  private static Uri extractTrackUri(
+      RtspHeaders rtspHeaders, Uri sessionUri, String controlAttributeString) {
     Uri controlAttributeUri = Uri.parse(controlAttributeString);
     if (controlAttributeUri.isAbsolute()) {
       return controlAttributeUri;
-    } else if (controlAttributeString.equals(GENERIC_CONTROL_ATTR)) {
+    }
+
+    if (!TextUtils.isEmpty(rtspHeaders.get(CONTENT_BASE))) {
+      sessionUri = Uri.parse(rtspHeaders.get(CONTENT_BASE));
+    } else if (!TextUtils.isEmpty(rtspHeaders.get(CONTENT_LOCATION))) {
+      sessionUri = Uri.parse(rtspHeaders.get(CONTENT_LOCATION));
+    }
+
+    if (controlAttributeString.equals(GENERIC_CONTROL_ATTR)) {
       return sessionUri;
     } else {
       return sessionUri.buildUpon().appendEncodedPath(controlAttributeString).build();

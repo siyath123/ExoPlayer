@@ -49,7 +49,13 @@ import java.util.Set;
  * Concatenates multiple {@link MediaSource}s. The list of {@link MediaSource}s can be modified
  * during playback. It is valid for the same {@link MediaSource} instance to be present more than
  * once in the concatenation. Access to this class is thread-safe.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class ConcatenatingMediaSource extends CompositeMediaSource<MediaSourceHolder> {
 
   private static final int MSG_ADD = 0;
@@ -59,7 +65,7 @@ public final class ConcatenatingMediaSource extends CompositeMediaSource<MediaSo
   private static final int MSG_UPDATE_TIMELINE = 4;
   private static final int MSG_ON_COMPLETION = 5;
 
-  private static final MediaItem EMPTY_MEDIA_ITEM =
+  private static final MediaItem PLACEHOLDER_MEDIA_ITEM =
       new MediaItem.Builder().setUri(Uri.EMPTY).build();
 
   // Accessed on any thread.
@@ -449,7 +455,7 @@ public final class ConcatenatingMediaSource extends CompositeMediaSource<MediaSo
   public MediaItem getMediaItem() {
     // This method is actually never called because getInitialTimeline is implemented and hence the
     // MaskingMediaSource does not need to create a placeholder timeline for this media source.
-    return EMPTY_MEDIA_ITEM;
+    return PLACEHOLDER_MEDIA_ITEM;
   }
 
   @Override
@@ -526,12 +532,14 @@ public final class ConcatenatingMediaSource extends CompositeMediaSource<MediaSo
     dispatchOnCompletionActions(pendingOnCompletionActions);
   }
 
+  /** {@inheritDoc} */
   @Override
   protected void onChildSourceInfoRefreshed(
       MediaSourceHolder mediaSourceHolder, MediaSource mediaSource, Timeline timeline) {
     updateMediaSourceInternal(mediaSourceHolder, timeline);
   }
 
+  /** {@inheritDoc} */
   @Override
   @Nullable
   protected MediaPeriodId getMediaPeriodIdForChildMediaPeriodId(
@@ -548,6 +556,7 @@ public final class ConcatenatingMediaSource extends CompositeMediaSource<MediaSo
     return null;
   }
 
+  /** {@inheritDoc} */
   @Override
   protected int getWindowIndexForChildWindowIndex(
       MediaSourceHolder mediaSourceHolder, int windowIndex) {
@@ -1001,7 +1010,7 @@ public final class ConcatenatingMediaSource extends CompositeMediaSource<MediaSo
 
     @Override
     public MediaItem getMediaItem() {
-      return EMPTY_MEDIA_ITEM;
+      return PLACEHOLDER_MEDIA_ITEM;
     }
 
     @Override

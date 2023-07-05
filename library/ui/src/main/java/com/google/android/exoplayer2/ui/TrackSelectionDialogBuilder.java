@@ -15,6 +15,9 @@
  */
 package com.google.android.exoplayer2.ui;
 
+import static com.google.android.exoplayer2.Player.COMMAND_GET_TRACKS;
+import static com.google.android.exoplayer2.Player.COMMAND_SET_TRACK_SELECTION_PARAMETERS;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -39,7 +42,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-/** Builder for a dialog with a {@link TrackSelectionView}. */
+/**
+ * Builder for a dialog with a {@link TrackSelectionView}.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class TrackSelectionDialogBuilder {
 
   /** Callback which is invoked when a track selection has been made. */
@@ -65,7 +76,7 @@ public final class TrackSelectionDialogBuilder {
   private boolean showDisableOption;
   @Nullable private TrackNameProvider trackNameProvider;
   private boolean isDisabled;
-  private Map<TrackGroup, TrackSelectionOverride> overrides;
+  private ImmutableMap<TrackGroup, TrackSelectionOverride> overrides;
   @Nullable private Comparator<Format> trackFormatComparator;
 
   /**
@@ -85,7 +96,7 @@ public final class TrackSelectionDialogBuilder {
     this.title = title;
     this.trackGroups = ImmutableList.copyOf(trackGroups);
     this.callback = callback;
-    overrides = Collections.emptyMap();
+    overrides = ImmutableMap.of();
   }
 
   /**
@@ -100,7 +111,9 @@ public final class TrackSelectionDialogBuilder {
       Context context, CharSequence title, Player player, @C.TrackType int trackType) {
     this.context = context;
     this.title = title;
-    List<Tracks.Group> allTrackGroups = player.getCurrentTracks().getGroups();
+    Tracks tracks =
+        player.isCommandAvailable(COMMAND_GET_TRACKS) ? player.getCurrentTracks() : Tracks.EMPTY;
+    List<Tracks.Group> allTrackGroups = tracks.getGroups();
     trackGroups = new ArrayList<>();
     for (int i = 0; i < allTrackGroups.size(); i++) {
       Tracks.Group trackGroup = allTrackGroups.get(i);
@@ -108,9 +121,12 @@ public final class TrackSelectionDialogBuilder {
         trackGroups.add(trackGroup);
       }
     }
-    overrides = Collections.emptyMap();
+    overrides = player.getTrackSelectionParameters().overrides;
     callback =
         (isDisabled, overrides) -> {
+          if (!player.isCommandAvailable(COMMAND_SET_TRACK_SELECTION_PARAMETERS)) {
+            return;
+          }
           TrackSelectionParameters.Builder parametersBuilder =
               player.getTrackSelectionParameters().buildUpon();
           parametersBuilder.setTrackTypeDisabled(trackType, isDisabled);
@@ -169,7 +185,7 @@ public final class TrackSelectionDialogBuilder {
    */
   public TrackSelectionDialogBuilder setOverrides(
       Map<TrackGroup, TrackSelectionOverride> overrides) {
-    this.overrides = overrides;
+    this.overrides = ImmutableMap.copyOf(overrides);
     return this;
   }
 

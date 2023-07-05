@@ -15,20 +15,14 @@
  */
 package com.google.android.exoplayer2.source;
 
-import static java.lang.annotation.ElementType.TYPE_USE;
-
 import android.os.Bundle;
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.Bundleable;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.BundleableUtil;
 import com.google.android.exoplayer2.util.Log;
+import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.List;
 
 /**
@@ -40,7 +34,13 @@ import java.util.List;
  * different content are in separate track groups (e.g., an audio track will not be in the same
  * group as a video track, and an audio track in one language will be in a different group to an
  * audio track in another language).
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class TrackGroupArray implements Bundleable {
 
   private static final String TAG = "TrackGroupArray";
@@ -115,21 +115,13 @@ public final class TrackGroupArray implements Bundleable {
 
   // Bundleable implementation.
 
-  @Documented
-  @Retention(RetentionPolicy.SOURCE)
-  @Target(TYPE_USE)
-  @IntDef({
-    FIELD_TRACK_GROUPS,
-  })
-  private @interface FieldNumber {}
-
-  private static final int FIELD_TRACK_GROUPS = 0;
+  private static final String FIELD_TRACK_GROUPS = Util.intToStringMaxRadix(0);
 
   @Override
   public Bundle toBundle() {
     Bundle bundle = new Bundle();
     bundle.putParcelableArrayList(
-        keyForField(FIELD_TRACK_GROUPS), BundleableUtil.toBundleArrayList(trackGroups));
+        FIELD_TRACK_GROUPS, BundleableUtil.toBundleArrayList(trackGroups));
     return bundle;
   }
 
@@ -137,8 +129,7 @@ public final class TrackGroupArray implements Bundleable {
   public static final Creator<TrackGroupArray> CREATOR =
       bundle -> {
         @Nullable
-        List<Bundle> trackGroupBundles =
-            bundle.getParcelableArrayList(keyForField(FIELD_TRACK_GROUPS));
+        List<Bundle> trackGroupBundles = bundle.getParcelableArrayList(FIELD_TRACK_GROUPS);
         if (trackGroupBundles == null) {
           return new TrackGroupArray();
         }
@@ -159,9 +150,5 @@ public final class TrackGroupArray implements Bundleable {
         }
       }
     }
-  }
-
-  private static String keyForField(@FieldNumber int field) {
-    return Integer.toString(field, Character.MAX_RADIX);
   }
 }

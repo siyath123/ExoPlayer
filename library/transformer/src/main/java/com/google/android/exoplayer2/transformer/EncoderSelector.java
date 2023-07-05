@@ -19,24 +19,46 @@ package com.google.android.exoplayer2.transformer;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import com.google.android.exoplayer2.util.MimeTypes;
-import java.util.List;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
-/** Selector of {@link MediaCodec} encoder instances. */
+/**
+ * Selector of {@link MediaCodec} encoder instances.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public interface EncoderSelector {
 
   /**
-   * Default implementation of {@link EncoderSelector}, which returns the preferred encoders for the
+   * Default implementation of {@code EncoderSelector}, which returns the preferred encoders for the
    * given {@link MimeTypes MIME type}.
+   *
+   * <p>The {@code EncoderSelector} selection result contains only hardware encoders if they exist,
+   * or only software encoders otherwise.
    */
-  EncoderSelector DEFAULT = EncoderUtil::getSupportedEncoders;
+  EncoderSelector DEFAULT =
+      mimeType -> {
+        ImmutableList<MediaCodecInfo> supportedEncoders =
+            EncoderUtil.getSupportedEncoders(mimeType);
+        ImmutableList<MediaCodecInfo> supportedHardwareEncoders =
+            ImmutableList.copyOf(
+                Iterables.filter(
+                    supportedEncoders,
+                    encoderInfo -> EncoderUtil.isHardwareAccelerated(encoderInfo, mimeType)));
+        return supportedHardwareEncoders.isEmpty() ? supportedEncoders : supportedHardwareEncoders;
+      };
 
   /**
    * Returns a list of encoders that can encode media in the specified {@code mimeType}, in priority
    * order.
    *
    * @param mimeType The {@linkplain MimeTypes MIME type} for which an encoder is required.
-   * @return An unmodifiable list of {@linkplain MediaCodecInfo encoders} that support the {@code
+   * @return An immutable list of {@linkplain MediaCodecInfo encoders} that support the {@code
    *     mimeType}. The list may be empty.
    */
-  List<MediaCodecInfo> selectEncoderInfos(String mimeType);
+  ImmutableList<MediaCodecInfo> selectEncoderInfos(String mimeType);
 }

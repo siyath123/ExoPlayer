@@ -65,8 +65,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-/** Extracts data from the FMP4 container format. */
+/**
+ * Extracts data from the FMP4 container format.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
 @SuppressWarnings("ConstantField")
+@Deprecated
 public class FragmentedMp4Extractor implements Extractor {
 
   /** Factory for {@link FragmentedMp4Extractor} instances. */
@@ -654,7 +662,7 @@ public class FragmentedMp4Extractor implements Extractor {
     }
 
     byte[] messageData = new byte[atom.bytesLeft()];
-    atom.readBytes(messageData, /*offset=*/ 0, atom.bytesLeft());
+    atom.readBytes(messageData, /* offset= */ 0, atom.bytesLeft());
     EventMessage eventMessage = new EventMessage(schemeIdUri, value, durationMs, id, messageData);
     ParsableByteArray encodedEventMessage =
         new ParsableByteArray(eventMessageEncoder.encode(eventMessage));
@@ -678,6 +686,13 @@ public class FragmentedMp4Extractor implements Extractor {
       // We also need to defer outputting metadata if pendingMetadataSampleInfos is non-empty, else
       // we will output metadata for samples in the wrong order. See:
       // https://github.com/google/ExoPlayer/issues/9996.
+      pendingMetadataSampleInfos.addLast(
+          new MetadataSampleInfo(sampleTimeUs, /* sampleTimeIsRelative= */ false, sampleSize));
+      pendingMetadataSampleBytes += sampleSize;
+    } else if (timestampAdjuster != null && !timestampAdjuster.isInitialized()) {
+      // We also need to defer outputting metadata if the timestampAdjuster is not initialized,
+      // else we will set a wrong timestampOffsetUs in timestampAdjuster. See:
+      // https://github.com/androidx/media/issues/356.
       pendingMetadataSampleInfos.addLast(
           new MetadataSampleInfo(sampleTimeUs, /* sampleTimeIsRelative= */ false, sampleSize));
       pendingMetadataSampleBytes += sampleSize;
@@ -968,6 +983,26 @@ public class FragmentedMp4Extractor implements Extractor {
     return version == 1 ? tfdt.readUnsignedLongToLong() : tfdt.readUnsignedInt();
   }
 
+  private static boolean isEdtsListDurationForEntireMediaTimeline(Track track) {
+    // Currently we only support a single edit that moves the entire media timeline (indicated by
+    // duration == 0 or (editListDurationUs + editListMediaTimeUs) >= track duration.
+    // Other uses of edit lists are uncommon and unsupported.
+    if (track.editListDurations == null
+        || track.editListDurations.length != 1
+        || track.editListMediaTimes == null) {
+      return false;
+    }
+    if (track.editListDurations[0] == 0) {
+      return true;
+    }
+    long editListEndMediaTimeUs =
+        Util.scaleLargeTimestamp(
+            track.editListDurations[0] + track.editListMediaTimes[0],
+            C.MICROS_PER_SECOND,
+            track.movieTimescale);
+    return editListEndMediaTimeUs >= track.durationUs;
+  }
+
   /**
    * Parses a trun atom (defined in 14496-12).
    *
@@ -1015,11 +1050,8 @@ public class FragmentedMp4Extractor implements Extractor {
     // ensure that the first frame's presentation timestamp is zero.
     long edtsOffset = 0;
 
-    // Currently we only support a single edit that moves the entire media timeline (indicated by
-    // duration == 0). Other uses of edit lists are uncommon and unsupported.
-    if (track.editListDurations != null
-        && track.editListDurations.length == 1
-        && track.editListDurations[0] == 0) {
+    // Currently we only support a single edit that moves the entire media timeline.
+    if (isEdtsListDurationForEntireMediaTimeline(track)) {
       edtsOffset = castNonNull(track.editListMediaTimes)[0];
     }
 
@@ -1673,15 +1705,15 @@ public class FragmentedMp4Extractor implements Extractor {
     }
 
     /**
-     * Advances {@link #firstSampleToOutputIndex} to point to the sync sample before the specified
-     * seek time in the current fragment.
+     * Advances {@link #firstSampleToOutputIndex} to point to the sync sample at or before the
+     * specified seek time in the current fragment.
      *
      * @param timeUs The seek time, in microseconds.
      */
     public void seek(long timeUs) {
       int searchIndex = currentSampleIndex;
       while (searchIndex < fragment.sampleCount
-          && fragment.getSamplePresentationTimeUs(searchIndex) < timeUs) {
+          && fragment.getSamplePresentationTimeUs(searchIndex) <= timeUs) {
         if (fragment.sampleIsSyncFrameTable[searchIndex]) {
           firstSampleToOutputIndex = searchIndex;
         }

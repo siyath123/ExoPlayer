@@ -33,10 +33,19 @@ import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.ArrayList;
 import org.checkerframework.checker.nullness.compatqual.NullableType;
 
-/** Media source with a single period consisting of silent raw audio of a given duration. */
+/**
+ * Media source with a single period consisting of silent raw audio of a given duration.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class SilenceMediaSource extends BaseMediaSource {
 
   /** Factory for {@link SilenceMediaSource SilenceMediaSources}. */
@@ -51,6 +60,7 @@ public final class SilenceMediaSource extends BaseMediaSource {
      * @param durationUs The duration of silent audio to output, in microseconds.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setDurationUs(@IntRange(from = 1) long durationUs) {
       this.durationUs = durationUs;
       return this;
@@ -63,6 +73,7 @@ public final class SilenceMediaSource extends BaseMediaSource {
      * @param tag A tag for the media source.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setTag(@Nullable Object tag) {
       this.tag = tag;
       return this;

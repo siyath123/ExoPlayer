@@ -15,6 +15,7 @@
  */
 package com.google.android.exoplayer2.source.rtsp.reader;
 
+import static com.google.android.exoplayer2.source.rtsp.reader.RtpReaderUtils.toSampleTimeUs;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 import static com.google.android.exoplayer2.util.Assertions.checkState;
 import static com.google.android.exoplayer2.util.Assertions.checkStateNotNull;
@@ -32,12 +33,18 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 /**
  * Parses a VP8 byte stream carried on RTP packets, and extracts VP8 individual video frames as
  * defined in RFC7741.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 /* package */ final class RtpVp8Reader implements RtpPayloadReader {
   private static final String TAG = "RtpVP8Reader";
 
-  /** VP9 uses a 90 KHz media clock (RFC7741 Section 4.1). */
-  private static final long MEDIA_CLOCK_FREQUENCY = 90_000;
+  /** VP8 uses a 90 KHz media clock (RFC7741 Section 4.1). */
+  private static final int MEDIA_CLOCK_FREQUENCY = 90_000;
 
   private final RtpPayloadFormat payloadFormat;
 
@@ -74,9 +81,6 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     fragmentedSampleTimeUs = C.TIME_UNSET;
     // The start time offset must be 0 until the first seek.
     startTimeOffsetUs = 0;
-    gotFirstPacketOfVp8Frame = false;
-    isKeyFrame = false;
-    isOutputFormatSet = false;
   }
 
   @Override
@@ -127,7 +131,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         fragmentedSampleSizeBytes += fragmentSize;
       }
 
-      fragmentedSampleTimeUs = toSampleUs(startTimeOffsetUs, timestamp, firstReceivedTimestamp);
+      fragmentedSampleTimeUs =
+          toSampleTimeUs(
+              startTimeOffsetUs, timestamp, firstReceivedTimestamp, MEDIA_CLOCK_FREQUENCY);
 
       if (rtpMarker) {
         outputSampleMetadataForFragmentedPackets();
@@ -214,17 +220,8 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
             fragmentedSampleSizeBytes,
             /* offset= */ 0,
             /* cryptoData= */ null);
-    fragmentedSampleSizeBytes = 0;
+    fragmentedSampleSizeBytes = C.LENGTH_UNSET;
     fragmentedSampleTimeUs = C.TIME_UNSET;
     gotFirstPacketOfVp8Frame = false;
-  }
-
-  private static long toSampleUs(
-      long startTimeOffsetUs, long rtpTimestamp, long firstReceivedRtpTimestamp) {
-    return startTimeOffsetUs
-        + Util.scaleLargeTimestamp(
-            (rtpTimestamp - firstReceivedRtpTimestamp),
-            /* multiplier= */ C.MICROS_PER_SECOND,
-            /* divisor= */ MEDIA_CLOCK_FREQUENCY);
   }
 }

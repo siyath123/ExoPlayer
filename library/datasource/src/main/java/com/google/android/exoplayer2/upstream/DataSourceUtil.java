@@ -20,7 +20,15 @@ import com.google.android.exoplayer2.C;
 import java.io.IOException;
 import java.util.Arrays;
 
-/** Utility methods for {@link DataSource}. */
+/**
+ * Utility methods for {@link DataSource}.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class DataSourceUtil {
 
   private DataSourceUtil() {}
@@ -54,6 +62,7 @@ public final class DataSourceUtil {
    * array containing the read data.
    *
    * @param dataSource The source from which to read.
+   * @param length The number of bytes to read.
    * @return The read data.
    * @throws IOException If an error occurs reading from the source.
    * @throws IllegalStateException If the end of the source was reached before {@code length} bytes

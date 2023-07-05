@@ -41,6 +41,7 @@ import com.google.common.base.Ascii;
 import com.google.common.base.Predicate;
 import com.google.common.net.HttpHeaders;
 import com.google.common.primitives.Longs;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.SocketTimeoutException;
@@ -66,7 +67,13 @@ import org.chromium.net.UrlResponseInfo;
  * <p>Note: HTTP request headers will be set using all parameters passed via (in order of decreasing
  * priority) the {@code dataSpec}, {@link #setRequestProperty} and the default parameters used to
  * construct the instance.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public class CronetDataSource extends BaseDataSource implements HttpDataSource {
 
   static {
@@ -140,6 +147,7 @@ public class CronetDataSource extends BaseDataSource implements HttpDataSource {
       readTimeoutMs = DEFAULT_READ_TIMEOUT_MILLIS;
     }
 
+    @CanIgnoreReturnValue
     @Override
     public final Factory setDefaultRequestProperties(Map<String, String> defaultRequestProperties) {
       this.defaultRequestProperties.clearAndSet(defaultRequestProperties);
@@ -159,6 +167,7 @@ public class CronetDataSource extends BaseDataSource implements HttpDataSource {
      *     agent of the underlying {@link CronetEngine}.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setUserAgent(@Nullable String userAgent) {
       this.userAgent = userAgent;
       if (internalFallbackFactory != null) {
@@ -177,6 +186,7 @@ public class CronetDataSource extends BaseDataSource implements HttpDataSource {
      *     UrlRequest.Builder#REQUEST_PRIORITY_*} constants.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setRequestPriority(int requestPriority) {
       this.requestPriority = requestPriority;
       return this;
@@ -190,6 +200,7 @@ public class CronetDataSource extends BaseDataSource implements HttpDataSource {
      * @param connectTimeoutMs The connect timeout, in milliseconds, that will be used.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setConnectionTimeoutMs(int connectTimeoutMs) {
       this.connectTimeoutMs = connectTimeoutMs;
       if (internalFallbackFactory != null) {
@@ -206,6 +217,7 @@ public class CronetDataSource extends BaseDataSource implements HttpDataSource {
      * @param resetTimeoutOnRedirects Whether the connect timeout is reset when a redirect occurs.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setResetTimeoutOnRedirects(boolean resetTimeoutOnRedirects) {
       this.resetTimeoutOnRedirects = resetTimeoutOnRedirects;
       return this;
@@ -221,6 +233,7 @@ public class CronetDataSource extends BaseDataSource implements HttpDataSource {
      *     to the redirect url in the "Cookie" header.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setHandleSetCookieRequests(boolean handleSetCookieRequests) {
       this.handleSetCookieRequests = handleSetCookieRequests;
       return this;
@@ -234,6 +247,7 @@ public class CronetDataSource extends BaseDataSource implements HttpDataSource {
      * @param readTimeoutMs The connect timeout, in milliseconds, that will be used.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setReadTimeoutMs(int readTimeoutMs) {
       this.readTimeoutMs = readTimeoutMs;
       if (internalFallbackFactory != null) {
@@ -252,6 +266,7 @@ public class CronetDataSource extends BaseDataSource implements HttpDataSource {
      *     predicate that was previously set.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setContentTypePredicate(@Nullable Predicate<String> contentTypePredicate) {
       this.contentTypePredicate = contentTypePredicate;
       if (internalFallbackFactory != null) {
@@ -264,6 +279,7 @@ public class CronetDataSource extends BaseDataSource implements HttpDataSource {
      * Sets whether we should keep the POST method and body when we have HTTP 302 redirects for a
      * POST request.
      */
+    @CanIgnoreReturnValue
     public Factory setKeepPostFor302Redirects(boolean keepPostFor302Redirects) {
       this.keepPostFor302Redirects = keepPostFor302Redirects;
       if (internalFallbackFactory != null) {
@@ -282,6 +298,7 @@ public class CronetDataSource extends BaseDataSource implements HttpDataSource {
      * @param transferListener The listener that will be used.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setTransferListener(@Nullable TransferListener transferListener) {
       this.transferListener = transferListener;
       if (internalFallbackFactory != null) {
@@ -301,6 +318,7 @@ public class CronetDataSource extends BaseDataSource implements HttpDataSource {
      * @deprecated Do not use {@link CronetDataSource} or its factory in cases where a suitable
      *     {@link CronetEngine} is not available. Use the fallback factory directly in such cases.
      */
+    @CanIgnoreReturnValue
     @Deprecated
     public Factory setFallbackFactory(@Nullable HttpDataSource.Factory fallbackFactory) {
       this.fallbackFactory = fallbackFactory;

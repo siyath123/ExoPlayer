@@ -20,27 +20,25 @@ import static com.google.android.exoplayer2.util.Assertions.checkArgument;
 import static com.google.android.exoplayer2.util.Assertions.checkState;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.lang.annotation.ElementType.TYPE_USE;
 
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Pair;
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.source.ads.AdPlaybackState;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.BundleUtil;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.InlineMe;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
+
+// TODO(b/276289331): Revert to media3-hosted SVG links below once they're available on
+// developer.android.com.
 
 /**
  * A flexible representation of the structure of media. A timeline is able to represent the
@@ -66,8 +64,9 @@ import java.util.List;
  *
  * <h2 id="single-file">Single media file or on-demand stream</h2>
  *
- * <p style="align:center"><img src="doc-files/timeline-single-file.svg" alt="Example timeline for a
- * single file">
+ * <p style="align:center"><img
+ * src="https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/doc-files/timeline-single-file.svg"
+ * alt="Example timeline for a single file">
  *
  * <p>A timeline for a single media file or on-demand stream consists of a single period and window.
  * The window spans the whole period, indicating that all parts of the media are available for
@@ -76,8 +75,9 @@ import java.util.List;
  *
  * <h2>Playlist of media files or on-demand streams</h2>
  *
- * <p style="align:center"><img src="doc-files/timeline-playlist.svg" alt="Example timeline for a
- * playlist of files">
+ * <p style="align:center"><img
+ * src="https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/doc-files/timeline-playlist.svg"
+ * alt="Example timeline for a playlist of files">
  *
  * <p>A timeline for a playlist of media files or on-demand streams consists of multiple periods,
  * each with its own window. Each window spans the whole of the corresponding period, and typically
@@ -87,8 +87,9 @@ import java.util.List;
  *
  * <h2 id="live-limited">Live stream with limited availability</h2>
  *
- * <p style="align:center"><img src="doc-files/timeline-live-limited.svg" alt="Example timeline for
- * a live stream with limited availability">
+ * <p style="align:center"><img
+ * src="https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/doc-files/timeline-live-limited.svg"
+ * alt="Example timeline for a live stream with limited availability">
  *
  * <p>A timeline for a live stream consists of a period whose duration is unknown, since it's
  * continually extending as more content is broadcast. If content only remains available for a
@@ -100,8 +101,9 @@ import java.util.List;
  *
  * <h2>Live stream with indefinite availability</h2>
  *
- * <p style="align:center"><img src="doc-files/timeline-live-indefinite.svg" alt="Example timeline
- * for a live stream with indefinite availability">
+ * <p style="align:center"><img
+ * src="https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/doc-files/timeline-live-indefinite.svg"
+ * alt="Example timeline for a live stream with indefinite availability">
  *
  * <p>A timeline for a live stream with indefinite availability is similar to the <a
  * href="#live-limited">Live stream with limited availability</a> case, except that the window
@@ -110,8 +112,9 @@ import java.util.List;
  *
  * <h2 id="live-multi-period">Live stream with multiple periods</h2>
  *
- * <p style="align:center"><img src="doc-files/timeline-live-multi-period.svg" alt="Example timeline
- * for a live stream with multiple periods">
+ * <p style="align:center"><img
+ * src="https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/doc-files/timeline-live-multi-period.svg"
+ * alt="Example timeline for a live stream with multiple periods">
  *
  * <p>This case arises when a live stream is explicitly divided into separate periods, for example
  * at content boundaries. This case is similar to the <a href="#live-limited">Live stream with
@@ -120,8 +123,9 @@ import java.util.List;
  *
  * <h2>On-demand stream followed by live stream</h2>
  *
- * <p style="align:center"><img src="doc-files/timeline-advanced.svg" alt="Example timeline for an
- * on-demand stream followed by a live stream">
+ * <p style="align:center"><img
+ * src="https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/doc-files/timeline-advanced.svg"
+ * alt="Example timeline for an on-demand stream followed by a live stream">
  *
  * <p>This case is the concatenation of the <a href="#single-file">Single media file or on-demand
  * stream</a> and <a href="#multi-period">Live stream with multiple periods</a> cases. When playback
@@ -130,12 +134,19 @@ import java.util.List;
  *
  * <h2 id="single-file-midrolls">On-demand stream with mid-roll ads</h2>
  *
- * <p style="align:center"><img src="doc-files/timeline-single-file-midrolls.svg" alt="Example
- * timeline for an on-demand stream with mid-roll ad groups">
+ * <p style="align:center"><img
+ * src="https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/doc-files/timeline-single-file-midrolls.svg"
+ * alt="Example timeline for an on-demand stream with mid-roll ad groups">
  *
  * <p>This case includes mid-roll ad groups, which are defined as part of the timeline's single
  * period. The period can be queried for information about the ad groups and the ads they contain.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public abstract class Timeline implements Bundleable {
 
   /**
@@ -145,8 +156,9 @@ public abstract class Timeline implements Bundleable {
    * shows some of the information defined by a window, as well as how this information relates to
    * corresponding {@link Period Periods} in the timeline.
    *
-   * <p style="align:center"><img src="doc-files/timeline-window.svg" alt="Information defined by a
-   * timeline window">
+   * <p style="align:center"><img
+   * src="https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/doc-files/timeline-window.svg"
+   * alt="Information defined by a timeline window">
    */
   public static final class Window implements Bundleable {
 
@@ -157,7 +169,7 @@ public abstract class Timeline implements Bundleable {
 
     private static final Object FAKE_WINDOW_UID = new Object();
 
-    private static final MediaItem EMPTY_MEDIA_ITEM =
+    private static final MediaItem PLACEHOLDER_MEDIA_ITEM =
         new MediaItem.Builder()
             .setMediaId("com.google.android.exoplayer2.Timeline")
             .setUri(Uri.EMPTY)
@@ -257,10 +269,11 @@ public abstract class Timeline implements Bundleable {
     /** Creates window. */
     public Window() {
       uid = SINGLE_WINDOW_UID;
-      mediaItem = EMPTY_MEDIA_ITEM;
+      mediaItem = PLACEHOLDER_MEDIA_ITEM;
     }
 
     /** Sets the data held by this window. */
+    @CanIgnoreReturnValue
     @SuppressWarnings("deprecation")
     public Window set(
         Object uid,
@@ -278,7 +291,7 @@ public abstract class Timeline implements Bundleable {
         int lastPeriodIndex,
         long positionInFirstPeriodUs) {
       this.uid = uid;
-      this.mediaItem = mediaItem != null ? mediaItem : EMPTY_MEDIA_ITEM;
+      this.mediaItem = mediaItem != null ? mediaItem : PLACEHOLDER_MEDIA_ITEM;
       this.tag =
           mediaItem != null && mediaItem.localConfiguration != null
               ? mediaItem.localConfiguration.tag
@@ -417,63 +430,20 @@ public abstract class Timeline implements Bundleable {
 
     // Bundleable implementation.
 
-    @Documented
-    @Retention(RetentionPolicy.SOURCE)
-    @Target(TYPE_USE)
-    @IntDef({
-      FIELD_MEDIA_ITEM,
-      FIELD_PRESENTATION_START_TIME_MS,
-      FIELD_WINDOW_START_TIME_MS,
-      FIELD_ELAPSED_REALTIME_EPOCH_OFFSET_MS,
-      FIELD_IS_SEEKABLE,
-      FIELD_IS_DYNAMIC,
-      FIELD_LIVE_CONFIGURATION,
-      FIELD_IS_PLACEHOLDER,
-      FIELD_DEFAULT_POSITION_US,
-      FIELD_DURATION_US,
-      FIELD_FIRST_PERIOD_INDEX,
-      FIELD_LAST_PERIOD_INDEX,
-      FIELD_POSITION_IN_FIRST_PERIOD_US,
-    })
-    private @interface FieldNumber {}
-
-    private static final int FIELD_MEDIA_ITEM = 1;
-    private static final int FIELD_PRESENTATION_START_TIME_MS = 2;
-    private static final int FIELD_WINDOW_START_TIME_MS = 3;
-    private static final int FIELD_ELAPSED_REALTIME_EPOCH_OFFSET_MS = 4;
-    private static final int FIELD_IS_SEEKABLE = 5;
-    private static final int FIELD_IS_DYNAMIC = 6;
-    private static final int FIELD_LIVE_CONFIGURATION = 7;
-    private static final int FIELD_IS_PLACEHOLDER = 8;
-    private static final int FIELD_DEFAULT_POSITION_US = 9;
-    private static final int FIELD_DURATION_US = 10;
-    private static final int FIELD_FIRST_PERIOD_INDEX = 11;
-    private static final int FIELD_LAST_PERIOD_INDEX = 12;
-    private static final int FIELD_POSITION_IN_FIRST_PERIOD_US = 13;
-
-    private final Bundle toBundle(boolean excludeMediaItem) {
-      Bundle bundle = new Bundle();
-      bundle.putBundle(
-          keyForField(FIELD_MEDIA_ITEM),
-          excludeMediaItem ? MediaItem.EMPTY.toBundle() : mediaItem.toBundle());
-      bundle.putLong(keyForField(FIELD_PRESENTATION_START_TIME_MS), presentationStartTimeMs);
-      bundle.putLong(keyForField(FIELD_WINDOW_START_TIME_MS), windowStartTimeMs);
-      bundle.putLong(
-          keyForField(FIELD_ELAPSED_REALTIME_EPOCH_OFFSET_MS), elapsedRealtimeEpochOffsetMs);
-      bundle.putBoolean(keyForField(FIELD_IS_SEEKABLE), isSeekable);
-      bundle.putBoolean(keyForField(FIELD_IS_DYNAMIC), isDynamic);
-      @Nullable MediaItem.LiveConfiguration liveConfiguration = this.liveConfiguration;
-      if (liveConfiguration != null) {
-        bundle.putBundle(keyForField(FIELD_LIVE_CONFIGURATION), liveConfiguration.toBundle());
-      }
-      bundle.putBoolean(keyForField(FIELD_IS_PLACEHOLDER), isPlaceholder);
-      bundle.putLong(keyForField(FIELD_DEFAULT_POSITION_US), defaultPositionUs);
-      bundle.putLong(keyForField(FIELD_DURATION_US), durationUs);
-      bundle.putInt(keyForField(FIELD_FIRST_PERIOD_INDEX), firstPeriodIndex);
-      bundle.putInt(keyForField(FIELD_LAST_PERIOD_INDEX), lastPeriodIndex);
-      bundle.putLong(keyForField(FIELD_POSITION_IN_FIRST_PERIOD_US), positionInFirstPeriodUs);
-      return bundle;
-    }
+    private static final String FIELD_MEDIA_ITEM = Util.intToStringMaxRadix(1);
+    private static final String FIELD_PRESENTATION_START_TIME_MS = Util.intToStringMaxRadix(2);
+    private static final String FIELD_WINDOW_START_TIME_MS = Util.intToStringMaxRadix(3);
+    private static final String FIELD_ELAPSED_REALTIME_EPOCH_OFFSET_MS =
+        Util.intToStringMaxRadix(4);
+    private static final String FIELD_IS_SEEKABLE = Util.intToStringMaxRadix(5);
+    private static final String FIELD_IS_DYNAMIC = Util.intToStringMaxRadix(6);
+    private static final String FIELD_LIVE_CONFIGURATION = Util.intToStringMaxRadix(7);
+    private static final String FIELD_IS_PLACEHOLDER = Util.intToStringMaxRadix(8);
+    private static final String FIELD_DEFAULT_POSITION_US = Util.intToStringMaxRadix(9);
+    private static final String FIELD_DURATION_US = Util.intToStringMaxRadix(10);
+    private static final String FIELD_FIRST_PERIOD_INDEX = Util.intToStringMaxRadix(11);
+    private static final String FIELD_LAST_PERIOD_INDEX = Util.intToStringMaxRadix(12);
+    private static final String FIELD_POSITION_IN_FIRST_PERIOD_US = Util.intToStringMaxRadix(13);
 
     /**
      * {@inheritDoc}
@@ -482,10 +452,51 @@ public abstract class Timeline implements Bundleable {
      * restored by {@link #CREATOR} will be a fake {@link Object} and the {@link #manifest} of the
      * instance will be {@code null}.
      */
-    // TODO(b/166765820): See if missing fields would be okay and add them to the Bundle otherwise.
     @Override
     public Bundle toBundle() {
-      return toBundle(/* excludeMediaItem= */ false);
+      Bundle bundle = new Bundle();
+      if (!MediaItem.EMPTY.equals(mediaItem)) {
+        bundle.putBundle(FIELD_MEDIA_ITEM, mediaItem.toBundle());
+      }
+      if (presentationStartTimeMs != C.TIME_UNSET) {
+        bundle.putLong(FIELD_PRESENTATION_START_TIME_MS, presentationStartTimeMs);
+      }
+      if (windowStartTimeMs != C.TIME_UNSET) {
+        bundle.putLong(FIELD_WINDOW_START_TIME_MS, windowStartTimeMs);
+      }
+      if (elapsedRealtimeEpochOffsetMs != C.TIME_UNSET) {
+        bundle.putLong(FIELD_ELAPSED_REALTIME_EPOCH_OFFSET_MS, elapsedRealtimeEpochOffsetMs);
+      }
+      if (isSeekable) {
+        bundle.putBoolean(FIELD_IS_SEEKABLE, isSeekable);
+      }
+      if (isDynamic) {
+        bundle.putBoolean(FIELD_IS_DYNAMIC, isDynamic);
+      }
+
+      @Nullable MediaItem.LiveConfiguration liveConfiguration = this.liveConfiguration;
+      if (liveConfiguration != null) {
+        bundle.putBundle(FIELD_LIVE_CONFIGURATION, liveConfiguration.toBundle());
+      }
+      if (isPlaceholder) {
+        bundle.putBoolean(FIELD_IS_PLACEHOLDER, isPlaceholder);
+      }
+      if (defaultPositionUs != 0) {
+        bundle.putLong(FIELD_DEFAULT_POSITION_US, defaultPositionUs);
+      }
+      if (durationUs != C.TIME_UNSET) {
+        bundle.putLong(FIELD_DURATION_US, durationUs);
+      }
+      if (firstPeriodIndex != 0) {
+        bundle.putInt(FIELD_FIRST_PERIOD_INDEX, firstPeriodIndex);
+      }
+      if (lastPeriodIndex != 0) {
+        bundle.putInt(FIELD_LAST_PERIOD_INDEX, lastPeriodIndex);
+      }
+      if (positionInFirstPeriodUs != 0) {
+        bundle.putLong(FIELD_POSITION_IN_FIRST_PERIOD_US, positionInFirstPeriodUs);
+      }
+      return bundle;
     }
 
     /**
@@ -497,42 +508,31 @@ public abstract class Timeline implements Bundleable {
     public static final Creator<Window> CREATOR = Window::fromBundle;
 
     private static Window fromBundle(Bundle bundle) {
-      @Nullable Bundle mediaItemBundle = bundle.getBundle(keyForField(FIELD_MEDIA_ITEM));
+      @Nullable Bundle mediaItemBundle = bundle.getBundle(FIELD_MEDIA_ITEM);
       @Nullable
       MediaItem mediaItem =
-          mediaItemBundle != null ? MediaItem.CREATOR.fromBundle(mediaItemBundle) : null;
+          mediaItemBundle != null ? MediaItem.CREATOR.fromBundle(mediaItemBundle) : MediaItem.EMPTY;
       long presentationStartTimeMs =
-          bundle.getLong(
-              keyForField(FIELD_PRESENTATION_START_TIME_MS), /* defaultValue= */ C.TIME_UNSET);
+          bundle.getLong(FIELD_PRESENTATION_START_TIME_MS, /* defaultValue= */ C.TIME_UNSET);
       long windowStartTimeMs =
-          bundle.getLong(keyForField(FIELD_WINDOW_START_TIME_MS), /* defaultValue= */ C.TIME_UNSET);
+          bundle.getLong(FIELD_WINDOW_START_TIME_MS, /* defaultValue= */ C.TIME_UNSET);
       long elapsedRealtimeEpochOffsetMs =
-          bundle.getLong(
-              keyForField(FIELD_ELAPSED_REALTIME_EPOCH_OFFSET_MS),
-              /* defaultValue= */ C.TIME_UNSET);
-      boolean isSeekable =
-          bundle.getBoolean(keyForField(FIELD_IS_SEEKABLE), /* defaultValue= */ false);
-      boolean isDynamic =
-          bundle.getBoolean(keyForField(FIELD_IS_DYNAMIC), /* defaultValue= */ false);
-      @Nullable
-      Bundle liveConfigurationBundle = bundle.getBundle(keyForField(FIELD_LIVE_CONFIGURATION));
+          bundle.getLong(FIELD_ELAPSED_REALTIME_EPOCH_OFFSET_MS, /* defaultValue= */ C.TIME_UNSET);
+      boolean isSeekable = bundle.getBoolean(FIELD_IS_SEEKABLE, /* defaultValue= */ false);
+      boolean isDynamic = bundle.getBoolean(FIELD_IS_DYNAMIC, /* defaultValue= */ false);
+      @Nullable Bundle liveConfigurationBundle = bundle.getBundle(FIELD_LIVE_CONFIGURATION);
       @Nullable
       MediaItem.LiveConfiguration liveConfiguration =
           liveConfigurationBundle != null
               ? MediaItem.LiveConfiguration.CREATOR.fromBundle(liveConfigurationBundle)
               : null;
-      boolean isPlaceHolder =
-          bundle.getBoolean(keyForField(FIELD_IS_PLACEHOLDER), /* defaultValue= */ false);
-      long defaultPositionUs =
-          bundle.getLong(keyForField(FIELD_DEFAULT_POSITION_US), /* defaultValue= */ 0);
-      long durationUs =
-          bundle.getLong(keyForField(FIELD_DURATION_US), /* defaultValue= */ C.TIME_UNSET);
-      int firstPeriodIndex =
-          bundle.getInt(keyForField(FIELD_FIRST_PERIOD_INDEX), /* defaultValue= */ 0);
-      int lastPeriodIndex =
-          bundle.getInt(keyForField(FIELD_LAST_PERIOD_INDEX), /* defaultValue= */ 0);
+      boolean isPlaceHolder = bundle.getBoolean(FIELD_IS_PLACEHOLDER, /* defaultValue= */ false);
+      long defaultPositionUs = bundle.getLong(FIELD_DEFAULT_POSITION_US, /* defaultValue= */ 0);
+      long durationUs = bundle.getLong(FIELD_DURATION_US, /* defaultValue= */ C.TIME_UNSET);
+      int firstPeriodIndex = bundle.getInt(FIELD_FIRST_PERIOD_INDEX, /* defaultValue= */ 0);
+      int lastPeriodIndex = bundle.getInt(FIELD_LAST_PERIOD_INDEX, /* defaultValue= */ 0);
       long positionInFirstPeriodUs =
-          bundle.getLong(keyForField(FIELD_POSITION_IN_FIRST_PERIOD_US), /* defaultValue= */ 0);
+          bundle.getLong(FIELD_POSITION_IN_FIRST_PERIOD_US, /* defaultValue= */ 0);
 
       Window window = new Window();
       window.set(
@@ -553,10 +553,6 @@ public abstract class Timeline implements Bundleable {
       window.isPlaceholder = isPlaceHolder;
       return window;
     }
-
-    private static String keyForField(@Window.FieldNumber int field) {
-      return Integer.toString(field, Character.MAX_RADIX);
-    }
   }
 
   /**
@@ -567,8 +563,9 @@ public abstract class Timeline implements Bundleable {
    * <p>The figure below shows some of the information defined by a period, as well as how this
    * information relates to a corresponding {@link Window} in the timeline.
    *
-   * <p style="align:center"><img src="doc-files/timeline-period.svg" alt="Information defined by a
-   * period">
+   * <p style="align:center"><img
+   * src="https://exoplayer.dev/doc/reference/com/google/android/exoplayer2/doc-files/timeline-period.svg"
+   * alt="Information defined by a period">
    */
   public static final class Period implements Bundleable {
 
@@ -624,6 +621,7 @@ public abstract class Timeline implements Bundleable {
      *     period is not within the window.
      * @return This period, for convenience.
      */
+    @CanIgnoreReturnValue
     public Period set(
         @Nullable Object id,
         @Nullable Object uid,
@@ -659,6 +657,7 @@ public abstract class Timeline implements Bundleable {
      *     information has yet to be loaded.
      * @return This period, for convenience.
      */
+    @CanIgnoreReturnValue
     public Period set(
         @Nullable Object id,
         @Nullable Object uid,
@@ -828,6 +827,7 @@ public abstract class Timeline implements Bundleable {
      * adGroupIndex}, or {@link AdPlaybackState#AD_STATE_UNAVAILABLE} if not yet known.
      *
      * @param adGroupIndex The ad group index.
+     * @param adIndexInAdGroup The index of the ad in the ad group.
      * @return The state of the ad, or {@link AdPlaybackState#AD_STATE_UNAVAILABLE} if not yet
      *     known.
      */
@@ -836,6 +836,17 @@ public abstract class Timeline implements Bundleable {
       return adGroup.count != C.LENGTH_UNSET
           ? adGroup.states[adIndexInAdGroup]
           : AD_STATE_UNAVAILABLE;
+    }
+
+    /**
+     * Returns whether the ad group at the given ad group index is a live postroll placeholder.
+     *
+     * @param adGroupIndex The ad group index.
+     * @return True if the ad group at the given index is a live postroll placeholder.
+     */
+    public boolean isLivePostrollPlaceholder(int adGroupIndex) {
+      return adGroupIndex == getAdGroupCount() - 1
+          && adPlaybackState.isLivePostrollPlaceholder(adGroupIndex);
     }
 
     /**
@@ -901,23 +912,11 @@ public abstract class Timeline implements Bundleable {
 
     // Bundleable implementation.
 
-    @Documented
-    @Retention(RetentionPolicy.SOURCE)
-    @Target(TYPE_USE)
-    @IntDef({
-      FIELD_WINDOW_INDEX,
-      FIELD_DURATION_US,
-      FIELD_POSITION_IN_WINDOW_US,
-      FIELD_PLACEHOLDER,
-      FIELD_AD_PLAYBACK_STATE
-    })
-    private @interface FieldNumber {}
-
-    private static final int FIELD_WINDOW_INDEX = 0;
-    private static final int FIELD_DURATION_US = 1;
-    private static final int FIELD_POSITION_IN_WINDOW_US = 2;
-    private static final int FIELD_PLACEHOLDER = 3;
-    private static final int FIELD_AD_PLAYBACK_STATE = 4;
+    private static final String FIELD_WINDOW_INDEX = Util.intToStringMaxRadix(0);
+    private static final String FIELD_DURATION_US = Util.intToStringMaxRadix(1);
+    private static final String FIELD_POSITION_IN_WINDOW_US = Util.intToStringMaxRadix(2);
+    private static final String FIELD_PLACEHOLDER = Util.intToStringMaxRadix(3);
+    private static final String FIELD_AD_PLAYBACK_STATE = Util.intToStringMaxRadix(4);
 
     /**
      * {@inheritDoc}
@@ -925,15 +924,24 @@ public abstract class Timeline implements Bundleable {
      * <p>It omits the {@link #id} and {@link #uid} fields so these fields of an instance restored
      * by {@link #CREATOR} will always be {@code null}.
      */
-    // TODO(b/166765820): See if missing fields would be okay and add them to the Bundle otherwise.
     @Override
     public Bundle toBundle() {
       Bundle bundle = new Bundle();
-      bundle.putInt(keyForField(FIELD_WINDOW_INDEX), windowIndex);
-      bundle.putLong(keyForField(FIELD_DURATION_US), durationUs);
-      bundle.putLong(keyForField(FIELD_POSITION_IN_WINDOW_US), positionInWindowUs);
-      bundle.putBoolean(keyForField(FIELD_PLACEHOLDER), isPlaceholder);
-      bundle.putBundle(keyForField(FIELD_AD_PLAYBACK_STATE), adPlaybackState.toBundle());
+      if (windowIndex != 0) {
+        bundle.putInt(FIELD_WINDOW_INDEX, windowIndex);
+      }
+      if (durationUs != C.TIME_UNSET) {
+        bundle.putLong(FIELD_DURATION_US, durationUs);
+      }
+      if (positionInWindowUs != 0) {
+        bundle.putLong(FIELD_POSITION_IN_WINDOW_US, positionInWindowUs);
+      }
+      if (isPlaceholder) {
+        bundle.putBoolean(FIELD_PLACEHOLDER, isPlaceholder);
+      }
+      if (!adPlaybackState.equals(AdPlaybackState.NONE)) {
+        bundle.putBundle(FIELD_AD_PLAYBACK_STATE, adPlaybackState.toBundle());
+      }
       return bundle;
     }
 
@@ -945,14 +953,11 @@ public abstract class Timeline implements Bundleable {
     public static final Creator<Period> CREATOR = Period::fromBundle;
 
     private static Period fromBundle(Bundle bundle) {
-      int windowIndex = bundle.getInt(keyForField(FIELD_WINDOW_INDEX), /* defaultValue= */ 0);
-      long durationUs =
-          bundle.getLong(keyForField(FIELD_DURATION_US), /* defaultValue= */ C.TIME_UNSET);
-      long positionInWindowUs =
-          bundle.getLong(keyForField(FIELD_POSITION_IN_WINDOW_US), /* defaultValue= */ 0);
-      boolean isPlaceholder = bundle.getBoolean(keyForField(FIELD_PLACEHOLDER));
-      @Nullable
-      Bundle adPlaybackStateBundle = bundle.getBundle(keyForField(FIELD_AD_PLAYBACK_STATE));
+      int windowIndex = bundle.getInt(FIELD_WINDOW_INDEX, /* defaultValue= */ 0);
+      long durationUs = bundle.getLong(FIELD_DURATION_US, /* defaultValue= */ C.TIME_UNSET);
+      long positionInWindowUs = bundle.getLong(FIELD_POSITION_IN_WINDOW_US, /* defaultValue= */ 0);
+      boolean isPlaceholder = bundle.getBoolean(FIELD_PLACEHOLDER, /* defaultValue= */ false);
+      @Nullable Bundle adPlaybackStateBundle = bundle.getBundle(FIELD_AD_PLAYBACK_STATE);
       AdPlaybackState adPlaybackState =
           adPlaybackStateBundle != null
               ? AdPlaybackState.CREATOR.fromBundle(adPlaybackStateBundle)
@@ -968,10 +973,6 @@ public abstract class Timeline implements Bundleable {
           adPlaybackState,
           isPlaceholder);
       return period;
-    }
-
-    private static String keyForField(@Period.FieldNumber int field) {
-      return Integer.toString(field, Character.MAX_RADIX);
     }
   }
 
@@ -1389,19 +1390,9 @@ public abstract class Timeline implements Bundleable {
 
   // Bundleable implementation.
 
-  @Documented
-  @Retention(RetentionPolicy.SOURCE)
-  @Target(TYPE_USE)
-  @IntDef({
-    FIELD_WINDOWS,
-    FIELD_PERIODS,
-    FIELD_SHUFFLED_WINDOW_INDICES,
-  })
-  private @interface FieldNumber {}
-
-  private static final int FIELD_WINDOWS = 0;
-  private static final int FIELD_PERIODS = 1;
-  private static final int FIELD_SHUFFLED_WINDOW_INDICES = 2;
+  private static final String FIELD_WINDOWS = Util.intToStringMaxRadix(0);
+  private static final String FIELD_PERIODS = Util.intToStringMaxRadix(1);
+  private static final String FIELD_SHUFFLED_WINDOW_INDICES = Util.intToStringMaxRadix(2);
 
   /**
    * {@inheritDoc}
@@ -1409,17 +1400,14 @@ public abstract class Timeline implements Bundleable {
    * <p>The {@link #getWindow(int, Window)} windows} and {@link #getPeriod(int, Period) periods} of
    * an instance restored by {@link #CREATOR} may have missing fields as described in {@link
    * Window#toBundle()} and {@link Period#toBundle()}.
-   *
-   * @param excludeMediaItems Whether to exclude all {@link Window#mediaItem media items} of windows
-   *     in the timeline.
    */
-  public final Bundle toBundle(boolean excludeMediaItems) {
+  @Override
+  public final Bundle toBundle() {
     List<Bundle> windowBundles = new ArrayList<>();
     int windowCount = getWindowCount();
     Window window = new Window();
     for (int i = 0; i < windowCount; i++) {
-      windowBundles.add(
-          getWindow(i, window, /* defaultPositionProjectionUs= */ 0).toBundle(excludeMediaItems));
+      windowBundles.add(getWindow(i, window, /* defaultPositionProjectionUs= */ 0).toBundle());
     }
 
     List<Bundle> periodBundles = new ArrayList<>();
@@ -1440,24 +1428,42 @@ public abstract class Timeline implements Bundleable {
     }
 
     Bundle bundle = new Bundle();
-    BundleUtil.putBinder(
-        bundle, keyForField(FIELD_WINDOWS), new BundleListRetriever(windowBundles));
-    BundleUtil.putBinder(
-        bundle, keyForField(FIELD_PERIODS), new BundleListRetriever(periodBundles));
-    bundle.putIntArray(keyForField(FIELD_SHUFFLED_WINDOW_INDICES), shuffledWindowIndices);
+    BundleUtil.putBinder(bundle, FIELD_WINDOWS, new BundleListRetriever(windowBundles));
+    BundleUtil.putBinder(bundle, FIELD_PERIODS, new BundleListRetriever(periodBundles));
+    bundle.putIntArray(FIELD_SHUFFLED_WINDOW_INDICES, shuffledWindowIndices);
     return bundle;
   }
 
   /**
-   * {@inheritDoc}
+   * Returns a {@link Bundle} containing just the specified {@link Window}.
    *
    * <p>The {@link #getWindow(int, Window)} windows} and {@link #getPeriod(int, Period) periods} of
    * an instance restored by {@link #CREATOR} may have missing fields as described in {@link
    * Window#toBundle()} and {@link Period#toBundle()}.
+   *
+   * @param windowIndex The index of the {@link Window} to include in the {@link Bundle}.
    */
-  @Override
-  public final Bundle toBundle() {
-    return toBundle(/* excludeMediaItems= */ false);
+  public final Bundle toBundleWithOneWindowOnly(int windowIndex) {
+    Window window = getWindow(windowIndex, new Window(), /* defaultPositionProjectionUs= */ 0);
+
+    List<Bundle> periodBundles = new ArrayList<>();
+    Period period = new Period();
+    for (int i = window.firstPeriodIndex; i <= window.lastPeriodIndex; i++) {
+      getPeriod(i, period, /* setIds= */ false);
+      period.windowIndex = 0;
+      periodBundles.add(period.toBundle());
+    }
+
+    window.lastPeriodIndex = window.lastPeriodIndex - window.firstPeriodIndex;
+    window.firstPeriodIndex = 0;
+    Bundle windowBundle = window.toBundle();
+
+    Bundle bundle = new Bundle();
+    BundleUtil.putBinder(
+        bundle, FIELD_WINDOWS, new BundleListRetriever(ImmutableList.of(windowBundle)));
+    BundleUtil.putBinder(bundle, FIELD_PERIODS, new BundleListRetriever(periodBundles));
+    bundle.putIntArray(FIELD_SHUFFLED_WINDOW_INDICES, new int[] {0});
+    return bundle;
   }
 
   /**
@@ -1471,13 +1477,10 @@ public abstract class Timeline implements Bundleable {
 
   private static Timeline fromBundle(Bundle bundle) {
     ImmutableList<Window> windows =
-        fromBundleListRetriever(
-            Window.CREATOR, BundleUtil.getBinder(bundle, keyForField(FIELD_WINDOWS)));
+        fromBundleListRetriever(Window.CREATOR, BundleUtil.getBinder(bundle, FIELD_WINDOWS));
     ImmutableList<Period> periods =
-        fromBundleListRetriever(
-            Period.CREATOR, BundleUtil.getBinder(bundle, keyForField(FIELD_PERIODS)));
-    @Nullable
-    int[] shuffledWindowIndices = bundle.getIntArray(keyForField(FIELD_SHUFFLED_WINDOW_INDICES));
+        fromBundleListRetriever(Period.CREATOR, BundleUtil.getBinder(bundle, FIELD_PERIODS));
+    @Nullable int[] shuffledWindowIndices = bundle.getIntArray(FIELD_SHUFFLED_WINDOW_INDICES);
     return new RemotableTimeline(
         windows,
         periods,
@@ -1497,10 +1500,6 @@ public abstract class Timeline implements Bundleable {
       builder.add(creator.fromBundle(bundleList.get(i)));
     }
     return builder.build();
-  }
-
-  private static String keyForField(@FieldNumber int field) {
-    return Integer.toString(field, Character.MAX_RADIX);
   }
 
   private static int[] generateUnshuffledIndices(int n) {

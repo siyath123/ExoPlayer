@@ -31,12 +31,21 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.Util;
+import com.google.android.exoplayer2.util.VideoFrameProcessor;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Thrown when a non locally recoverable playback failure occurs. */
+/**
+ * Thrown when a non locally recoverable playback failure occurs.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public class PlaybackException extends Exception implements Bundleable {
 
   /**
@@ -151,8 +160,9 @@ public class PlaybackException extends Exception implements Bundleable {
    * Caused by the player trying to access cleartext HTTP traffic (meaning http:// rather than
    * https://) when the app's Network Security Configuration does not permit it.
    *
-   * <p>See <a href="https://exoplayer.dev/issues/cleartext-not-permitted">this corresponding
-   * troubleshooting topic</a>.
+   * <p>See <a
+   * href="https://developer.android.com/guide/topics/media/issues/cleartext-not-permitted">this
+   * corresponding troubleshooting topic</a>.
    */
   public static final int ERROR_CODE_IO_CLEARTEXT_NOT_PERMITTED = 2007;
   /** Caused by reading data out of the data bound. */
@@ -226,6 +236,13 @@ public class PlaybackException extends Exception implements Bundleable {
   public static final int ERROR_CODE_DRM_DEVICE_REVOKED = 6007;
   /** Caused by an expired DRM license being loaded into an open DRM session. */
   public static final int ERROR_CODE_DRM_LICENSE_EXPIRED = 6008;
+
+  // Frame processing errors (7xxx).
+
+  /** Caused by a failure when initializing a {@link VideoFrameProcessor}. */
+  public static final int ERROR_CODE_VIDEO_FRAME_PROCESSOR_INIT_FAILED = 7000;
+  /** Caused by a failure when processing a video frame. */
+  public static final int ERROR_CODE_VIDEO_FRAME_PROCESSING_FAILED = 7001;
 
   /**
    * Player implementations that want to surface custom errors can use error codes greater than this
@@ -304,6 +321,10 @@ public class PlaybackException extends Exception implements Bundleable {
         return "ERROR_CODE_DRM_DEVICE_REVOKED";
       case ERROR_CODE_DRM_LICENSE_EXPIRED:
         return "ERROR_CODE_DRM_LICENSE_EXPIRED";
+      case ERROR_CODE_VIDEO_FRAME_PROCESSOR_INIT_FAILED:
+        return "ERROR_CODE_VIDEO_FRAME_PROCESSOR_INIT_FAILED";
+      case ERROR_CODE_VIDEO_FRAME_PROCESSING_FAILED:
+        return "ERROR_CODE_VIDEO_FRAME_PROCESSING_FAILED";
       default:
         if (errorCode >= CUSTOM_ERROR_CODE_BASE) {
           return "custom error code";
@@ -343,13 +364,12 @@ public class PlaybackException extends Exception implements Bundleable {
   /** Creates a new instance using the fields obtained from the given {@link Bundle}. */
   protected PlaybackException(Bundle bundle) {
     this(
-        /* message= */ bundle.getString(keyForField(FIELD_STRING_MESSAGE)),
+        /* message= */ bundle.getString(FIELD_STRING_MESSAGE),
         /* cause= */ getCauseFromBundle(bundle),
         /* errorCode= */ bundle.getInt(
-            keyForField(FIELD_INT_ERROR_CODE), /* defaultValue= */ ERROR_CODE_UNSPECIFIED),
+            FIELD_INT_ERROR_CODE, /* defaultValue= */ ERROR_CODE_UNSPECIFIED),
         /* timestampMs= */ bundle.getLong(
-            keyForField(FIELD_LONG_TIMESTAMP_MS),
-            /* defaultValue= */ SystemClock.elapsedRealtime()));
+            FIELD_LONG_TIMESTAMP_MS, /* defaultValue= */ SystemClock.elapsedRealtime()));
   }
 
   /** Creates a new instance using the given values. */
@@ -397,18 +417,18 @@ public class PlaybackException extends Exception implements Bundleable {
 
   // Bundleable implementation.
 
-  private static final int FIELD_INT_ERROR_CODE = 0;
-  private static final int FIELD_LONG_TIMESTAMP_MS = 1;
-  private static final int FIELD_STRING_MESSAGE = 2;
-  private static final int FIELD_STRING_CAUSE_CLASS_NAME = 3;
-  private static final int FIELD_STRING_CAUSE_MESSAGE = 4;
+  private static final String FIELD_INT_ERROR_CODE = Util.intToStringMaxRadix(0);
+  private static final String FIELD_LONG_TIMESTAMP_MS = Util.intToStringMaxRadix(1);
+  private static final String FIELD_STRING_MESSAGE = Util.intToStringMaxRadix(2);
+  private static final String FIELD_STRING_CAUSE_CLASS_NAME = Util.intToStringMaxRadix(3);
+  private static final String FIELD_STRING_CAUSE_MESSAGE = Util.intToStringMaxRadix(4);
 
   /**
    * Defines a minimum field ID value for subclasses to use when implementing {@link #toBundle()}
    * and {@link Bundleable.Creator}.
    *
    * <p>Subclasses should obtain their {@link Bundle Bundle's} field keys by applying a non-negative
-   * offset on this constant and passing the result to {@link #keyForField(int)}.
+   * offset on this constant and passing the result to {@link Util#intToStringMaxRadix(int)}.
    */
   protected static final int FIELD_CUSTOM_ID_BASE = 1000;
 
@@ -419,26 +439,15 @@ public class PlaybackException extends Exception implements Bundleable {
   @Override
   public Bundle toBundle() {
     Bundle bundle = new Bundle();
-    bundle.putInt(keyForField(FIELD_INT_ERROR_CODE), errorCode);
-    bundle.putLong(keyForField(FIELD_LONG_TIMESTAMP_MS), timestampMs);
-    bundle.putString(keyForField(FIELD_STRING_MESSAGE), getMessage());
+    bundle.putInt(FIELD_INT_ERROR_CODE, errorCode);
+    bundle.putLong(FIELD_LONG_TIMESTAMP_MS, timestampMs);
+    bundle.putString(FIELD_STRING_MESSAGE, getMessage());
     @Nullable Throwable cause = getCause();
     if (cause != null) {
-      bundle.putString(keyForField(FIELD_STRING_CAUSE_CLASS_NAME), cause.getClass().getName());
-      bundle.putString(keyForField(FIELD_STRING_CAUSE_MESSAGE), cause.getMessage());
+      bundle.putString(FIELD_STRING_CAUSE_CLASS_NAME, cause.getClass().getName());
+      bundle.putString(FIELD_STRING_CAUSE_MESSAGE, cause.getMessage());
     }
     return bundle;
-  }
-
-  /**
-   * Converts the given field number to a string which can be used as a field key when implementing
-   * {@link #toBundle()} and {@link Bundleable.Creator}.
-   *
-   * <p>Subclasses should use {@code field} values greater than or equal to {@link
-   * #FIELD_CUSTOM_ID_BASE}.
-   */
-  protected static String keyForField(int field) {
-    return Integer.toString(field, Character.MAX_RADIX);
   }
 
   // Creates a new {@link Throwable} with possibly {@code null} message.
@@ -456,8 +465,8 @@ public class PlaybackException extends Exception implements Bundleable {
 
   @Nullable
   private static Throwable getCauseFromBundle(Bundle bundle) {
-    @Nullable String causeClassName = bundle.getString(keyForField(FIELD_STRING_CAUSE_CLASS_NAME));
-    @Nullable String causeMessage = bundle.getString(keyForField(FIELD_STRING_CAUSE_MESSAGE));
+    @Nullable String causeClassName = bundle.getString(FIELD_STRING_CAUSE_CLASS_NAME);
+    @Nullable String causeMessage = bundle.getString(FIELD_STRING_CAUSE_MESSAGE);
     @Nullable Throwable cause = null;
     if (!TextUtils.isEmpty(causeClassName)) {
       try {

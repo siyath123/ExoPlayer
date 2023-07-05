@@ -21,12 +21,14 @@ import static com.google.android.exoplayer2.C.FORMAT_UNSUPPORTED_SUBTYPE;
 import static com.google.android.exoplayer2.C.FORMAT_UNSUPPORTED_TYPE;
 import static com.google.android.exoplayer2.RendererCapabilities.ADAPTIVE_NOT_SEAMLESS;
 import static com.google.android.exoplayer2.RendererCapabilities.DECODER_SUPPORT_FALLBACK;
+import static com.google.android.exoplayer2.RendererCapabilities.DECODER_SUPPORT_FALLBACK_MIMETYPE;
 import static com.google.android.exoplayer2.RendererCapabilities.DECODER_SUPPORT_PRIMARY;
 import static com.google.android.exoplayer2.RendererCapabilities.HARDWARE_ACCELERATION_NOT_SUPPORTED;
 import static com.google.android.exoplayer2.RendererCapabilities.HARDWARE_ACCELERATION_SUPPORTED;
 import static com.google.android.exoplayer2.RendererCapabilities.TUNNELING_NOT_SUPPORTED;
 import static com.google.android.exoplayer2.RendererConfiguration.DEFAULT;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -40,20 +42,24 @@ import com.google.android.exoplayer2.Bundleable;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.RendererCapabilities.Capabilities;
 import com.google.android.exoplayer2.RendererConfiguration;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.Tracks;
+import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.source.MediaSource.MediaPeriodId;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.testutil.FakeAudioRenderer;
 import com.google.android.exoplayer2.testutil.FakeTimeline;
 import com.google.android.exoplayer2.testutil.TestUtil;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.Parameters;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
 import com.google.android.exoplayer2.trackselection.TrackSelector.InvalidationListener;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.util.HandlerWrapper;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
@@ -1618,7 +1624,7 @@ public final class DefaultTrackSelectorTest {
     Format aacAudioFormat = formatBuilder.setSampleMimeType(MimeTypes.AUDIO_AAC).build();
     Format opusAudioFormat = formatBuilder.setSampleMimeType(MimeTypes.AUDIO_OPUS).build();
 
-    // Should not adapt between mixed mime types by default, so we expect a fixed selection
+    // Should not adapt between mixed MIME types by default, so we expect a fixed selection
     // containing the first stream.
     TrackGroupArray trackGroups = singleTrackGroup(aacAudioFormat, opusAudioFormat);
     TrackSelectorResult result =
@@ -1635,7 +1641,7 @@ public final class DefaultTrackSelectorTest {
     assertThat(result.length).isEqualTo(1);
     assertFixedSelection(result.selections[0], trackGroups, opusAudioFormat);
 
-    // If we explicitly enable mixed mime type adaptiveness, expect an adaptive selection.
+    // If we explicitly enable mixed MIME type adaptiveness, expect an adaptive selection.
     trackSelector.setParameters(
         defaultParameters.buildUpon().setAllowAudioMixedMimeTypeAdaptiveness(true));
     result =
@@ -1967,7 +1973,7 @@ public final class DefaultTrackSelectorTest {
     Format h264VideoFormat = formatBuilder.setSampleMimeType(MimeTypes.VIDEO_H264).build();
     Format h265VideoFormat = formatBuilder.setSampleMimeType(MimeTypes.VIDEO_H265).build();
 
-    // Should not adapt between mixed mime types by default, so we expect a fixed selection
+    // Should not adapt between mixed MIME types by default, so we expect a fixed selection
     // containing the first stream.
     TrackGroupArray trackGroups = singleTrackGroup(h264VideoFormat, h265VideoFormat);
     TrackSelectorResult result =
@@ -1984,7 +1990,7 @@ public final class DefaultTrackSelectorTest {
     assertThat(result.length).isEqualTo(1);
     assertFixedSelection(result.selections[0], trackGroups, h265VideoFormat);
 
-    // If we explicitly enable mixed mime type adaptiveness, expect an adaptive selection.
+    // If we explicitly enable mixed MIME type adaptiveness, expect an adaptive selection.
     trackSelector.setParameters(
         defaultParameters.buildUpon().setAllowVideoMixedMimeTypeAdaptiveness(true));
     result =
@@ -2243,6 +2249,68 @@ public final class DefaultTrackSelectorTest {
   }
 
   /**
+   * Tests that track selector will select video track with support of its primary decoder over a
+   * track that will use a decoder for it's format fallback sampleMimetype.
+   */
+  @Test
+  public void selectTracks_withDecoderSupportFallbackMimetype_selectsTrackWithPrimaryDecoder()
+      throws Exception {
+    Format formatDV =
+        new Format.Builder().setId("0").setSampleMimeType(MimeTypes.VIDEO_DOLBY_VISION).build();
+    Format formatHevc =
+        new Format.Builder().setId("1").setSampleMimeType(MimeTypes.VIDEO_H265).build();
+    TrackGroupArray trackGroups =
+        new TrackGroupArray(new TrackGroup(formatDV), new TrackGroup(formatHevc));
+    @Capabilities
+    int capabilitiesDecoderSupportPrimary =
+        RendererCapabilities.create(
+            FORMAT_HANDLED,
+            ADAPTIVE_NOT_SEAMLESS,
+            TUNNELING_NOT_SUPPORTED,
+            HARDWARE_ACCELERATION_SUPPORTED,
+            DECODER_SUPPORT_PRIMARY);
+    int capabilitiesDecoderSupportFallbackType =
+        RendererCapabilities.create(
+            FORMAT_HANDLED,
+            ADAPTIVE_NOT_SEAMLESS,
+            TUNNELING_NOT_SUPPORTED,
+            HARDWARE_ACCELERATION_SUPPORTED,
+            DECODER_SUPPORT_FALLBACK_MIMETYPE);
+
+    // Select track supported by primary decoder by default.
+    ImmutableMap<String, Integer> rendererCapabilitiesMapDifferingDecoderSupport =
+        ImmutableMap.of(
+            "0", capabilitiesDecoderSupportFallbackType, "1", capabilitiesDecoderSupportPrimary);
+    RendererCapabilities rendererCapabilitiesDifferingDecoderSupport =
+        new FakeMappedRendererCapabilities(
+            C.TRACK_TYPE_VIDEO, rendererCapabilitiesMapDifferingDecoderSupport);
+    TrackSelectorResult result =
+        trackSelector.selectTracks(
+            new RendererCapabilities[] {rendererCapabilitiesDifferingDecoderSupport},
+            trackGroups,
+            periodId,
+            TIMELINE);
+
+    assertFixedSelection(result.selections[0], trackGroups, formatHevc);
+
+    // Select Dolby Vision track over HEVC when renderer supports both equally
+    ImmutableMap<String, Integer> rendererCapabilitiesMapAllPrimaryDecoderSupport =
+        ImmutableMap.of(
+            "0", capabilitiesDecoderSupportPrimary, "1", capabilitiesDecoderSupportPrimary);
+    RendererCapabilities rendererCapabilitiesAllPrimaryDecoderSupport =
+        new FakeMappedRendererCapabilities(
+            C.TRACK_TYPE_VIDEO, rendererCapabilitiesMapAllPrimaryDecoderSupport);
+    result =
+        trackSelector.selectTracks(
+            new RendererCapabilities[] {rendererCapabilitiesAllPrimaryDecoderSupport},
+            trackGroups,
+            periodId,
+            TIMELINE);
+
+    assertFixedSelection(result.selections[0], trackGroups, formatDV);
+  }
+
+  /**
    * Tests that track selector will select the video track with the highest number of matching role
    * flags given by {@link Parameters}.
    */
@@ -2389,6 +2457,36 @@ public final class DefaultTrackSelectorTest {
     }
   }
 
+  @Test
+  public void onRendererCapabilitiesChangedWithDefaultParameters_notNotifyInvalidateListener() {
+    Renderer renderer =
+        new FakeAudioRenderer(
+            /* handler= */ mock(HandlerWrapper.class),
+            /* eventListener= */ mock(AudioRendererEventListener.class));
+
+    trackSelector.onRendererCapabilitiesChanged(renderer);
+
+    verify(invalidationListener, never()).onRendererCapabilitiesChanged(renderer);
+  }
+
+  @Test
+  public void
+      onRendererCapabilitiesChangedWithInvalidateSelectionsForRendererCapabilitiesChangeEnabled_notifyInvalidateListener() {
+    trackSelector.setParameters(
+        defaultParameters
+            .buildUpon()
+            .setAllowInvalidateSelectionsOnRendererCapabilitiesChange(true)
+            .build());
+    Renderer renderer =
+        new FakeAudioRenderer(
+            /* handler= */ mock(HandlerWrapper.class),
+            /* eventListener= */ mock(AudioRendererEventListener.class));
+
+    trackSelector.onRendererCapabilitiesChanged(renderer);
+
+    verify(invalidationListener).onRendererCapabilitiesChanged(renderer);
+  }
+
   private static void assertSelections(TrackSelectorResult result, TrackSelection[] expected) {
     assertThat(result.length).isEqualTo(expected.length);
     for (int i = 0; i < expected.length; i++) {
@@ -2509,6 +2607,7 @@ public final class DefaultTrackSelectorTest {
         .setExceedRendererCapabilitiesIfNecessary(false)
         .setTunnelingEnabled(true)
         .setAllowMultipleAdaptiveSelections(true)
+        .setAllowInvalidateSelectionsOnRendererCapabilitiesChange(false)
         .setSelectionOverride(
             /* rendererIndex= */ 2,
             new TrackGroupArray(VIDEO_TRACK_GROUP),

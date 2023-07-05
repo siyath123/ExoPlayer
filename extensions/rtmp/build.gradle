@@ -11,13 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-apply from: "$gradle.ext.exoplayerSettingsDir/common_library_config.gradle"
+ apply from: "$gradle.ext.exoplayerSettingsDir/common_library_config.gradle"
 
 dependencies {
     implementation project(modulePrefix + 'library-common')
     implementation project(modulePrefix + 'library-datasource')
     implementation 'io.antmedia:rtmp-client:3.2.0'
     implementation 'androidx.annotation:annotation:' + androidxAnnotationVersion
+    compileOnly 'com.google.errorprone:error_prone_annotations:' + errorProneVersion
     compileOnly 'org.jetbrains.kotlin:kotlin-annotations-jvm:' + kotlinAnnotationsVersion
     testImplementation project(modulePrefix + 'library-core')
     testImplementation project(modulePrefix + 'testutils')
@@ -30,7 +31,7 @@ ext {
 apply from: '../../javadoc_library.gradle'
 
 ext {
-    releaseArtifactId = 'extension-rtmp'
-    releaseDescription = 'RTMP extension for ExoPlayer.'
+ releaseArtifactId = 'extension-rtmp'
+ releaseDescription = 'RTMP extension for ExoPlayer.'
 }
 apply from: '../../publish.gradle'

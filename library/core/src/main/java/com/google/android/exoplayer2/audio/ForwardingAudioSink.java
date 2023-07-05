@@ -15,13 +15,23 @@
  */
 package com.google.android.exoplayer2.audio;
 
+import android.media.AudioDeviceInfo;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.analytics.PlayerId;
 import java.nio.ByteBuffer;
 
-/** An overridable {@link AudioSink} implementation forwarding all methods to another sink. */
+/**
+ * An overridable {@link AudioSink} implementation forwarding all methods to another sink.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public class ForwardingAudioSink implements AudioSink {
 
   private final AudioSink sink;
@@ -132,6 +142,17 @@ public class ForwardingAudioSink implements AudioSink {
   @Override
   public void setAuxEffectInfo(AuxEffectInfo auxEffectInfo) {
     sink.setAuxEffectInfo(auxEffectInfo);
+  }
+
+  @RequiresApi(23)
+  @Override
+  public void setPreferredDevice(@Nullable AudioDeviceInfo audioDeviceInfo) {
+    sink.setPreferredDevice(audioDeviceInfo);
+  }
+
+  @Override
+  public void setOutputStreamOffsetUs(long outputStreamOffsetUs) {
+    sink.setOutputStreamOffsetUs(outputStreamOffsetUs);
   }
 
   @Override

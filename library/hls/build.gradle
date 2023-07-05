@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-apply from: "$gradle.ext.exoplayerSettingsDir/common_library_config.gradle"
+ apply from: "$gradle.ext.exoplayerSettingsDir/common_library_config.gradle"
 
 android {
     buildTypes {
@@ -20,11 +20,12 @@ android {
         }
     }
 
-    sourceSets.test.assets.srcDir '../../testdata/src/test/assets/'
+ sourceSets.test.assets.srcDir '../../testdata/src/test/assets/'
 }
 
 dependencies {
     implementation 'androidx.annotation:annotation:' + androidxAnnotationVersion
+    compileOnly 'com.google.errorprone:error_prone_annotations:' + errorProneVersion
     compileOnly 'org.checkerframework:checker-qual:' + checkerframeworkVersion
     compileOnly 'org.checkerframework:checker-compat-qual:' + checkerframeworkCompatVersion
     compileOnly 'org.jetbrains.kotlin:kotlin-annotations-jvm:' + kotlinAnnotationsVersion
@@ -42,7 +43,7 @@ ext {
 apply from: '../../javadoc_library.gradle'
 
 ext {
-    releaseArtifactId = 'exoplayer-hls'
-    releaseDescription = 'The ExoPlayer library HLS module.'
+ releaseArtifactId = 'exoplayer-hls'
+ releaseDescription = 'The ExoPlayer library HLS module.'
 }
 apply from: '../../publish.gradle'

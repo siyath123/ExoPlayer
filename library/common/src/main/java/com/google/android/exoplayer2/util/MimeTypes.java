@@ -24,7 +24,15 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Defines common MIME types and helper methods. */
+/**
+ * Defines common MIME types and helper methods.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class MimeTypes {
 
   public static final String BASE_TYPE_VIDEO = "video";
@@ -58,6 +66,7 @@ public final class MimeTypes {
   public static final String VIDEO_MJPEG = BASE_TYPE_VIDEO + "/mjpeg";
   public static final String VIDEO_MP42 = BASE_TYPE_VIDEO + "/mp42";
   public static final String VIDEO_MP43 = BASE_TYPE_VIDEO + "/mp43";
+  public static final String VIDEO_RAW = BASE_TYPE_VIDEO + "/raw";
   public static final String VIDEO_UNKNOWN = BASE_TYPE_VIDEO + "/x-unknown";
 
   // audio/ MIME types
@@ -89,11 +98,14 @@ public final class MimeTypes {
   public static final String AUDIO_AMR_NB = BASE_TYPE_AUDIO + "/3gpp";
   public static final String AUDIO_AMR_WB = BASE_TYPE_AUDIO + "/amr-wb";
   public static final String AUDIO_FLAC = BASE_TYPE_AUDIO + "/flac";
-  public static final String AUDIO_MIDI = BASE_TYPE_AUDIO + "/midi";
   public static final String AUDIO_ALAC = BASE_TYPE_AUDIO + "/alac";
   public static final String AUDIO_MSGSM = BASE_TYPE_AUDIO + "/gsm";
   public static final String AUDIO_OGG = BASE_TYPE_AUDIO + "/ogg";
   public static final String AUDIO_WAV = BASE_TYPE_AUDIO + "/wav";
+  public static final String AUDIO_MIDI = BASE_TYPE_AUDIO + "/midi";
+
+  public static final String AUDIO_EXOPLAYER_MIDI = BASE_TYPE_AUDIO + "/x-exoplayer-midi";
+
   public static final String AUDIO_UNKNOWN = BASE_TYPE_AUDIO + "/x-unknown";
 
   // text/ MIME types
@@ -123,7 +135,12 @@ public final class MimeTypes {
   public static final String APPLICATION_TX3G = BASE_TYPE_APPLICATION + "/x-quicktime-tx3g";
   public static final String APPLICATION_MP4VTT = BASE_TYPE_APPLICATION + "/x-mp4-vtt";
   public static final String APPLICATION_MP4CEA608 = BASE_TYPE_APPLICATION + "/x-mp4-cea-608";
-  public static final String APPLICATION_RAWCC = BASE_TYPE_APPLICATION + "/x-rawcc";
+  /**
+   * @deprecated RawCC is a Google-internal subtitle format that isn't supported by this version of
+   *     Media3. There is no replacement for this value.
+   */
+  @Deprecated public static final String APPLICATION_RAWCC = BASE_TYPE_APPLICATION + "/x-rawcc";
+
   public static final String APPLICATION_VOBSUB = BASE_TYPE_APPLICATION + "/vobsub";
   public static final String APPLICATION_PGS = BASE_TYPE_APPLICATION + "/pgs";
   public static final String APPLICATION_SCTE35 = BASE_TYPE_APPLICATION + "/x-scte35";
@@ -139,7 +156,11 @@ public final class MimeTypes {
 
   // image/ MIME types
 
+  public static final String IMAGE_PNG = BASE_TYPE_IMAGE + "/png";
+  public static final String IMAGE_WEBP = BASE_TYPE_IMAGE + "/webp";
   public static final String IMAGE_JPEG = BASE_TYPE_IMAGE + "/jpeg";
+  public static final String IMAGE_HEIC = BASE_TYPE_IMAGE + "/heic";
+  public static final String IMAGE_HEIF = BASE_TYPE_IMAGE + "/heif";
 
   /**
    * A non-standard codec string for E-AC3-JOC. Use of this constant allows for disambiguation
@@ -562,8 +583,14 @@ public final class MimeTypes {
         return C.ENCODING_DTS;
       case MimeTypes.AUDIO_DTS_HD:
         return C.ENCODING_DTS_HD;
+      case MimeTypes.AUDIO_DTS_EXPRESS:
+        return C.ENCODING_DTS_HD;
+      case MimeTypes.AUDIO_DTS_X:
+        return C.ENCODING_DTS_UHD_P2;
       case MimeTypes.AUDIO_TRUEHD:
         return C.ENCODING_DOLBY_TRUEHD;
+      case MimeTypes.AUDIO_OPUS:
+        return C.ENCODING_OPUS;
       default:
         return C.ENCODING_INVALID;
     }

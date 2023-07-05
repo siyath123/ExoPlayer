@@ -37,9 +37,11 @@ import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.CueGroup;
 import com.google.android.exoplayer2.trackselection.TrackSelectionParameters;
 import com.google.android.exoplayer2.util.FlagSet;
+import com.google.android.exoplayer2.util.Size;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoSize;
 import com.google.common.base.Objects;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -48,26 +50,135 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A media player interface defining traditional high-level functionality, such as the ability to
- * play, pause, seek and query properties of the currently playing media.
+ * A media player interface defining high-level functionality, such as the ability to play, pause,
+ * seek and query properties of the currently playing media.
  *
- * <p>This interface includes some convenience methods that can be implemented by calling other
- * methods in the interface. {@link BasePlayer} implements these convenience methods so inheriting
- * {@link BasePlayer} is recommended when implementing the interface so that only the minimal set of
- * required methods can be implemented.
+ * <h2>Player features and usage</h2>
  *
  * <p>Some important properties of media players that implement this interface are:
  *
  * <ul>
- *   <li>They can provide a {@link Timeline} representing the structure of the media being played,
- *       which can be obtained by calling {@link #getCurrentTimeline()}.
- *   <li>They can provide a {@link Tracks} defining the currently available tracks and which are
- *       selected to be rendered, which can be obtained by calling {@link #getCurrentTracks()}.
+ *   <li>All methods must be called from a single {@linkplain #getApplicationLooper() application
+ *       thread} unless indicated otherwise. Callbacks in registered listeners are called on the
+ *       same thread.
+ *   <li>The available functionality can be limited. Player instances provide a set of {@link
+ *       #getAvailableCommands() availabe commands} to signal feature support and users of the
+ *       interface must only call methods if the corresponding {@link Command} is available.
+ *   <li>Users can register {@link Player.Listener} callbacks that get informed about state changes.
+ *   <li>Player instances need to update the visible state immediately after each method call, even
+ *       if the actual changes are handled on background threads or even other devices. This
+ *       simplifies the usage for callers of methods as no asynchronous handling needs to be
+ *       considered.
+ *   <li>Player instances can provide playlist operations, like 'set', 'add', 'remove', 'move' or
+ *       'replace' of {@link MediaItem} instances. The player can also support {@linkplain
+ *       RepeatMode repeat modes} and shuffling within this playlist. The player provides a {@link
+ *       Timeline} representing the structure of the playlist and all its items, which can be
+ *       obtained by calling {@link #getCurrentTimeline()}
+ *   <li>Player instances can provide seeking within the currently playing item and to other items,
+ *       using the various {@code seek...} methods.
+ *   <li>Player instances can provide {@link Tracks} defining the currently available and selected
+ *       tracks, which can be obtained by calling {@link #getCurrentTracks()}. Users can also modify
+ *       track selection behavior by setting {@link TrackSelectionParameters} with {@link
+ *       #setTrackSelectionParameters}.
+ *   <li>Player instances can provide {@link MediaMetadata} about the currently playing item, which
+ *       can be obtained by calling {@link #getMediaMetadata()}.
+ *   <li>Player instances can provide information about ads in its media structure, for example via
+ *       {@link #isPlayingAd()}.
+ *   <li>Player instances can accept different types of video outputs, like {@link
+ *       #setVideoSurfaceView SurfaceView} or {@link #setVideoTextureView TextureView} for video
+ *       rendering.
+ *   <li>Player instances can handle {@linkplain #setPlaybackSpeed playback speed}, {@linkplain
+ *       #getAudioAttributes audio attributes}, and {@linkplain #setVolume audio volume}.
+ *   <li>Player instances can provide information about the {@linkplain #getDeviceInfo playback
+ *       device}, which may be remote, and allow to change the device's volume.
  * </ul>
+ *
+ * <h2>API stability guarantees</h2>
+ *
+ * <p>The majority of the Player interface and its related classes are part of the stable API that
+ * guarantees backwards-compatibility for users of the API. Only more advances use cases may need to
+ * rely on {@code UnstableApi} classes and methods that are subject to incompatible changes or even
+ * removal in a future release. Implementors of the Player interface are not covered by these API
+ * stability guarantees.
+ *
+ * <h2>Player state</h2>
+ *
+ * <p>Users can listen to state changes by adding a {@link Player.Listener} with {@link
+ * #addListener}.
+ *
+ * <p>The main elements of the overall player state are:
+ *
+ * <ul>
+ *   <li>Playlist
+ *       <ul>
+ *         <li>{@link MediaItem} instances can be added with methods like {@link #setMediaItem} to
+ *             define what the player will be playing.
+ *         <li>The current playlist can be obtained via {@link #getCurrentTimeline} and convenience
+ *             methods like {@link #getMediaItemCount} or {@link #getCurrentMediaItem}.
+ *         <li>With an empty playlist, the player can only be in {@link #STATE_IDLE} or {@link
+ *             #STATE_ENDED}.
+ *       </ul>
+ *   <li>Playback state
+ *       <ul>
+ *         <li>{@link #STATE_IDLE}: This is the initial state, the state when the player is
+ *             {@linkplain #stop stopped}, and when playback {@linkplain #getPlayerError failed}.
+ *             The player will hold only limited resources in this state. {@link #prepare} must be
+ *             called to transition away from this state.
+ *         <li>{@link #STATE_BUFFERING}: The player is not able to immediately play from its current
+ *             position. This mostly happens because more data needs to be loaded.
+ *         <li>{@link #STATE_READY}: The player is able to immediately play from its current
+ *             position.
+ *         <li>{@link #STATE_ENDED}: The player finished playing all media, or there is no media to
+ *             play.
+ *       </ul>
+ *   <li>Play/Pause, playback suppression and isPlaying
+ *       <ul>
+ *         <li>{@linkplain #getPlayWhenReady() playWhenReady}: Indicates the user intention to play.
+ *             It can be set with {@link #play} or {@link #pause}.
+ *         <li>{@linkplain #getPlaybackSuppressionReason() playback suppression}: Defines a reason
+ *             for which playback will be suppressed even if {@linkplain #getPlayWhenReady()
+ *             playWhenReady} is {@code true}.
+ *         <li>{@link #isPlaying()}: Whether the player is playing (that is, its position is
+ *             advancing and media is being presented). This will only be {@code true} if playback
+ *             state is {@link #STATE_READY}, {@linkplain #getPlayWhenReady() playWhenReady} is
+ *             {@code true}, and playback is not suppressed.
+ *       </ul>
+ *   <li>Playback position
+ *       <ul>
+ *         <li>{@linkplain #getCurrentMediaItemIndex() media item index}: The index in the playlist.
+ *         <li>{@linkplain #isPlayingAd() ad insertion}: Whether an inserted ad is playing and which
+ *             {@linkplain #getCurrentAdGroupIndex() ad group index} and {@linkplain
+ *             #getCurrentAdIndexInAdGroup() ad index in the group} it belongs to
+ *         <li>{@linkplain #getCurrentPosition() current position}: The current position of the
+ *             playback. This is the same as the {@linkplain #getContentPosition() content position}
+ *             unless an ad is playing, where this indicates the position in the inserted ad.
+ *       </ul>
+ * </ul>
+ *
+ * <p>Note that there are no callbacks for normal playback progression, only for {@linkplain
+ * Listener#onMediaItemTransition transitions between media items} and other {@linkplain
+ * Listener#onPositionDiscontinuity position discontinuities}. Code that needs to monitor playback
+ * progress (for example, an UI progress bar) should query the current position in appropriate
+ * intervals.
+ *
+ * <h2>Implementing the Player interface</h2>
+ *
+ * <p>Implementing the Player interface is complex, as the interface includes many convenience
+ * methods that need to provide a consistent state and behavior, requires correct handling of
+ * listeners and available commands, and expects immediate state changes even if methods are
+ * internally handled asynchronously. For this reason, implementations are advised to inherit {@link
+ * SimpleBasePlayer} that handles all of these complexities and provides a simpler integration point
+ * for implementors of the interface.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public interface Player {
 
-  /** A set of {@link Event events}. */
+  /** A set of {@linkplain Event events}. */
   final class Events {
 
     private final FlagSet flags;
@@ -75,7 +186,7 @@ public interface Player {
     /**
      * Creates an instance.
      *
-     * @param flags The {@link FlagSet} containing the {@link Event events}.
+     * @param flags The {@link FlagSet} containing the {@linkplain Event events}.
      */
     public Events(FlagSet flags) {
       this.flags = flags;
@@ -92,10 +203,10 @@ public interface Player {
     }
 
     /**
-     * Returns whether any of the given {@link Event events} occurred.
+     * Returns whether any of the given {@linkplain Event events} occurred.
      *
-     * @param events The {@link Event events}.
-     * @return Whether any of the {@link Event events} occurred.
+     * @param events The {@linkplain Event events}.
+     * @return Whether any of the {@linkplain Event events} occurred.
      */
     public boolean containsAny(@Event int... events) {
       return flags.containsAny(events);
@@ -205,6 +316,7 @@ public interface Player {
     }
 
     /** Creates an instance. */
+    @SuppressWarnings("deprecation") // Setting deprecated windowIndex field
     public PositionInfo(
         @Nullable Object windowUid,
         int mediaItemIndex,
@@ -262,27 +374,14 @@ public interface Player {
     }
 
     // Bundleable implementation.
-    @Documented
-    @Retention(RetentionPolicy.SOURCE)
-    @Target(TYPE_USE)
-    @IntDef({
-      FIELD_MEDIA_ITEM_INDEX,
-      FIELD_MEDIA_ITEM,
-      FIELD_PERIOD_INDEX,
-      FIELD_POSITION_MS,
-      FIELD_CONTENT_POSITION_MS,
-      FIELD_AD_GROUP_INDEX,
-      FIELD_AD_INDEX_IN_AD_GROUP
-    })
-    private @interface FieldNumber {}
 
-    private static final int FIELD_MEDIA_ITEM_INDEX = 0;
-    private static final int FIELD_MEDIA_ITEM = 1;
-    private static final int FIELD_PERIOD_INDEX = 2;
-    private static final int FIELD_POSITION_MS = 3;
-    private static final int FIELD_CONTENT_POSITION_MS = 4;
-    private static final int FIELD_AD_GROUP_INDEX = 5;
-    private static final int FIELD_AD_INDEX_IN_AD_GROUP = 6;
+    private static final String FIELD_MEDIA_ITEM_INDEX = Util.intToStringMaxRadix(0);
+    private static final String FIELD_MEDIA_ITEM = Util.intToStringMaxRadix(1);
+    private static final String FIELD_PERIOD_INDEX = Util.intToStringMaxRadix(2);
+    private static final String FIELD_POSITION_MS = Util.intToStringMaxRadix(3);
+    private static final String FIELD_CONTENT_POSITION_MS = Util.intToStringMaxRadix(4);
+    private static final String FIELD_AD_GROUP_INDEX = Util.intToStringMaxRadix(5);
+    private static final String FIELD_AD_INDEX_IN_AD_GROUP = Util.intToStringMaxRadix(6);
 
     /**
      * {@inheritDoc}
@@ -292,16 +391,30 @@ public interface Player {
      */
     @Override
     public Bundle toBundle() {
+      return toBundle(/* canAccessCurrentMediaItem= */ true, /* canAccessTimeline= */ true);
+    }
+
+    /**
+     * Returns a {@link Bundle} representing the information stored in this object, filtered by
+     * available commands.
+     *
+     * @param canAccessCurrentMediaItem Whether the {@link Bundle} should contain information
+     *     accessbile with {@link #COMMAND_GET_CURRENT_MEDIA_ITEM}.
+     * @param canAccessTimeline Whether the {@link Bundle} should contain information accessbile
+     *     with {@link #COMMAND_GET_TIMELINE}.
+     */
+    public Bundle toBundle(boolean canAccessCurrentMediaItem, boolean canAccessTimeline) {
       Bundle bundle = new Bundle();
-      bundle.putInt(keyForField(FIELD_MEDIA_ITEM_INDEX), mediaItemIndex);
-      if (mediaItem != null) {
-        bundle.putBundle(keyForField(FIELD_MEDIA_ITEM), mediaItem.toBundle());
+      bundle.putInt(FIELD_MEDIA_ITEM_INDEX, canAccessTimeline ? mediaItemIndex : 0);
+      if (mediaItem != null && canAccessCurrentMediaItem) {
+        bundle.putBundle(FIELD_MEDIA_ITEM, mediaItem.toBundle());
       }
-      bundle.putInt(keyForField(FIELD_PERIOD_INDEX), periodIndex);
-      bundle.putLong(keyForField(FIELD_POSITION_MS), positionMs);
-      bundle.putLong(keyForField(FIELD_CONTENT_POSITION_MS), contentPositionMs);
-      bundle.putInt(keyForField(FIELD_AD_GROUP_INDEX), adGroupIndex);
-      bundle.putInt(keyForField(FIELD_AD_INDEX_IN_AD_GROUP), adIndexInAdGroup);
+      bundle.putInt(FIELD_PERIOD_INDEX, canAccessTimeline ? periodIndex : 0);
+      bundle.putLong(FIELD_POSITION_MS, canAccessCurrentMediaItem ? positionMs : 0);
+      bundle.putLong(FIELD_CONTENT_POSITION_MS, canAccessCurrentMediaItem ? contentPositionMs : 0);
+      bundle.putInt(FIELD_AD_GROUP_INDEX, canAccessCurrentMediaItem ? adGroupIndex : C.INDEX_UNSET);
+      bundle.putInt(
+          FIELD_AD_INDEX_IN_AD_GROUP, canAccessCurrentMediaItem ? adIndexInAdGroup : C.INDEX_UNSET);
       return bundle;
     }
 
@@ -309,22 +422,17 @@ public interface Player {
     public static final Creator<PositionInfo> CREATOR = PositionInfo::fromBundle;
 
     private static PositionInfo fromBundle(Bundle bundle) {
-      int mediaItemIndex =
-          bundle.getInt(keyForField(FIELD_MEDIA_ITEM_INDEX), /* defaultValue= */ C.INDEX_UNSET);
-      @Nullable Bundle mediaItemBundle = bundle.getBundle(keyForField(FIELD_MEDIA_ITEM));
+      int mediaItemIndex = bundle.getInt(FIELD_MEDIA_ITEM_INDEX, /* defaultValue= */ 0);
+      @Nullable Bundle mediaItemBundle = bundle.getBundle(FIELD_MEDIA_ITEM);
       @Nullable
       MediaItem mediaItem =
           mediaItemBundle == null ? null : MediaItem.CREATOR.fromBundle(mediaItemBundle);
-      int periodIndex =
-          bundle.getInt(keyForField(FIELD_PERIOD_INDEX), /* defaultValue= */ C.INDEX_UNSET);
-      long positionMs =
-          bundle.getLong(keyForField(FIELD_POSITION_MS), /* defaultValue= */ C.TIME_UNSET);
-      long contentPositionMs =
-          bundle.getLong(keyForField(FIELD_CONTENT_POSITION_MS), /* defaultValue= */ C.TIME_UNSET);
-      int adGroupIndex =
-          bundle.getInt(keyForField(FIELD_AD_GROUP_INDEX), /* defaultValue= */ C.INDEX_UNSET);
+      int periodIndex = bundle.getInt(FIELD_PERIOD_INDEX, /* defaultValue= */ 0);
+      long positionMs = bundle.getLong(FIELD_POSITION_MS, /* defaultValue= */ 0);
+      long contentPositionMs = bundle.getLong(FIELD_CONTENT_POSITION_MS, /* defaultValue= */ 0);
+      int adGroupIndex = bundle.getInt(FIELD_AD_GROUP_INDEX, /* defaultValue= */ C.INDEX_UNSET);
       int adIndexInAdGroup =
-          bundle.getInt(keyForField(FIELD_AD_INDEX_IN_AD_GROUP), /* defaultValue= */ C.INDEX_UNSET);
+          bundle.getInt(FIELD_AD_INDEX_IN_AD_GROUP, /* defaultValue= */ C.INDEX_UNSET);
       return new PositionInfo(
           /* windowUid= */ null,
           mediaItemIndex,
@@ -336,14 +444,10 @@ public interface Player {
           adGroupIndex,
           adIndexInAdGroup);
     }
-
-    private static String keyForField(@FieldNumber int field) {
-      return Integer.toString(field, Character.MAX_RADIX);
-    }
   }
 
   /**
-   * A set of {@link Command commands}.
+   * A set of {@linkplain Command commands}.
    *
    * <p>Instances are immutable.
    */
@@ -370,8 +474,8 @@ public interface Player {
         COMMAND_SET_REPEAT_MODE,
         COMMAND_GET_CURRENT_MEDIA_ITEM,
         COMMAND_GET_TIMELINE,
-        COMMAND_GET_MEDIA_ITEMS_METADATA,
-        COMMAND_SET_MEDIA_ITEMS_METADATA,
+        COMMAND_GET_METADATA,
+        COMMAND_SET_PLAYLIST_METADATA,
         COMMAND_SET_MEDIA_ITEM,
         COMMAND_CHANGE_MEDIA_ITEMS,
         COMMAND_GET_AUDIO_ATTRIBUTES,
@@ -379,11 +483,14 @@ public interface Player {
         COMMAND_GET_DEVICE_VOLUME,
         COMMAND_SET_VOLUME,
         COMMAND_SET_DEVICE_VOLUME,
+        COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS,
         COMMAND_ADJUST_DEVICE_VOLUME,
+        COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS,
         COMMAND_SET_VIDEO_SURFACE,
         COMMAND_GET_TEXT,
         COMMAND_SET_TRACK_SELECTION_PARAMETERS,
         COMMAND_GET_TRACKS,
+        COMMAND_RELEASE
       };
 
       private final FlagSet.Builder flagsBuilder;
@@ -405,6 +512,7 @@ public interface Player {
        * @return This builder.
        * @throws IllegalStateException If {@link #build()} has already been called.
        */
+      @CanIgnoreReturnValue
       public Builder add(@Command int command) {
         flagsBuilder.add(command);
         return this;
@@ -418,18 +526,20 @@ public interface Player {
        * @return This builder.
        * @throws IllegalStateException If {@link #build()} has already been called.
        */
+      @CanIgnoreReturnValue
       public Builder addIf(@Command int command, boolean condition) {
         flagsBuilder.addIf(command, condition);
         return this;
       }
 
       /**
-       * Adds {@link Command commands}.
+       * Adds {@linkplain Command commands}.
        *
-       * @param commands The {@link Command commands} to add.
+       * @param commands The {@linkplain Command commands} to add.
        * @return This builder.
        * @throws IllegalStateException If {@link #build()} has already been called.
        */
+      @CanIgnoreReturnValue
       public Builder addAll(@Command int... commands) {
         flagsBuilder.addAll(commands);
         return this;
@@ -438,21 +548,23 @@ public interface Player {
       /**
        * Adds {@link Commands}.
        *
-       * @param commands The set of {@link Command commands} to add.
+       * @param commands The set of {@linkplain Command commands} to add.
        * @return This builder.
        * @throws IllegalStateException If {@link #build()} has already been called.
        */
+      @CanIgnoreReturnValue
       public Builder addAll(Commands commands) {
         flagsBuilder.addAll(commands.flags);
         return this;
       }
 
       /**
-       * Adds all existing {@link Command commands}.
+       * Adds all existing {@linkplain Command commands}.
        *
        * @return This builder.
        * @throws IllegalStateException If {@link #build()} has already been called.
        */
+      @CanIgnoreReturnValue
       public Builder addAllCommands() {
         flagsBuilder.addAll(SUPPORTED_COMMANDS);
         return this;
@@ -465,6 +577,7 @@ public interface Player {
        * @return This builder.
        * @throws IllegalStateException If {@link #build()} has already been called.
        */
+      @CanIgnoreReturnValue
       public Builder remove(@Command int command) {
         flagsBuilder.remove(command);
         return this;
@@ -478,18 +591,20 @@ public interface Player {
        * @return This builder.
        * @throws IllegalStateException If {@link #build()} has already been called.
        */
+      @CanIgnoreReturnValue
       public Builder removeIf(@Command int command, boolean condition) {
         flagsBuilder.removeIf(command, condition);
         return this;
       }
 
       /**
-       * Removes {@link Command commands}.
+       * Removes {@linkplain Command commands}.
        *
-       * @param commands The {@link Command commands} to remove.
+       * @param commands The {@linkplain Command commands} to remove.
        * @return This builder.
        * @throws IllegalStateException If {@link #build()} has already been called.
        */
+      @CanIgnoreReturnValue
       public Builder removeAll(@Command int... commands) {
         flagsBuilder.removeAll(commands);
         return this;
@@ -564,13 +679,7 @@ public interface Player {
 
     // Bundleable implementation.
 
-    @Documented
-    @Retention(RetentionPolicy.SOURCE)
-    @Target(TYPE_USE)
-    @IntDef({FIELD_COMMANDS})
-    private @interface FieldNumber {}
-
-    private static final int FIELD_COMMANDS = 0;
+    private static final String FIELD_COMMANDS = Util.intToStringMaxRadix(0);
 
     @Override
     public Bundle toBundle() {
@@ -579,7 +688,7 @@ public interface Player {
       for (int i = 0; i < flags.size(); i++) {
         commandsBundle.add(flags.get(i));
       }
-      bundle.putIntegerArrayList(keyForField(FIELD_COMMANDS), commandsBundle);
+      bundle.putIntegerArrayList(FIELD_COMMANDS, commandsBundle);
       return bundle;
     }
 
@@ -587,8 +696,7 @@ public interface Player {
     public static final Creator<Commands> CREATOR = Commands::fromBundle;
 
     private static Commands fromBundle(Bundle bundle) {
-      @Nullable
-      ArrayList<Integer> commands = bundle.getIntegerArrayList(keyForField(FIELD_COMMANDS));
+      @Nullable ArrayList<Integer> commands = bundle.getIntegerArrayList(FIELD_COMMANDS);
       if (commands == null) {
         return Commands.EMPTY;
       }
@@ -598,16 +706,18 @@ public interface Player {
       }
       return builder.build();
     }
-
-    private static String keyForField(@FieldNumber int field) {
-      return Integer.toString(field, Character.MAX_RADIX);
-    }
   }
 
   /**
-   * Listener of all changes in the Player.
+   * Listener for changes in a {@link Player}.
    *
    * <p>All methods have no-op default implementations to allow selective overrides.
+   *
+   * <p>If the return value of a {@link Player} getter changes due to a change in {@linkplain
+   * #onAvailableCommandsChanged(Commands) command availability}, the corresponding listener
+   * method(s) will be invoked. If the return value of a {@link Player} getter does not change
+   * because the corresponding command is {@linkplain #onAvailableCommandsChanged(Commands) not
+   * available}, the corresponding listener method will not be invoked.
    */
   interface Listener {
 
@@ -616,8 +726,6 @@ public interface Player {
      *
      * <p>State changes and events that happen within one {@link Looper} message queue iteration are
      * reported together and only after all individual callbacks were triggered.
-     *
-     * <p>Only state changes represented by {@link Event events} are reported through this method.
      *
      * <p>Listeners should prefer this method over individual callbacks in the following cases:
      *
@@ -644,7 +752,7 @@ public interface Player {
     default void onEvents(Player player, Events events) {}
 
     /**
-     * Called when the timeline has been refreshed.
+     * Called when the value of {@link Player#getCurrentTimeline()} changes.
      *
      * <p>Note that the current {@link MediaItem} or playback position may change as a result of a
      * timeline change. If playback can't continue smoothly because of this timeline change, a
@@ -663,8 +771,8 @@ public interface Player {
      * Called when playback transitions to a media item or starts repeating a media item according
      * to the current {@link #getRepeatMode() repeat mode}.
      *
-     * <p>Note that this callback is also called when the playlist becomes non-empty or empty as a
-     * consequence of a playlist change.
+     * <p>Note that this callback is also called when the value of {@link #getCurrentTimeline()}
+     * becomes non-empty or empty.
      *
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
@@ -676,7 +784,7 @@ public interface Player {
         @Nullable MediaItem mediaItem, @MediaItemTransitionReason int reason) {}
 
     /**
-     * Called when the tracks change.
+     * Called when the value of {@link Player#getCurrentTracks()} changes.
      *
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
@@ -686,14 +794,7 @@ public interface Player {
     default void onTracksChanged(Tracks tracks) {}
 
     /**
-     * Called when the combined {@link MediaMetadata} changes.
-     *
-     * <p>The provided {@link MediaMetadata} is a combination of the {@link MediaItem#mediaMetadata
-     * MediaItem metadata}, the static metadata in the media's {@link Format#metadata Format}, and
-     * any timed metadata that has been parsed from the media and output via {@link
-     * Listener#onMetadata(Metadata)}. If a field is populated in the {@link
-     * MediaItem#mediaMetadata}, it will be prioritised above the same field coming from static or
-     * timed metadata.
+     * Called when the value of {@link Player#getMediaMetadata()} changes.
      *
      * <p>This method may be called multiple times in quick succession.
      *
@@ -705,7 +806,7 @@ public interface Player {
     default void onMediaMetadataChanged(MediaMetadata mediaMetadata) {}
 
     /**
-     * Called when the playlist {@link MediaMetadata} changes.
+     * Called when the value of {@link Player#getPlaylistMetadata()} changes.
      *
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
@@ -762,7 +863,7 @@ public interface Player {
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
      *
-     * @param playbackState The new playback {@link State state}.
+     * @param playbackState The new playback {@link State}.
      */
     default void onPlaybackStateChanged(@State int playbackState) {}
 
@@ -773,7 +874,7 @@ public interface Player {
      * other events that happen in the same {@link Looper} message queue iteration.
      *
      * @param playWhenReady Whether playback will proceed when ready.
-     * @param reason The {@link PlayWhenReadyChangeReason reason} for the change.
+     * @param reason The {@link PlayWhenReadyChangeReason} for the change.
      */
     default void onPlayWhenReadyChanged(
         boolean playWhenReady, @PlayWhenReadyChangeReason int reason) {}
@@ -815,7 +916,7 @@ public interface Player {
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
      *
-     * @param shuffleModeEnabled Whether shuffling of {@link MediaItem media items} is enabled.
+     * @param shuffleModeEnabled Whether shuffling of {@linkplain MediaItem media items} is enabled.
      */
     default void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {}
 
@@ -871,10 +972,10 @@ public interface Player {
         PositionInfo oldPosition, PositionInfo newPosition, @DiscontinuityReason int reason) {}
 
     /**
-     * Called when the current playback parameters change. The playback parameters may change due to
-     * a call to {@link #setPlaybackParameters(PlaybackParameters)}, or the player itself may change
-     * them (for example, if audio playback switches to passthrough or offload mode, where speed
-     * adjustment is no longer possible).
+     * Called when the value of {@link #getPlaybackParameters()} changes. The playback parameters
+     * may change due to a call to {@link #setPlaybackParameters(PlaybackParameters)}, or the player
+     * itself may change them (for example, if audio playback switches to passthrough or offload
+     * mode, where speed adjustment is no longer possible).
      *
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
@@ -915,14 +1016,6 @@ public interface Player {
     default void onMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) {}
 
     /**
-     * @deprecated Seeks are processed without delay. Listen to {@link
-     *     #onPositionDiscontinuity(PositionInfo, PositionInfo, int)} with reason {@link
-     *     #DISCONTINUITY_REASON_SEEK} instead.
-     */
-    @Deprecated
-    default void onSeekProcessed() {}
-
-    /**
      * Called when the audio session ID changes.
      *
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
@@ -933,7 +1026,7 @@ public interface Player {
     default void onAudioSessionIdChanged(int audioSessionId) {}
 
     /**
-     * Called when the audio attributes change.
+     * Called when the value of {@link #getAudioAttributes()} changes.
      *
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
@@ -943,7 +1036,7 @@ public interface Player {
     default void onAudioAttributesChanged(AudioAttributes audioAttributes) {}
 
     /**
-     * Called when the volume changes.
+     * Called when the value of {@link #getVolume()} changes.
      *
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
@@ -973,7 +1066,7 @@ public interface Player {
     default void onDeviceInfoChanged(DeviceInfo deviceInfo) {}
 
     /**
-     * Called when the device volume or mute state changes.
+     * Called when the value of {@link #getDeviceVolume()} or {@link #isDeviceMuted()} changes.
      *
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
@@ -984,7 +1077,7 @@ public interface Player {
     default void onDeviceVolumeChanged(int volume, boolean muted) {}
 
     /**
-     * Called each time there's a change in the size of the video being rendered.
+     * Called each time when {@link Player#getVideoSize()} changes.
      *
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
@@ -1017,10 +1110,10 @@ public interface Player {
     default void onRenderedFirstFrame() {}
 
     /**
-     * Called when there is a change in the {@link Cue Cues}.
+     * Called when the value of {@link #getCurrentCues()} changes.
      *
-     * <p>Both {@link #onCues(List)} and {@link #onCues(CueGroup)} are called when there is a change
-     * in the cues. You should only implement one or the other.
+     * <p>Both this method and {@link #onCues(CueGroup)} are called when there is a change in the
+     * cues. You should only implement one or the other.
      *
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
@@ -1031,10 +1124,10 @@ public interface Player {
     default void onCues(List<Cue> cues) {}
 
     /**
-     * Called when there is a change in the {@link CueGroup}.
+     * Called when the value of {@link #getCurrentCues()} changes.
      *
-     * <p>Both {@link #onCues(List)} and {@link #onCues(CueGroup)} are called when there is a change
-     * in the cues. You should only implement one or the other.
+     * <p>Both this method and {@link #onCues(List)} are called when there is a change in the cues.
+     * You should only implement one or the other.
      *
      * <p>{@link #onEvents(Player, Events)} will also be called to report this event along with
      * other events that happen in the same {@link Looper} message queue iteration.
@@ -1087,8 +1180,9 @@ public interface Player {
    * #PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST}, {@link
    * #PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS}, {@link
    * #PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY}, {@link
-   * #PLAY_WHEN_READY_CHANGE_REASON_REMOTE} or {@link
-   * #PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM}.
+   * #PLAY_WHEN_READY_CHANGE_REASON_REMOTE}, {@link
+   * #PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM} or {@link
+   * #PLAY_WHEN_READY_CHANGE_REASON_SUPPRESSED_TOO_LONG}.
    */
   // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
   // with Kotlin usages from before TYPE_USE was added.
@@ -1100,7 +1194,8 @@ public interface Player {
     PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS,
     PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY,
     PLAY_WHEN_READY_CHANGE_REASON_REMOTE,
-    PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM
+    PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM,
+    PLAY_WHEN_READY_CHANGE_REASON_SUPPRESSED_TOO_LONG
   })
   @interface PlayWhenReadyChangeReason {}
   /** Playback has been started or paused by a call to {@link #setPlayWhenReady(boolean)}. */
@@ -1113,11 +1208,17 @@ public interface Player {
   int PLAY_WHEN_READY_CHANGE_REASON_REMOTE = 4;
   /** Playback has been paused at the end of a media item. */
   int PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM = 5;
+  /**
+   * Playback has been paused because playback has been {@linkplain #getPlaybackSuppressionReason()
+   * suppressed} too long.
+   */
+  int PLAY_WHEN_READY_CHANGE_REASON_SUPPRESSED_TOO_LONG = 6;
 
   /**
    * Reason why playback is suppressed even though {@link #getPlayWhenReady()} is {@code true}. One
-   * of {@link #PLAYBACK_SUPPRESSION_REASON_NONE} or {@link
-   * #PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS}.
+   * of {@link #PLAYBACK_SUPPRESSION_REASON_NONE}, {@link
+   * #PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS} or {@link
+   * #PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_ROUTE}.
    */
   // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
   // with Kotlin usages from before TYPE_USE was added.
@@ -1126,13 +1227,19 @@ public interface Player {
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
   @IntDef({
     PLAYBACK_SUPPRESSION_REASON_NONE,
-    PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS
+    PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS,
+    PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_ROUTE
   })
   @interface PlaybackSuppressionReason {}
   /** Playback is not suppressed. */
   int PLAYBACK_SUPPRESSION_REASON_NONE = 0;
   /** Playback is suppressed due to transient audio focus loss. */
   int PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS = 1;
+  /**
+   * Playback is suppressed due to no suitable audio route, such as an attempt to use an internal
+   * speaker instead of bluetooth headphones on Wear OS.
+   */
+  int PLAYBACK_SUPPRESSION_REASON_UNSUITABLE_AUDIO_ROUTE = 2;
 
   /**
    * Repeat modes for playback. One of {@link #REPEAT_MODE_OFF}, {@link #REPEAT_MODE_ONE} or {@link
@@ -1380,24 +1487,57 @@ public interface Player {
   int EVENT_DEVICE_VOLUME_CHANGED = 30;
 
   /**
-   * Commands that can be executed on a {@code Player}. One of {@link #COMMAND_PLAY_PAUSE}, {@link
-   * #COMMAND_PREPARE}, {@link #COMMAND_STOP}, {@link #COMMAND_SEEK_TO_DEFAULT_POSITION}, {@link
-   * #COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM}, {@link #COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM}, {@link
-   * #COMMAND_SEEK_TO_PREVIOUS}, {@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM}, {@link
-   * #COMMAND_SEEK_TO_NEXT}, {@link #COMMAND_SEEK_TO_MEDIA_ITEM}, {@link #COMMAND_SEEK_BACK}, {@link
-   * #COMMAND_SEEK_FORWARD}, {@link #COMMAND_SET_SPEED_AND_PITCH}, {@link
-   * #COMMAND_SET_SHUFFLE_MODE}, {@link #COMMAND_SET_REPEAT_MODE}, {@link
-   * #COMMAND_GET_CURRENT_MEDIA_ITEM}, {@link #COMMAND_GET_TIMELINE}, {@link
-   * #COMMAND_GET_MEDIA_ITEMS_METADATA}, {@link #COMMAND_SET_MEDIA_ITEMS_METADATA}, {@link
-   * #COMMAND_CHANGE_MEDIA_ITEMS}, {@link #COMMAND_GET_AUDIO_ATTRIBUTES}, {@link
-   * #COMMAND_GET_VOLUME}, {@link #COMMAND_GET_DEVICE_VOLUME}, {@link #COMMAND_SET_VOLUME}, {@link
-   * #COMMAND_SET_DEVICE_VOLUME}, {@link #COMMAND_ADJUST_DEVICE_VOLUME}, {@link
-   * #COMMAND_SET_VIDEO_SURFACE}, {@link #COMMAND_GET_TEXT}, {@link
-   * #COMMAND_SET_TRACK_SELECTION_PARAMETERS}, {@link #COMMAND_GET_TRACKS} or {@link
-   * #COMMAND_SET_MEDIA_ITEM}.
+   * Commands that indicate which method calls are currently permitted on a particular {@code
+   * Player} instance.
+   *
+   * <p>The currently available commands can be inspected with {@link #getAvailableCommands()} and
+   * {@link #isCommandAvailable(int)}.
+   *
+   * <p>See the documentation of each command constant for the details of which methods it permits
+   * calling.
+   *
+   * <p>One of the following values:
+   *
+   * <ul>
+   *   <li>{@link #COMMAND_PLAY_PAUSE}
+   *   <li>{@link #COMMAND_PREPARE}
+   *   <li>{@link #COMMAND_STOP}
+   *   <li>{@link #COMMAND_SEEK_TO_DEFAULT_POSITION}
+   *   <li>{@link #COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM}
+   *   <li>{@link #COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM}
+   *   <li>{@link #COMMAND_SEEK_TO_PREVIOUS}
+   *   <li>{@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM}
+   *   <li>{@link #COMMAND_SEEK_TO_NEXT}
+   *   <li>{@link #COMMAND_SEEK_TO_MEDIA_ITEM}
+   *   <li>{@link #COMMAND_SEEK_BACK}
+   *   <li>{@link #COMMAND_SEEK_FORWARD}
+   *   <li>{@link #COMMAND_SET_SPEED_AND_PITCH}
+   *   <li>{@link #COMMAND_SET_SHUFFLE_MODE}
+   *   <li>{@link #COMMAND_SET_REPEAT_MODE}
+   *   <li>{@link #COMMAND_GET_CURRENT_MEDIA_ITEM}
+   *   <li>{@link #COMMAND_GET_TIMELINE}
+   *   <li>{@link #COMMAND_GET_METADATA}
+   *   <li>{@link #COMMAND_SET_PLAYLIST_METADATA}
+   *   <li>{@link #COMMAND_SET_MEDIA_ITEM}
+   *   <li>{@link #COMMAND_CHANGE_MEDIA_ITEMS}
+   *   <li>{@link #COMMAND_GET_AUDIO_ATTRIBUTES}
+   *   <li>{@link #COMMAND_GET_VOLUME}
+   *   <li>{@link #COMMAND_GET_DEVICE_VOLUME}
+   *   <li>{@link #COMMAND_SET_VOLUME}
+   *   <li>{@link #COMMAND_SET_DEVICE_VOLUME}
+   *   <li>{@link #COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS}
+   *   <li>{@link #COMMAND_ADJUST_DEVICE_VOLUME}
+   *   <li>{@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS}
+   *   <li>{@link #COMMAND_SET_VIDEO_SURFACE}
+   *   <li>{@link #COMMAND_GET_TEXT}
+   *   <li>{@link #COMMAND_SET_TRACK_SELECTION_PARAMETERS}
+   *   <li>{@link #COMMAND_GET_TRACKS}
+   *   <li>{@link #COMMAND_RELEASE}
+   * </ul>
    */
   // @Target list includes both 'default' targets and TYPE_USE, to ensure backwards compatibility
   // with Kotlin usages from before TYPE_USE was added.
+  @SuppressWarnings("deprecation") // Listing deprecated constants.
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
@@ -1421,7 +1561,9 @@ public interface Player {
     COMMAND_GET_CURRENT_MEDIA_ITEM,
     COMMAND_GET_TIMELINE,
     COMMAND_GET_MEDIA_ITEMS_METADATA,
+    COMMAND_GET_METADATA,
     COMMAND_SET_MEDIA_ITEMS_METADATA,
+    COMMAND_SET_PLAYLIST_METADATA,
     COMMAND_SET_MEDIA_ITEM,
     COMMAND_CHANGE_MEDIA_ITEMS,
     COMMAND_GET_AUDIO_ATTRIBUTES,
@@ -1429,91 +1571,395 @@ public interface Player {
     COMMAND_GET_DEVICE_VOLUME,
     COMMAND_SET_VOLUME,
     COMMAND_SET_DEVICE_VOLUME,
+    COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS,
     COMMAND_ADJUST_DEVICE_VOLUME,
+    COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS,
     COMMAND_SET_VIDEO_SURFACE,
     COMMAND_GET_TEXT,
     COMMAND_SET_TRACK_SELECTION_PARAMETERS,
     COMMAND_GET_TRACKS,
+    COMMAND_RELEASE,
   })
   @interface Command {}
-  /** Command to start, pause or resume playback. */
+  /**
+   * Command to start, pause or resume playback.
+   *
+   * <p>The following methods must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}:
+   *
+   * <ul>
+   *   <li>{@link #play()}
+   *   <li>{@link #pause()}
+   *   <li>{@link #setPlayWhenReady(boolean)}
+   * </ul>
+   */
   int COMMAND_PLAY_PAUSE = 1;
-  /** Command to prepare the player. */
+
+  /**
+   * Command to prepare the player.
+   *
+   * <p>The {@link #prepare()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_PREPARE = 2;
-  /** Command to stop playback or release the player. */
+
+  /**
+   * Command to stop playback.
+   *
+   * <p>The {@link #stop()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_STOP = 3;
-  /** Command to seek to the default position of the current {@link MediaItem}. */
+
+  /**
+   * Command to seek to the default position of the current {@link MediaItem}.
+   *
+   * <p>The {@link #seekToDefaultPosition()} method must only be called if this command is
+   * {@linkplain #isCommandAvailable(int) available}.
+   */
   int COMMAND_SEEK_TO_DEFAULT_POSITION = 4;
-  /** Command to seek anywhere into the current {@link MediaItem}. */
+
+  /**
+   * Command to seek anywhere inside the current {@link MediaItem}.
+   *
+   * <p>The {@link #seekTo(long)} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM = 5;
   /**
    * @deprecated Use {@link #COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM} instead.
    */
   @Deprecated int COMMAND_SEEK_IN_CURRENT_WINDOW = COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM;
-  /** Command to seek to the default position of the previous {@link MediaItem}. */
+
+  /**
+   * Command to seek to the default position of the previous {@link MediaItem}.
+   *
+   * <p>The {@link #seekToPreviousMediaItem()} method must only be called if this command is
+   * {@linkplain #isCommandAvailable(int) available}.
+   */
   int COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM = 6;
   /**
    * @deprecated Use {@link #COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM} instead.
    */
   @Deprecated int COMMAND_SEEK_TO_PREVIOUS_WINDOW = COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM;
-  /** Command to seek to an earlier position in the current or previous {@link MediaItem}. */
+  /**
+   * Command to seek to an earlier position in the current {@link MediaItem} or the default position
+   * of the previous {@link MediaItem}.
+   *
+   * <p>The {@link #seekToPrevious()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_SEEK_TO_PREVIOUS = 7;
-  /** Command to seek to the default position of the next {@link MediaItem}. */
+  /**
+   * Command to seek to the default position of the next {@link MediaItem}.
+   *
+   * <p>The {@link #seekToNextMediaItem()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_SEEK_TO_NEXT_MEDIA_ITEM = 8;
   /**
    * @deprecated Use {@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM} instead.
    */
   @Deprecated int COMMAND_SEEK_TO_NEXT_WINDOW = COMMAND_SEEK_TO_NEXT_MEDIA_ITEM;
-  /** Command to seek to a later position in the current or next {@link MediaItem}. */
+  /**
+   * Command to seek to a later position in the current {@link MediaItem} or the default position of
+   * the next {@link MediaItem}.
+   *
+   * <p>The {@link #seekToNext()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_SEEK_TO_NEXT = 9;
-  /** Command to seek anywhere in any {@link MediaItem}. */
+
+  /**
+   * Command to seek anywhere in any {@link MediaItem}.
+   *
+   * <p>The following methods must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}:
+   *
+   * <ul>
+   *   <li>{@link #seekTo(int, long)}
+   *   <li>{@link #seekToDefaultPosition(int)}
+   * </ul>
+   */
   int COMMAND_SEEK_TO_MEDIA_ITEM = 10;
   /**
    * @deprecated Use {@link #COMMAND_SEEK_TO_MEDIA_ITEM} instead.
    */
   @Deprecated int COMMAND_SEEK_TO_WINDOW = COMMAND_SEEK_TO_MEDIA_ITEM;
-  /** Command to seek back by a fixed increment into the current {@link MediaItem}. */
+  /**
+   * Command to seek back by a fixed increment inside the current {@link MediaItem}.
+   *
+   * <p>The {@link #seekBack()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_SEEK_BACK = 11;
-  /** Command to seek forward by a fixed increment into the current {@link MediaItem}. */
+  /**
+   * Command to seek forward by a fixed increment inside the current {@link MediaItem}.
+   *
+   * <p>The {@link #seekForward()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_SEEK_FORWARD = 12;
-  /** Command to set the playback speed and pitch. */
+
+  /**
+   * Command to set the playback speed and pitch.
+   *
+   * <p>The following methods must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}:
+   *
+   * <ul>
+   *   <li>{@link #setPlaybackParameters(PlaybackParameters)}
+   *   <li>{@link #setPlaybackSpeed(float)}
+   * </ul>
+   */
   int COMMAND_SET_SPEED_AND_PITCH = 13;
-  /** Command to enable shuffling. */
+
+  /**
+   * Command to enable shuffling.
+   *
+   * <p>The {@link #setShuffleModeEnabled(boolean)} method must only be called if this command is
+   * {@linkplain #isCommandAvailable(int) available}.
+   */
   int COMMAND_SET_SHUFFLE_MODE = 14;
-  /** Command to set the repeat mode. */
+
+  /**
+   * Command to set the repeat mode.
+   *
+   * <p>The {@link #setRepeatMode(int)} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_SET_REPEAT_MODE = 15;
-  /** Command to get the currently playing {@link MediaItem}. */
+
+  /**
+   * Command to get information about the currently playing {@link MediaItem}.
+   *
+   * <p>The following methods must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}:
+   *
+   * <ul>
+   *   <li>{@link #getCurrentMediaItem()}
+   *   <li>{@link #isCurrentMediaItemDynamic()}
+   *   <li>{@link #isCurrentMediaItemLive()}
+   *   <li>{@link #isCurrentMediaItemSeekable()}
+   *   <li>{@link #getCurrentLiveOffset()}
+   *   <li>{@link #getDuration()}
+   *   <li>{@link #getCurrentPosition()}
+   *   <li>{@link #getBufferedPosition()}
+   *   <li>{@link #getContentDuration()}
+   *   <li>{@link #getContentPosition()}
+   *   <li>{@link #getContentBufferedPosition()}
+   *   <li>{@link #getTotalBufferedDuration()}
+   *   <li>{@link #isPlayingAd()}
+   *   <li>{@link #getCurrentAdGroupIndex()}
+   *   <li>{@link #getCurrentAdIndexInAdGroup()}
+   * </ul>
+   */
   int COMMAND_GET_CURRENT_MEDIA_ITEM = 16;
-  /** Command to get the information about the current timeline. */
+
+  /**
+   * Command to get the information about the current timeline.
+   *
+   * <p>The following methods must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}:
+   *
+   * <ul>
+   *   <li>{@link #getCurrentTimeline()}
+   *   <li>{@link #getCurrentMediaItemIndex()}
+   *   <li>{@link #getCurrentPeriodIndex()}
+   *   <li>{@link #getMediaItemCount()}
+   *   <li>{@link #getMediaItemAt(int)}
+   *   <li>{@link #getNextMediaItemIndex()}
+   *   <li>{@link #getPreviousMediaItemIndex()}
+   *   <li>{@link #hasPreviousMediaItem()}
+   *   <li>{@link #hasNextMediaItem()}
+   * </ul>
+   */
   int COMMAND_GET_TIMELINE = 17;
-  /** Command to get the {@link MediaItem MediaItems} metadata. */
-  int COMMAND_GET_MEDIA_ITEMS_METADATA = 18;
-  /** Command to set the {@link MediaItem MediaItems} metadata. */
-  int COMMAND_SET_MEDIA_ITEMS_METADATA = 19;
-  /** Command to set a {@link MediaItem MediaItem}. */
+
+  /**
+   * @deprecated Use {@link #COMMAND_GET_METADATA} instead.
+   */
+  @Deprecated int COMMAND_GET_MEDIA_ITEMS_METADATA = 18;
+
+  /**
+   * Command to get metadata related to the playlist and current {@link MediaItem}.
+   *
+   * <p>The following methods must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}:
+   *
+   * <ul>
+   *   <li>{@link #getMediaMetadata()}
+   *   <li>{@link #getPlaylistMetadata()}
+   * </ul>
+   */
+  int COMMAND_GET_METADATA = 18;
+
+  /**
+   * @deprecated Use {@link #COMMAND_SET_PLAYLIST_METADATA} instead.
+   */
+  @Deprecated int COMMAND_SET_MEDIA_ITEMS_METADATA = 19;
+
+  /**
+   * Command to set the playlist metadata.
+   *
+   * <p>The {@link #setPlaylistMetadata(MediaMetadata)} method must only be called if this command
+   * is {@linkplain #isCommandAvailable(int) available}.
+   */
+  int COMMAND_SET_PLAYLIST_METADATA = 19;
+
+  /**
+   * Command to set a {@link MediaItem}.
+   *
+   * <p>The following methods must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}:
+   *
+   * <ul>
+   *   <li>{@link #setMediaItem(MediaItem)}
+   *   <li>{@link #setMediaItem(MediaItem, boolean)}
+   *   <li>{@link #setMediaItem(MediaItem, long)}
+   * </ul>
+   */
   int COMMAND_SET_MEDIA_ITEM = 31;
-  /** Command to change the {@link MediaItem MediaItems} in the playlist. */
+  /**
+   * Command to change the {@linkplain MediaItem media items} in the playlist.
+   *
+   * <p>The following methods must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}:
+   *
+   * <ul>
+   *   <li>{@link #addMediaItem(MediaItem)}
+   *   <li>{@link #addMediaItem(int, MediaItem)}
+   *   <li>{@link #addMediaItems(List)}
+   *   <li>{@link #addMediaItems(int, List)}
+   *   <li>{@link #clearMediaItems()}
+   *   <li>{@link #moveMediaItem(int, int)}
+   *   <li>{@link #moveMediaItems(int, int, int)}
+   *   <li>{@link #removeMediaItem(int)}
+   *   <li>{@link #removeMediaItems(int, int)}
+   *   <li>{@link #setMediaItems(List)}
+   *   <li>{@link #setMediaItems(List, boolean)}
+   *   <li>{@link #setMediaItems(List, int, long)}
+   *   <li>{@link #replaceMediaItem(int, MediaItem)}
+   *   <li>{@link #replaceMediaItems(int, int, List)}
+   * </ul>
+   */
   int COMMAND_CHANGE_MEDIA_ITEMS = 20;
-  /** Command to get the player current {@link AudioAttributes}. */
+
+  /**
+   * Command to get the player current {@link AudioAttributes}.
+   *
+   * <p>The {@link #getAudioAttributes()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_GET_AUDIO_ATTRIBUTES = 21;
-  /** Command to get the player volume. */
+
+  /**
+   * Command to get the player volume.
+   *
+   * <p>The {@link #getVolume()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_GET_VOLUME = 22;
-  /** Command to get the device volume and whether it is muted. */
+
+  /**
+   * Command to get the device volume and whether it is muted.
+   *
+   * <p>The following methods must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}:
+   *
+   * <ul>
+   *   <li>{@link #getDeviceVolume()}
+   *   <li>{@link #isDeviceMuted()}
+   * </ul>
+   */
   int COMMAND_GET_DEVICE_VOLUME = 23;
-  /** Command to set the player volume. */
+
+  /**
+   * Command to set the player volume.
+   *
+   * <p>The {@link #setVolume(float)} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_SET_VOLUME = 24;
-  /** Command to set the device volume and mute it. */
-  int COMMAND_SET_DEVICE_VOLUME = 25;
-  /** Command to increase and decrease the device volume and mute it. */
-  int COMMAND_ADJUST_DEVICE_VOLUME = 26;
-  /** Command to set and clear the surface on which to render the video. */
+
+  /**
+   * @deprecated Use {@link #COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS} instead.
+   */
+  @Deprecated int COMMAND_SET_DEVICE_VOLUME = 25;
+  /**
+   * Command to set the device volume with volume flags.
+   *
+   * <p>The {@link #setDeviceVolume(int, int)} method must only be called if this command is
+   * {@linkplain #isCommandAvailable(int) available}.
+   */
+  int COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS = 33;
+
+  /**
+   * @deprecated Use {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} instead.
+   */
+  @Deprecated int COMMAND_ADJUST_DEVICE_VOLUME = 26;
+  /**
+   * Command to increase and decrease the device volume and mute it with volume flags.
+   *
+   * <p>The following methods must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}:
+   *
+   * <ul>
+   *   <li>{@link #increaseDeviceVolume(int)}
+   *   <li>{@link #decreaseDeviceVolume(int)}
+   *   <li>{@link #setDeviceMuted(boolean, int)}
+   * </ul>
+   */
+  int COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS = 34;
+
+  /**
+   * Command to set and clear the surface on which to render the video.
+   *
+   * <p>The following methods must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}:
+   *
+   * <ul>
+   *   <li>{@link #setVideoSurface(Surface)}
+   *   <li>{@link #clearVideoSurface()}
+   *   <li>{@link #clearVideoSurface(Surface)}
+   *   <li>{@link #setVideoSurfaceHolder(SurfaceHolder)}
+   *   <li>{@link #clearVideoSurfaceHolder(SurfaceHolder)}
+   *   <li>{@link #setVideoSurfaceView(SurfaceView)}
+   *   <li>{@link #clearVideoSurfaceView(SurfaceView)}
+   * </ul>
+   */
   int COMMAND_SET_VIDEO_SURFACE = 27;
-  /** Command to get the text that should currently be displayed by the player. */
+
+  /**
+   * Command to get the text that should currently be displayed by the player.
+   *
+   * <p>The {@link #getCurrentCues()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_GET_TEXT = 28;
-  /** Command to set the player's track selection parameters. */
+
+  /**
+   * Command to set the player's track selection parameters.
+   *
+   * <p>The {@link #setTrackSelectionParameters(TrackSelectionParameters)} method must only be
+   * called if this command is {@linkplain #isCommandAvailable(int) available}.
+   */
   int COMMAND_SET_TRACK_SELECTION_PARAMETERS = 29;
-  /** Command to get details of the current track selection. */
+
+  /**
+   * Command to get details of the current track selection.
+   *
+   * <p>The {@link #getCurrentTracks()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
   int COMMAND_GET_TRACKS = 30;
+  /**
+   * Command to release the player.
+   *
+   * <p>The {@link #release()} method must only be called if this command is {@linkplain
+   * #isCommandAvailable(int) available}.
+   */
+  int COMMAND_RELEASE = 32;
 
   /** Represents an invalid {@link Command}. */
   int COMMAND_INVALID = -1;
@@ -1521,6 +1967,8 @@ public interface Player {
   /**
    * Returns the {@link Looper} associated with the application thread that's used to access the
    * player and on which player events are received.
+   *
+   * <p>This method can be called from any thread.
    */
   Looper getApplicationLooper();
 
@@ -1529,6 +1977,8 @@ public interface Player {
    *
    * <p>The listener's methods will be called on the thread associated with {@link
    * #getApplicationLooper()}.
+   *
+   * <p>This method can be called from any thread.
    *
    * @param listener The listener to register.
    */
@@ -1543,17 +1993,23 @@ public interface Player {
   void removeListener(Listener listener);
 
   /**
-   * Clears the playlist, adds the specified {@link MediaItem MediaItems} and resets the position to
-   * the default position.
+   * Clears the playlist, adds the specified {@linkplain MediaItem media items} and resets the
+   * position to the default position.
    *
-   * @param mediaItems The new {@link MediaItem MediaItems}.
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
+   * @param mediaItems The new {@linkplain MediaItem media items}.
    */
   void setMediaItems(List<MediaItem> mediaItems);
 
   /**
-   * Clears the playlist and adds the specified {@link MediaItem MediaItems}.
+   * Clears the playlist and adds the specified {@linkplain MediaItem media items}.
    *
-   * @param mediaItems The new {@link MediaItem MediaItems}.
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
+   * @param mediaItems The new {@linkplain MediaItem media items}.
    * @param resetPosition Whether the playback position should be reset to the default position in
    *     the first {@link Timeline.Window}. If false, playback will start from the position defined
    *     by {@link #getCurrentMediaItemIndex()} and {@link #getCurrentPosition()}.
@@ -1561,9 +2017,12 @@ public interface Player {
   void setMediaItems(List<MediaItem> mediaItems, boolean resetPosition);
 
   /**
-   * Clears the playlist and adds the specified {@link MediaItem MediaItems}.
+   * Clears the playlist and adds the specified {@linkplain MediaItem media items}.
    *
-   * @param mediaItems The new {@link MediaItem MediaItems}.
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
+   * @param mediaItems The new {@linkplain MediaItem media items}.
    * @param startIndex The {@link MediaItem} index to start playback from. If {@link C#INDEX_UNSET}
    *     is passed, the current position is not reset.
    * @param startPositionMs The position in milliseconds to start playback from. If {@link
@@ -1579,12 +2038,18 @@ public interface Player {
    * Clears the playlist, adds the specified {@link MediaItem} and resets the position to the
    * default position.
    *
+   * <p>This method must only be called if {@link #COMMAND_SET_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param mediaItem The new {@link MediaItem}.
    */
   void setMediaItem(MediaItem mediaItem);
 
   /**
    * Clears the playlist and adds the specified {@link MediaItem}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SET_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @param mediaItem The new {@link MediaItem}.
    * @param startPositionMs The position in milliseconds to start playback from.
@@ -1593,6 +2058,9 @@ public interface Player {
 
   /**
    * Clears the playlist and adds the specified {@link MediaItem}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SET_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @param mediaItem The new {@link MediaItem}.
    * @param resetPosition Whether the playback position should be reset to the default position. If
@@ -1604,12 +2072,18 @@ public interface Player {
   /**
    * Adds a media item to the end of the playlist.
    *
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param mediaItem The {@link MediaItem} to add.
    */
   void addMediaItem(MediaItem mediaItem);
 
   /**
    * Adds a media item at the given index of the playlist.
+   *
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @param index The index at which to add the media item. If the index is larger than the size of
    *     the playlist, the media item is added to the end of the playlist.
@@ -1620,23 +2094,33 @@ public interface Player {
   /**
    * Adds a list of media items to the end of the playlist.
    *
-   * @param mediaItems The {@link MediaItem MediaItems} to add.
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
+   * @param mediaItems The {@linkplain MediaItem media items} to add.
    */
   void addMediaItems(List<MediaItem> mediaItems);
 
   /**
    * Adds a list of media items at the given index of the playlist.
    *
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param index The index at which to add the media items. If the index is larger than the size of
    *     the playlist, the media items are added to the end of the playlist.
-   * @param mediaItems The {@link MediaItem MediaItems} to add.
+   * @param mediaItems The {@linkplain MediaItem media items} to add.
    */
   void addMediaItems(int index, List<MediaItem> mediaItems);
 
   /**
    * Moves the media item at the current index to the new index.
    *
-   * @param currentIndex The current index of the media item to move.
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
+   * @param currentIndex The current index of the media item to move. If the index is larger than
+   *     the size of the playlist, the request is ignored.
    * @param newIndex The new index of the media item. If the new index is larger than the size of
    *     the playlist the item is moved to the end of the playlist.
    */
@@ -1645,8 +2129,13 @@ public interface Player {
   /**
    * Moves the media item range to the new index.
    *
-   * @param fromIndex The start of the range to move.
-   * @param toIndex The first item not to be included in the range (exclusive).
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
+   * @param fromIndex The start of the range to move. If the index is larger than the size of the
+   *     playlist, the request is ignored.
+   * @param toIndex The first item not to be included in the range (exclusive). If the index is
+   *     larger than the size of the playlist, items up to the end of the playlist are moved.
    * @param newIndex The new index of the first media item of the range. If the new index is larger
    *     than the size of the remaining playlist after removing the range, the range is moved to the
    *     end of the playlist.
@@ -1654,35 +2143,72 @@ public interface Player {
   void moveMediaItems(int fromIndex, int toIndex, int newIndex);
 
   /**
+   * Replaces the media item at the given index of the playlist.
+   *
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
+   * @param index The index at which to replace the media item. If the index is larger than the size
+   *     of the playlist, the request is ignored.
+   * @param mediaItem The new {@link MediaItem}.
+   */
+  void replaceMediaItem(int index, MediaItem mediaItem);
+
+  /**
+   * Replaces the media items at the given range of the playlist.
+   *
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
+   * <p>Note that it is possible to replace a range with an arbitrary number of new items, so that
+   * the number of removed items defined by {@code fromIndex} and {@code toIndex} does not have to
+   * match the number of added items defined by {@code mediaItems}. As result, it may also change
+   * the index of subsequent items not touched by this operation.
+   *
+   * @param fromIndex The start of the range. If the index is larger than the size of the playlist,
+   *     the request is ignored.
+   * @param toIndex The first item not to be included in the range (exclusive). If the index is
+   *     larger than the size of the playlist, items up to the end of the playlist are replaced.
+   * @param mediaItems The {@linkplain MediaItem media items} to replace the range with.
+   */
+  void replaceMediaItems(int fromIndex, int toIndex, List<MediaItem> mediaItems);
+
+  /**
    * Removes the media item at the given index of the playlist.
    *
-   * @param index The index at which to remove the media item.
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
+   * @param index The index at which to remove the media item. If the index is larger than the size
+   *     of the playlist, the request is ignored.
    */
   void removeMediaItem(int index);
 
   /**
    * Removes a range of media items from the playlist.
    *
-   * @param fromIndex The index at which to start removing media items.
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
+   * @param fromIndex The index at which to start removing media items. If the index is larger than
+   *     the size of the playlist, the request is ignored.
    * @param toIndex The index of the first item to be kept (exclusive). If the index is larger than
-   *     the size of the playlist, media items to the end of the playlist are removed.
+   *     the size of the playlist, media items up to the end of the playlist are removed.
    */
   void removeMediaItems(int fromIndex, int toIndex);
 
-  /** Clears the playlist. */
+  /**
+   * Clears the playlist.
+   *
+   * <p>This method must only be called if {@link #COMMAND_CHANGE_MEDIA_ITEMS} is {@linkplain
+   * #getAvailableCommands() available}.
+   */
   void clearMediaItems();
 
   /**
    * Returns whether the provided {@link Command} is available.
    *
    * <p>This method does not execute the command.
-   *
-   * <p>Executing a command that is not available (for example, calling {@link
-   * #seekToNextMediaItem()} if {@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM} is unavailable) will
-   * neither throw an exception nor generate a {@link #getPlayerError()} player error}.
-   *
-   * <p>{@link #COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM} and {@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM}
-   * are unavailable if there is no such {@link MediaItem}.
    *
    * @param command A {@link Command}.
    * @return Whether the {@link Command} is available.
@@ -1700,13 +2226,6 @@ public interface Player {
    * Listener#onAvailableCommandsChanged(Commands)} to get an update when the available commands
    * change.
    *
-   * <p>Executing a command that is not available (for example, calling {@link
-   * #seekToNextMediaItem()} if {@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM} is unavailable) will
-   * neither throw an exception nor generate a {@link #getPlayerError()} player error}.
-   *
-   * <p>{@link #COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM} and {@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM}
-   * are unavailable if there is no such {@link MediaItem}.
-   *
    * @return The currently available {@link Commands}.
    * @see Listener#onAvailableCommandsChanged
    */
@@ -1715,15 +2234,18 @@ public interface Player {
   /**
    * Prepares the player.
    *
+   * <p>This method must only be called if {@link #COMMAND_PREPARE} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * <p>This will move the player out of {@link #STATE_IDLE idle state} and the player will start
    * loading media and acquire resources needed for playback.
    */
   void prepare();
 
   /**
-   * Returns the current {@link State playback state} of the player.
+   * Returns the current {@linkplain State playback state} of the player.
    *
-   * @return The current {@link State playback state}.
+   * @return The current {@linkplain State playback state}.
    * @see Listener#onPlaybackStateChanged(int)
    */
   @State
@@ -1733,7 +2255,7 @@ public interface Player {
    * Returns the reason why playback is suppressed even though {@link #getPlayWhenReady()} is {@code
    * true}, or {@link #PLAYBACK_SUPPRESSION_REASON_NONE} if playback is not suppressed.
    *
-   * @return The current {@link PlaybackSuppressionReason playback suppression reason}.
+   * @return The current {@link PlaybackSuppressionReason}.
    * @see Listener#onPlaybackSuppressionReasonChanged(int)
    */
   @PlaybackSuppressionReason
@@ -1771,17 +2293,28 @@ public interface Player {
 
   /**
    * Resumes playback as soon as {@link #getPlaybackState()} == {@link #STATE_READY}. Equivalent to
-   * {@code setPlayWhenReady(true)}.
+   * {@link #setPlayWhenReady(boolean) setPlayWhenReady(true)}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_PLAY_PAUSE} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   void play();
 
-  /** Pauses playback. Equivalent to {@code setPlayWhenReady(false)}. */
+  /**
+   * Pauses playback. Equivalent to {@link #setPlayWhenReady(boolean) setPlayWhenReady(false)}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_PLAY_PAUSE} is {@linkplain
+   * #getAvailableCommands() available}.
+   */
   void pause();
 
   /**
    * Sets whether playback should proceed when {@link #getPlaybackState()} == {@link #STATE_READY}.
    *
    * <p>If the player is already in the ready state then this method pauses and resumes playback.
+   *
+   * <p>This method must only be called if {@link #COMMAND_PLAY_PAUSE} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @param playWhenReady Whether playback should proceed when ready.
    */
@@ -1798,6 +2331,9 @@ public interface Player {
   /**
    * Sets the {@link RepeatMode} to be used for playback.
    *
+   * <p>This method must only be called if {@link #COMMAND_SET_REPEAT_MODE} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param repeatMode The repeat mode.
    */
   void setRepeatMode(@RepeatMode int repeatMode);
@@ -1813,6 +2349,9 @@ public interface Player {
 
   /**
    * Sets whether shuffling of media items is enabled.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SET_SHUFFLE_MODE} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @param shuffleModeEnabled Whether shuffling is enabled.
    */
@@ -1837,6 +2376,9 @@ public interface Player {
    * Seeks to the default position associated with the current {@link MediaItem}. The position can
    * depend on the type of media being played. For live streams it will typically be the live edge.
    * For other streams it will typically be the start.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_DEFAULT_POSITION} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   void seekToDefaultPosition();
 
@@ -1845,15 +2387,20 @@ public interface Player {
    * depend on the type of media being played. For live streams it will typically be the live edge.
    * For other streams it will typically be the start.
    *
+   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param mediaItemIndex The index of the {@link MediaItem} whose associated default position
-   *     should be seeked to.
-   * @throws IllegalSeekPositionException If the player has a non-empty timeline and the provided
-   *     {@code mediaItemIndex} is not within the bounds of the current timeline.
+   *     should be seeked to. If the index is larger than the size of the playlist, the request is
+   *     ignored.
    */
   void seekToDefaultPosition(int mediaItemIndex);
 
   /**
    * Seeks to a position specified in milliseconds in the current {@link MediaItem}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM} is
+   * {@linkplain #getAvailableCommands() available}.
    *
    * @param positionMs The seek position in the current {@link MediaItem}, or {@link C#TIME_UNSET}
    *     to seek to the media item's default position.
@@ -1863,11 +2410,13 @@ public interface Player {
   /**
    * Seeks to a position specified in milliseconds in the specified {@link MediaItem}.
    *
-   * @param mediaItemIndex The index of the {@link MediaItem}.
+   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
+   * @param mediaItemIndex The index of the {@link MediaItem}. If the index is larger than the size
+   *     of the playlist, the request is ignored.
    * @param positionMs The seek position in the specified {@link MediaItem}, or {@link C#TIME_UNSET}
    *     to seek to the media item's default position.
-   * @throws IllegalSeekPositionException If the player has a non-empty timeline and the provided
-   *     {@code mediaItemIndex} is not within the bounds of the current timeline.
    */
   void seekTo(int mediaItemIndex, long positionMs);
 
@@ -1881,6 +2430,9 @@ public interface Player {
 
   /**
    * Seeks back in the current {@link MediaItem} by {@link #getSeekBackIncrement()} milliseconds.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SEEK_BACK} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   void seekBack();
 
@@ -1895,6 +2447,9 @@ public interface Player {
   /**
    * Seeks forward in the current {@link MediaItem} by {@link #getSeekForwardIncrement()}
    * milliseconds.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SEEK_FORWARD} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   void seekForward();
 
@@ -1917,6 +2472,9 @@ public interface Player {
    * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
    * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
    * details.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   boolean hasPreviousMediaItem();
 
@@ -1940,6 +2498,9 @@ public interface Player {
    * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
    * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
    * details.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM} is
+   * {@linkplain #getAvailableCommands() available}.
    */
   void seekToPreviousMediaItem();
 
@@ -1971,6 +2532,9 @@ public interface Player {
    *       MediaItem}.
    *   <li>Otherwise, seeks to 0 in the current {@link MediaItem}.
    * </ul>
+   *
+   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_PREVIOUS} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   void seekToPrevious();
 
@@ -1993,6 +2557,9 @@ public interface Player {
    * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
    * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
    * details.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   boolean hasNextMediaItem();
 
@@ -2016,6 +2583,9 @@ public interface Player {
    * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
    * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
    * details.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_NEXT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   void seekToNextMediaItem();
 
@@ -2031,6 +2601,9 @@ public interface Player {
    *       has not ended, seeks to the live edge of the current {@link MediaItem}.
    *   <li>Otherwise, does nothing.
    * </ul>
+   *
+   * <p>This method must only be called if {@link #COMMAND_SEEK_TO_NEXT} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   void seekToNext();
 
@@ -2042,6 +2615,9 @@ public interface Player {
    * Listener#onPlaybackParametersChanged(PlaybackParameters)} will be called whenever the currently
    * active playback parameters change.
    *
+   * <p>This method must only be called if {@link #COMMAND_SET_SPEED_AND_PITCH} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param playbackParameters The playback parameters.
    */
   void setPlaybackParameters(PlaybackParameters playbackParameters);
@@ -2052,8 +2628,11 @@ public interface Player {
    * <p>This is equivalent to {@code
    * setPlaybackParameters(getPlaybackParameters().withSpeed(speed))}.
    *
+   * <p>This method must only be called if {@link #COMMAND_SET_SPEED_AND_PITCH} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param speed The linear factor by which playback will be sped up. Must be higher than 0. 1 is
-   *     normal speed, 2 is twice as fast, 0.5 is half normal speed...
+   *     normal speed, 2 is twice as fast, 0.5 is half normal speed.
    */
   void setPlaybackSpeed(@FloatRange(from = 0, fromInclusive = false) float speed);
 
@@ -2075,25 +2654,26 @@ public interface Player {
    *
    * <p>Calling this method does not clear the playlist, reset the playback position or the playback
    * error.
+   *
+   * <p>This method must only be called if {@link #COMMAND_STOP} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   void stop();
 
   /**
-   * @deprecated Use {@link #stop()} and {@link #clearMediaItems()} (if {@code reset} is true) or
-   *     just {@link #stop()} (if {@code reset} is false). Any player error will be cleared when
-   *     {@link #prepare() re-preparing} the player.
-   */
-  @Deprecated
-  void stop(boolean reset);
-
-  /**
    * Releases the player. This method must be called when the player is no longer required. The
    * player must not be used after calling this method.
+   *
+   * <p>This method must only be called if {@link #COMMAND_RELEASE} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   void release();
 
   /**
    * Returns the current tracks.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_TRACKS} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @see Listener#onTracksChanged(Tracks)
    */
@@ -2122,6 +2702,9 @@ public interface Player {
    *         .setMaxVideoSizeSd()
    *         .build())
    * }</pre>
+   *
+   * <p>This method must only be called if {@link #COMMAND_SET_TRACK_SELECTION_PARAMETERS} is
+   * {@linkplain #getAvailableCommands() available}.
    */
   void setTrackSelectionParameters(TrackSelectionParameters parameters);
 
@@ -2134,16 +2717,27 @@ public interface Player {
    * metadata that has been parsed from the media and output via {@link
    * Listener#onMetadata(Metadata)}. If a field is populated in the {@link MediaItem#mediaMetadata},
    * it will be prioritised above the same field coming from static or timed metadata.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_METADATA} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   MediaMetadata getMediaMetadata();
 
   /**
    * Returns the playlist {@link MediaMetadata}, as set by {@link
    * #setPlaylistMetadata(MediaMetadata)}, or {@link MediaMetadata#EMPTY} if not supported.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_METADATA} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   MediaMetadata getPlaylistMetadata();
 
-  /** Sets the playlist {@link MediaMetadata}. */
+  /**
+   * Sets the playlist {@link MediaMetadata}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SET_PLAYLIST_METADATA} is {@linkplain
+   * #getAvailableCommands() available}.
+   */
   void setPlaylistMetadata(MediaMetadata mediaMetadata);
 
   /**
@@ -2155,11 +2749,19 @@ public interface Player {
   /**
    * Returns the current {@link Timeline}. Never null, but may be empty.
    *
+   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @see Listener#onTimelineChanged(Timeline, int)
    */
   Timeline getCurrentTimeline();
 
-  /** Returns the index of the period currently being played. */
+  /**
+   * Returns the index of the period currently being played.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
+   * #getAvailableCommands() available}.
+   */
   int getCurrentPeriodIndex();
 
   /**
@@ -2172,6 +2774,9 @@ public interface Player {
    * Returns the index of the current {@link MediaItem} in the {@link #getCurrentTimeline()
    * timeline}, or the prospective index if the {@link #getCurrentTimeline() current timeline} is
    * empty.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   int getCurrentMediaItemIndex();
 
@@ -2190,6 +2795,9 @@ public interface Player {
    * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
    * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
    * details.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   int getNextMediaItemIndex();
 
@@ -2208,38 +2816,63 @@ public interface Player {
    * <p>Note: When the repeat mode is {@link #REPEAT_MODE_ONE}, this method behaves the same as when
    * the current repeat mode is {@link #REPEAT_MODE_OFF}. See {@link #REPEAT_MODE_ONE} for more
    * details.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   int getPreviousMediaItemIndex();
 
   /**
    * Returns the currently playing {@link MediaItem}. May be null if the timeline is empty.
    *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @see Listener#onMediaItemTransition(MediaItem, int)
    */
   @Nullable
   MediaItem getCurrentMediaItem();
 
-  /** Returns the number of {@link MediaItem media items} in the playlist. */
+  /**
+   * Returns the number of {@linkplain MediaItem media items} in the playlist.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
+   * #getAvailableCommands() available}.
+   */
   int getMediaItemCount();
 
-  /** Returns the {@link MediaItem} at the given index. */
+  /**
+   * Returns the {@link MediaItem} at the given index.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_TIMELINE} is {@linkplain
+   * #getAvailableCommands() available}.
+   */
   MediaItem getMediaItemAt(int index);
 
   /**
    * Returns the duration of the current content or ad in milliseconds, or {@link C#TIME_UNSET} if
    * the duration is not known.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   long getDuration();
 
   /**
    * Returns the playback position in the current content or ad, in milliseconds, or the prospective
    * position in milliseconds if the {@link #getCurrentTimeline() current timeline} is empty.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   long getCurrentPosition();
 
   /**
    * Returns an estimate of the position in the current content or ad up to which data is buffered,
    * in milliseconds.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   long getBufferedPosition();
 
@@ -2252,7 +2885,10 @@ public interface Player {
 
   /**
    * Returns an estimate of the total buffered duration from the current position, in milliseconds.
-   * This includes pre-buffered data for subsequent ads and {@link MediaItem media items}.
+   * This includes pre-buffered data for subsequent ads and {@linkplain MediaItem media items}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   long getTotalBufferedDuration();
 
@@ -2265,6 +2901,9 @@ public interface Player {
   /**
    * Returns whether the current {@link MediaItem} is dynamic (may change when the {@link Timeline}
    * is updated), or {@code false} if the {@link Timeline} is empty.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @see Timeline.Window#isDynamic
    */
@@ -2280,6 +2919,9 @@ public interface Player {
    * Returns whether the current {@link MediaItem} is live, or {@code false} if the {@link Timeline}
    * is empty.
    *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @see Timeline.Window#isLive()
    */
   boolean isCurrentMediaItemLive();
@@ -2294,6 +2936,9 @@ public interface Player {
    *
    * <p>Note that this offset may rely on an accurate local time, so this method may return an
    * incorrect value if the difference between system clock and server clock is unknown.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   long getCurrentLiveOffset();
 
@@ -2307,22 +2952,36 @@ public interface Player {
    * Returns whether the current {@link MediaItem} is seekable, or {@code false} if the {@link
    * Timeline} is empty.
    *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @see Timeline.Window#isSeekable
    */
   boolean isCurrentMediaItemSeekable();
 
-  /** Returns whether the player is currently playing an ad. */
+  /**
+   * Returns whether the player is currently playing an ad.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
+   */
   boolean isPlayingAd();
 
   /**
    * If {@link #isPlayingAd()} returns true, returns the index of the ad group in the period
    * currently being played. Returns {@link C#INDEX_UNSET} otherwise.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   int getCurrentAdGroupIndex();
 
   /**
    * If {@link #isPlayingAd()} returns true, returns the index of the ad in its ad group. Returns
    * {@link C#INDEX_UNSET} otherwise.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   int getCurrentAdIndexInAdGroup();
 
@@ -2330,6 +2989,9 @@ public interface Player {
    * If {@link #isPlayingAd()} returns {@code true}, returns the duration of the current content in
    * milliseconds, or {@link C#TIME_UNSET} if the duration is not known. If there is no ad playing,
    * the returned duration is the same as that returned by {@link #getDuration()}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   long getContentDuration();
 
@@ -2337,6 +2999,9 @@ public interface Player {
    * If {@link #isPlayingAd()} returns {@code true}, returns the content position that will be
    * played once all ads in the ad group have finished playing, in milliseconds. If there is no ad
    * playing, the returned position is the same as that returned by {@link #getCurrentPosition()}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   long getContentPosition();
 
@@ -2344,15 +3009,26 @@ public interface Player {
    * If {@link #isPlayingAd()} returns {@code true}, returns an estimate of the content position in
    * the current content up to which data is buffered, in milliseconds. If there is no ad playing,
    * the returned position is the same as that returned by {@link #getBufferedPosition()}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_CURRENT_MEDIA_ITEM} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   long getContentBufferedPosition();
 
-  /** Returns the attributes for audio playback. */
+  /**
+   * Returns the attributes for audio playback.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_AUDIO_ATTRIBUTES} is {@linkplain
+   * #getAvailableCommands() available}.
+   */
   AudioAttributes getAudioAttributes();
 
   /**
    * Sets the audio volume, valid values are between 0 (silence) and 1 (unity gain, signal
    * unchanged), inclusive.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SET_VOLUME} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @param volume Linear output gain to apply to all audio channels.
    */
@@ -2360,6 +3036,9 @@ public interface Player {
 
   /**
    * Returns the audio volume, with 0 being silence and 1 being unity gain (signal unchanged).
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_VOLUME} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @return The linear gain applied to all audio channels.
    */
@@ -2369,12 +3048,18 @@ public interface Player {
   /**
    * Clears any {@link Surface}, {@link SurfaceHolder}, {@link SurfaceView} or {@link TextureView}
    * currently set on the player.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   void clearVideoSurface();
 
   /**
    * Clears the {@link Surface} onto which video is being rendered if it matches the one passed.
    * Else does nothing.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @param surface The surface to clear.
    */
@@ -2391,6 +3076,9 @@ public interface Player {
    * this method, since passing the holder allows the player to track the lifecycle of the surface
    * automatically.
    *
+   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param surface The {@link Surface}.
    */
   void setVideoSurface(@Nullable Surface surface);
@@ -2402,6 +3090,9 @@ public interface Player {
    * <p>The thread that calls the {@link SurfaceHolder.Callback} methods must be the thread
    * associated with {@link #getApplicationLooper()}.
    *
+   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param surfaceHolder The surface holder.
    */
   void setVideoSurfaceHolder(@Nullable SurfaceHolder surfaceHolder);
@@ -2409,6 +3100,9 @@ public interface Player {
   /**
    * Clears the {@link SurfaceHolder} that holds the {@link Surface} onto which video is being
    * rendered if it matches the one passed. Else does nothing.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @param surfaceHolder The surface holder to clear.
    */
@@ -2421,6 +3115,9 @@ public interface Player {
    * <p>The thread that calls the {@link SurfaceHolder.Callback} methods must be the thread
    * associated with {@link #getApplicationLooper()}.
    *
+   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param surfaceView The surface view.
    */
   void setVideoSurfaceView(@Nullable SurfaceView surfaceView);
@@ -2428,6 +3125,9 @@ public interface Player {
   /**
    * Clears the {@link SurfaceView} onto which video is being rendered if it matches the one passed.
    * Else does nothing.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
+   * #getAvailableCommands() available}.
    *
    * @param surfaceView The texture view to clear.
    */
@@ -2440,6 +3140,9 @@ public interface Player {
    * <p>The thread that calls the {@link TextureView.SurfaceTextureListener} methods must be the
    * thread associated with {@link #getApplicationLooper()}.
    *
+   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param textureView The texture view.
    */
   void setVideoTextureView(@Nullable TextureView textureView);
@@ -2448,6 +3151,9 @@ public interface Player {
    * Clears the {@link TextureView} onto which video is being rendered if it matches the one passed.
    * Else does nothing.
    *
+   * <p>This method must only be called if {@link #COMMAND_SET_VIDEO_SURFACE} is {@linkplain
+   * #getAvailableCommands() available}.
+   *
    * @param textureView The texture view to clear.
    */
   void clearVideoTextureView(@Nullable TextureView textureView);
@@ -2455,14 +3161,26 @@ public interface Player {
   /**
    * Gets the size of the video.
    *
-   * <p>The video's width and height are {@code 0} if there is no video or its size has not been
-   * determined yet.
+   * <p>The video's width and height are {@code 0} if there is {@linkplain
+   * Tracks#isTypeSupported(int) no supported video track} or its size has not been determined yet.
    *
    * @see Listener#onVideoSizeChanged(VideoSize)
    */
   VideoSize getVideoSize();
 
-  /** Returns the current {@link CueGroup}. */
+  /**
+   * Gets the size of the surface on which the video is rendered.
+   *
+   * @see Listener#onSurfaceSizeChanged(int, int)
+   */
+  Size getSurfaceSize();
+
+  /**
+   * Returns the current {@link CueGroup}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_TEXT} is {@linkplain
+   * #getAvailableCommands() available}.
+   */
   CueGroup getCurrentCues();
 
   /** Gets the device information. */
@@ -2478,26 +3196,90 @@ public interface Player {
    *
    * <p>For devices with {@link DeviceInfo#PLAYBACK_TYPE_REMOTE remote playback}, the volume of the
    * remote device is returned.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_DEVICE_VOLUME} is {@linkplain
+   * #getAvailableCommands() available}.
    */
   @IntRange(from = 0)
   int getDeviceVolume();
 
-  /** Gets whether the device is muted or not. */
+  /**
+   * Gets whether the device is muted or not.
+   *
+   * <p>This method must only be called if {@link #COMMAND_GET_DEVICE_VOLUME} is {@linkplain
+   * #getAvailableCommands() available}.
+   */
   boolean isDeviceMuted();
 
   /**
-   * Sets the volume of the device.
-   *
-   * @param volume The volume to set.
+   * @deprecated Use {@link #setDeviceVolume(int, int)} instead.
    */
+  @Deprecated
   void setDeviceVolume(@IntRange(from = 0) int volume);
 
-  /** Increases the volume of the device. */
+  /**
+   * Sets the volume of the device with volume flags.
+   *
+   * <p>This method must only be called if {@link #COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS} is
+   * {@linkplain #getAvailableCommands() available}.
+   *
+   * @param volume The volume to set.
+   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
+   */
+  void setDeviceVolume(@IntRange(from = 0) int volume, int flags);
+
+  /**
+   * @deprecated Use {@link #increaseDeviceVolume(int)} instead.
+   */
+  @Deprecated
   void increaseDeviceVolume();
 
-  /** Decreases the volume of the device. */
+  /**
+   * Increases the volume of the device.
+   *
+   * <p>The {@link #getDeviceVolume()} device volume cannot be increased above {@link
+   * DeviceInfo#maxVolume}, if defined.
+   *
+   * <p>This method must only be called if {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} is
+   * {@linkplain #getAvailableCommands() available}.
+   *
+   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
+   */
+  void increaseDeviceVolume(@C.VolumeFlags int flags);
+
+  /**
+   * @deprecated Use {@link #decreaseDeviceVolume(int)} instead.
+   */
+  @Deprecated
   void decreaseDeviceVolume();
 
-  /** Sets the mute state of the device. */
+  /**
+   * Decreases the volume of the device.
+   *
+   * <p>The {@link #getDeviceVolume()} device volume cannot be decreased below {@link
+   * DeviceInfo#minVolume}.
+   *
+   * <p>This method must only be called if {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} is
+   * {@linkplain #getAvailableCommands() available}.
+   *
+   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
+   */
+  void decreaseDeviceVolume(@C.VolumeFlags int flags);
+
+  /**
+   * @deprecated Use {@link #setDeviceMuted(boolean, int)} instead.
+   */
+  @Deprecated
   void setDeviceMuted(boolean muted);
+
+  /**
+   * Sets the mute state of the device.
+   *
+   * <p>This method must only be called if {@link #COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS} is
+   * {@linkplain #getAvailableCommands() available}.
+   *
+   * @param muted Whether to set the device to be muted or not
+   * @param flags Either 0 or a bitwise combination of one or more {@link C.VolumeFlags}.
+   */
+  void setDeviceMuted(boolean muted, @C.VolumeFlags int flags);
 }

@@ -29,12 +29,21 @@ import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.ParserException;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableMap;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 
-/** Represents one media description section in a SDP message. */
+/**
+ * Represents one media description section in a SDP message.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 /* package */ final class MediaDescription {
 
   /** Represents the mandatory RTPMAP attribute in MediaDescription. Reference RFC 2327 Page 22. */
@@ -147,6 +156,7 @@ import java.util.HashMap;
      * @param mediaTitle The assigned media title.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setMediaTitle(String mediaTitle) {
       this.mediaTitle = mediaTitle;
       return this;
@@ -158,6 +168,7 @@ import java.util.HashMap;
      * @param connection The connection parameter.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setConnection(String connection) {
       this.connection = connection;
       return this;
@@ -169,6 +180,7 @@ import java.util.HashMap;
      * @param bitrate The estimated bitrate measured in bits per second.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setBitrate(int bitrate) {
       this.bitrate = bitrate;
       return this;
@@ -180,6 +192,7 @@ import java.util.HashMap;
      * @param key The encryption parameter.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setKey(String key) {
       this.key = key;
       return this;
@@ -194,6 +207,7 @@ import java.util.HashMap;
      * @param attributeValue The value of the attribute, or "" if the attribute bears no value.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder addAttribute(String attributeName, String attributeValue) {
       attributes.put(attributeName, attributeValue);
       return this;

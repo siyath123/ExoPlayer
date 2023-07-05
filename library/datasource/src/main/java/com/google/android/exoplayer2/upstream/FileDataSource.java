@@ -29,11 +29,20 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.Util;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-/** A {@link DataSource} for reading local files. */
+/**
+ * A {@link DataSource} for reading local files.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class FileDataSource extends BaseDataSource {
 
   /** Thrown when a {@link FileDataSource} encounters an error reading a file. */
@@ -80,6 +89,7 @@ public final class FileDataSource extends BaseDataSource {
      * @param listener The {@link TransferListener}.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setListener(@Nullable TransferListener listener) {
       this.listener = listener;
       return this;

@@ -25,8 +25,8 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
+var data = {"i0":42,"i1":42,"i2":42,"i3":42,"i4":42,"i5":42,"i6":42,"i7":42,"i8":42,"i9":42};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -129,8 +129,14 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <ul class="blockList">
 <li class="blockList">
 <hr>
-<pre>public final class <span class="typeNameLabel">GlProgram</span>
+<pre><a href="https://developer.android.com/reference/java/lang/Deprecated.html" title="class or interface in java.lang" class="externalLink" target="_top">@Deprecated</a>
+public final class <span class="typeNameLabel">GlProgram</span>
 extends <a href="https://developer.android.com/reference/java/lang/Object.html" title="class or interface in java.lang" class="externalLink" target="_top">Object</a></pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+     contains the same ExoPlayer code). See <a href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+     migration guide</a> for more details, including a script to help with the migration.</div>
+</div>
 <div class="block">Represents a GLSL shader program.
 
  <p>After constructing a program, keep a reference for its lifetime and call <a href="#delete()"><code>delete()</code></a> (or
@@ -159,6 +165,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
          <a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;vertexShaderFilePath,
          <a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;fragmentShaderFilePath)</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Compiles a GL shader program from vertex and fragment shader GLSL GLES20 code.</div>
 </td>
 </tr>
@@ -166,6 +173,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String,java.lang.String)">GlProgram</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;vertexShaderGlsl,
          <a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;fragmentShaderGlsl)</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Creates a GL shader program from vertex and fragment shader GLSL GLES20 code.</div>
 </td>
 </tr>
@@ -181,7 +189,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t6" class="tableTab"><span><a href="javascript:show(32);">Deprecated Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colSecond" scope="col">Method</th>
@@ -191,6 +199,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#bindAttributesAndUniforms()">bindAttributesAndUniforms</a></span>()</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Binds all attributes and uniforms in the program.</div>
 </td>
 </tr>
@@ -198,6 +207,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#delete()">delete</a></span>()</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Deletes the program.</div>
 </td>
 </tr>
@@ -205,6 +215,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <td class="colFirst"><code>int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getAttributeArrayLocationAndEnable(java.lang.String)">getAttributeArrayLocationAndEnable</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;attributeName)</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Returns the location of an <code>GlProgram.Attribute</code>, which has been enabled as a vertex attribute
  array.</div>
 </td>
@@ -213,6 +224,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <td class="colFirst"><code>int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getUniformLocation(java.lang.String)">getUniformLocation</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;uniformName)</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Returns the location of a <code>GlProgram.Uniform</code>.</div>
 </td>
 </tr>
@@ -222,6 +234,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
                   float[]&nbsp;values,
                   int&nbsp;size)</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Sets a float buffer type attribute.</div>
 </td>
 </tr>
@@ -230,7 +243,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setFloatsUniform(java.lang.String,float%5B%5D)">setFloatsUniform</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;name,
                 float[]&nbsp;value)</code></th>
 <td class="colLast">
-<div class="block">Sets a float array type uniform.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
+<div class="block">Sets a <code>float[]</code> type uniform.</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
@@ -238,22 +252,34 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setFloatUniform(java.lang.String,float)">setFloatUniform</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;name,
                float&nbsp;value)</code></th>
 <td class="colLast">
-<div class="block">Sets a float type uniform.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
+<div class="block">Sets a <code>float</code> type uniform.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setIntUniform(java.lang.String,int)">setIntUniform</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;name,
+             int&nbsp;value)</code></th>
+<td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
+<div class="block">Sets an <code>int</code> type uniform.</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setSamplerTexIdUniform(java.lang.String,int,int)">setSamplerTexIdUniform</a></span>&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;name,
                       int&nbsp;texId,
                       int&nbsp;texUnitIndex)</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Sets a texture sampler type uniform.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#use()">use</a></span>()</code></th>
 <td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Uses the program.</div>
 </td>
 </tr>
@@ -290,7 +316,9 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <pre>public&nbsp;GlProgram&#8203;(<a href="https://developer.android.com/reference/android/content/Context.html" title="class or interface in android.content" class="externalLink" target="_top">Context</a>&nbsp;context,
                  <a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;vertexShaderFilePath,
                  <a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;fragmentShaderFilePath)
-          throws <a href="https://developer.android.com/reference/java/io/IOException.html" title="class or interface in java.io" class="externalLink" target="_top">IOException</a></pre>
+          throws <a href="https://developer.android.com/reference/java/io/IOException.html" title="class or interface in java.io" class="externalLink" target="_top">IOException</a>,
+                 <a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Compiles a GL shader program from vertex and fragment shader GLSL GLES20 code.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -299,6 +327,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <dd><code>fragmentShaderFilePath</code> - The path to a fragment shader program.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="https://developer.android.com/reference/java/io/IOException.html" title="class or interface in java.io" class="externalLink" target="_top">IOException</a></code> - When failing to read shader files.</dd>
+<dd><code><a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -309,7 +338,9 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <li class="blockList">
 <h4>GlProgram</h4>
 <pre>public&nbsp;GlProgram&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;vertexShaderGlsl,
-                 <a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;fragmentShaderGlsl)</pre>
+                 <a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;fragmentShaderGlsl)
+          throws <a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Creates a GL shader program from vertex and fragment shader GLSL GLES20 code.
 
  <p>This involves slow steps, like compiling, linking, and switching the GL program, so do not
@@ -318,6 +349,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>vertexShaderGlsl</code> - The vertex shader program.</dd>
 <dd><code>fragmentShaderGlsl</code> - The fragment shader program.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -338,6 +371,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <li class="blockList">
 <h4>getUniformLocation</h4>
 <pre class="methodSignature">public&nbsp;int&nbsp;getUniformLocation&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;uniformName)</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Returns the location of a <code>GlProgram.Uniform</code>.</div>
 </li>
 </ul>
@@ -347,10 +381,16 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>use</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;use()</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;use()
+         throws <a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Uses the program.
 
  <p>Call this in the rendering loop to switch between different programs.</div>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></code></dd>
+</dl>
 </li>
 </ul>
 <a id="delete()">
@@ -359,8 +399,14 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>delete</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;delete()</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;delete()
+            throws <a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Deletes the program. Deleted programs cannot be used again.</div>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></code></dd>
+</dl>
 </li>
 </ul>
 <a id="getAttributeArrayLocationAndEnable(java.lang.String)">
@@ -369,9 +415,15 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockList">
 <li class="blockList">
 <h4>getAttributeArrayLocationAndEnable</h4>
-<pre class="methodSignature">public&nbsp;int&nbsp;getAttributeArrayLocationAndEnable&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;attributeName)</pre>
+<pre class="methodSignature">public&nbsp;int&nbsp;getAttributeArrayLocationAndEnable&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;attributeName)
+                                       throws <a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Returns the location of an <code>GlProgram.Attribute</code>, which has been enabled as a vertex attribute
  array.</div>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></code></dd>
+</dl>
 </li>
 </ul>
 <a id="setBufferAttribute(java.lang.String,float[],int)">
@@ -383,6 +435,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <pre class="methodSignature">public&nbsp;void&nbsp;setBufferAttribute&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;name,
                                float[]&nbsp;values,
                                int&nbsp;size)</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Sets a float buffer type attribute.</div>
 </li>
 </ul>
@@ -395,6 +448,7 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <pre class="methodSignature">public&nbsp;void&nbsp;setSamplerTexIdUniform&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;name,
                                    int&nbsp;texId,
                                    int&nbsp;texUnitIndex)</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Sets a texture sampler type uniform.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -405,6 +459,18 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 </dl>
 </li>
 </ul>
+<a id="setIntUniform(java.lang.String,int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setIntUniform</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;setIntUniform&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;name,
+                          int&nbsp;value)</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
+<div class="block">Sets an <code>int</code> type uniform.</div>
+</li>
+</ul>
 <a id="setFloatUniform(java.lang.String,float)">
 <!--   -->
 </a>
@@ -413,7 +479,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <h4>setFloatUniform</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setFloatUniform&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;name,
                             float&nbsp;value)</pre>
-<div class="block">Sets a float type uniform.</div>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
+<div class="block">Sets a <code>float</code> type uniform.</div>
 </li>
 </ul>
 <a id="setFloatsUniform(java.lang.String,float[])">
@@ -424,7 +491,8 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <h4>setFloatsUniform</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setFloatsUniform&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;name,
                              float[]&nbsp;value)</pre>
-<div class="block">Sets a float array type uniform.</div>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
+<div class="block">Sets a <code>float[]</code> type uniform.</div>
 </li>
 </ul>
 <a id="bindAttributesAndUniforms()">
@@ -433,8 +501,14 @@ extends <a href="https://developer.android.com/reference/java/lang/Object.html" 
 <ul class="blockListLast">
 <li class="blockList">
 <h4>bindAttributesAndUniforms</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;bindAttributesAndUniforms()</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;bindAttributesAndUniforms()
+                               throws <a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <div class="block">Binds all attributes and uniforms in the program.</div>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="GlUtil.GlException.html" title="class in com.google.android.exoplayer2.util">GlUtil.GlException</a></code></dd>
+</dl>
 </li>
 </ul>
 </li>

@@ -234,7 +234,7 @@ implements <a href="MediaSourceFactory.html" title="interface in com.google.andr
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>int[]</code></td>
+<td class="colFirst"><code>@com.google.android.exoplayer2.C.ContentType int[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getSupportedTypes()">getSupportedTypes</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Returns the <a href="../C.ContentType.html" title="annotation in com.google.android.exoplayer2"><code>content types</code></a> supported by media sources created by this
@@ -270,6 +270,13 @@ implements <a href="MediaSourceFactory.html" title="interface in com.google.andr
 </a>
 <h3>Methods inherited from class&nbsp;java.lang.<a href="https://developer.android.com/reference/java/lang/Object.html" title="class or interface in java.lang" class="externalLink" target="_top">Object</a></h3>
 <code><a href="https://developer.android.com/reference/java/lang/Object.html#clone()" title="class or interface in java.lang" class="externalLink">clone</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#equals(java.lang.Object)" title="class or interface in java.lang" class="externalLink">equals</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#finalize()" title="class or interface in java.lang" class="externalLink">finalize</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#getClass()" title="class or interface in java.lang" class="externalLink">getClass</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#hashCode()" title="class or interface in java.lang" class="externalLink">hashCode</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#notify()" title="class or interface in java.lang" class="externalLink">notify</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#notifyAll()" title="class or interface in java.lang" class="externalLink">notifyAll</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#toString()" title="class or interface in java.lang" class="externalLink">toString</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#wait()" title="class or interface in java.lang" class="externalLink">wait</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#wait(long)" title="class or interface in java.lang" class="externalLink">wait</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#wait(long,int)" title="class or interface in java.lang" class="externalLink" target="_top">wait</a></code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a id="methods.inherited.from.class.com.google.android.exoplayer2.source.MediaSource.Factory">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;com.google.android.exoplayer2.source.<a href="MediaSource.Factory.html" title="interface in com.google.android.exoplayer2.source">MediaSource.Factory</a></h3>
+<code><a href="MediaSource.Factory.html#setCmcdConfigurationFactory(com.google.android.exoplayer2.upstream.CmcdConfiguration.Factory)">setCmcdConfigurationFactory</a></code></li>
 </ul>
 </li>
 </ul>
@@ -403,7 +410,8 @@ implements <a href="MediaSourceFactory.html" title="interface in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setLoadErrorHandlingPolicy</h4>
-<pre class="methodSignature">public&nbsp;<a href="ProgressiveMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source">ProgressiveMediaSource.Factory</a>&nbsp;setLoadErrorHandlingPolicy&#8203;(<a href="../upstream/LoadErrorHandlingPolicy.html" title="interface in com.google.android.exoplayer2.upstream">LoadErrorHandlingPolicy</a>&nbsp;loadErrorHandlingPolicy)</pre>
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="ProgressiveMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source">ProgressiveMediaSource.Factory</a>&nbsp;setLoadErrorHandlingPolicy&#8203;(<a href="../upstream/LoadErrorHandlingPolicy.html" title="interface in com.google.android.exoplayer2.upstream">LoadErrorHandlingPolicy</a>&nbsp;loadErrorHandlingPolicy)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="MediaSource.Factory.html#setLoadErrorHandlingPolicy(com.google.android.exoplayer2.upstream.LoadErrorHandlingPolicy)">MediaSource.Factory</a></code></span></div>
 <div class="block">Sets an optional <a href="../upstream/LoadErrorHandlingPolicy.html" title="interface in com.google.android.exoplayer2.upstream"><code>LoadErrorHandlingPolicy</code></a>.</div>
 <dl>
@@ -420,7 +428,8 @@ implements <a href="MediaSourceFactory.html" title="interface in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setContinueLoadingCheckIntervalBytes</h4>
-<pre class="methodSignature">public&nbsp;<a href="ProgressiveMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source">ProgressiveMediaSource.Factory</a>&nbsp;setContinueLoadingCheckIntervalBytes&#8203;(int&nbsp;continueLoadingCheckIntervalBytes)</pre>
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="ProgressiveMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source">ProgressiveMediaSource.Factory</a>&nbsp;setContinueLoadingCheckIntervalBytes&#8203;(int&nbsp;continueLoadingCheckIntervalBytes)</pre>
 <div class="block">Sets the number of bytes that should be loaded between each invocation of <a href="SequenceableLoader.Callback.html#onContinueLoadingRequested(T)"><code>SequenceableLoader.Callback.onContinueLoadingRequested(SequenceableLoader)</code></a>. The default value is
  <a href="ProgressiveMediaSource.html#DEFAULT_LOADING_CHECK_INTERVAL_BYTES"><code>ProgressiveMediaSource.DEFAULT_LOADING_CHECK_INTERVAL_BYTES</code></a>.</div>
 <dl>
@@ -438,7 +447,8 @@ implements <a href="MediaSourceFactory.html" title="interface in com.google.andr
 <ul class="blockList">
 <li class="blockList">
 <h4>setDrmSessionManagerProvider</h4>
-<pre class="methodSignature">public&nbsp;<a href="ProgressiveMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source">ProgressiveMediaSource.Factory</a>&nbsp;setDrmSessionManagerProvider&#8203;(<a href="../drm/DrmSessionManagerProvider.html" title="interface in com.google.android.exoplayer2.drm">DrmSessionManagerProvider</a>&nbsp;drmSessionManagerProvider)</pre>
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="ProgressiveMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source">ProgressiveMediaSource.Factory</a>&nbsp;setDrmSessionManagerProvider&#8203;(<a href="../drm/DrmSessionManagerProvider.html" title="interface in com.google.android.exoplayer2.drm">DrmSessionManagerProvider</a>&nbsp;drmSessionManagerProvider)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="MediaSource.Factory.html#setDrmSessionManagerProvider(com.google.android.exoplayer2.drm.DrmSessionManagerProvider)">MediaSource.Factory</a></code></span></div>
 <div class="block">Sets the <a href="../drm/DrmSessionManagerProvider.html" title="interface in com.google.android.exoplayer2.drm"><code>DrmSessionManagerProvider</code></a> used to obtain a <a href="../drm/DrmSessionManager.html" title="interface in com.google.android.exoplayer2.drm"><code>DrmSessionManager</code></a> for a
  <a href="../MediaItem.html" title="class in com.google.android.exoplayer2"><code>MediaItem</code></a>.</div>
@@ -476,7 +486,8 @@ implements <a href="MediaSourceFactory.html" title="interface in com.google.andr
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getSupportedTypes</h4>
-<pre class="methodSignature">public&nbsp;int[]&nbsp;getSupportedTypes()</pre>
+<pre class="methodSignature"><a href="../C.ContentType.html" title="annotation in com.google.android.exoplayer2">@ContentType</a>
+public&nbsp;@com.google.android.exoplayer2.C.ContentType int[]&nbsp;getSupportedTypes()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="MediaSource.Factory.html#getSupportedTypes()">MediaSource.Factory</a></code></span></div>
 <div class="block">Returns the <a href="../C.ContentType.html" title="annotation in com.google.android.exoplayer2"><code>content types</code></a> supported by media sources created by this
  factory.</div>

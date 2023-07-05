@@ -214,7 +214,7 @@ implements <a href="../MediaSourceFactory.html" title="interface in com.google.a
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>int[]</code></td>
+<td class="colFirst"><code>@com.google.android.exoplayer2.C.ContentType int[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getSupportedTypes()">getSupportedTypes</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Returns the <a href="../../C.ContentType.html" title="annotation in com.google.android.exoplayer2"><code>content types</code></a> supported by media sources created by this
@@ -278,6 +278,13 @@ implements <a href="../MediaSourceFactory.html" title="interface in com.google.a
 <h3>Methods inherited from class&nbsp;java.lang.<a href="https://developer.android.com/reference/java/lang/Object.html" title="class or interface in java.lang" class="externalLink" target="_top">Object</a></h3>
 <code><a href="https://developer.android.com/reference/java/lang/Object.html#clone()" title="class or interface in java.lang" class="externalLink">clone</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#equals(java.lang.Object)" title="class or interface in java.lang" class="externalLink">equals</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#finalize()" title="class or interface in java.lang" class="externalLink">finalize</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#getClass()" title="class or interface in java.lang" class="externalLink">getClass</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#hashCode()" title="class or interface in java.lang" class="externalLink">hashCode</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#notify()" title="class or interface in java.lang" class="externalLink">notify</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#notifyAll()" title="class or interface in java.lang" class="externalLink">notifyAll</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#toString()" title="class or interface in java.lang" class="externalLink">toString</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#wait()" title="class or interface in java.lang" class="externalLink">wait</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#wait(long)" title="class or interface in java.lang" class="externalLink">wait</a>, <a href="https://developer.android.com/reference/java/lang/Object.html?is-external=true#wait(long,int)" title="class or interface in java.lang" class="externalLink" target="_top">wait</a></code></li>
 </ul>
+<ul class="blockList">
+<li class="blockList"><a id="methods.inherited.from.class.com.google.android.exoplayer2.source.MediaSource.Factory">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;com.google.android.exoplayer2.source.<a href="../MediaSource.Factory.html" title="interface in com.google.android.exoplayer2.source">MediaSource.Factory</a></h3>
+<code><a href="../MediaSource.Factory.html#setCmcdConfigurationFactory(com.google.android.exoplayer2.upstream.CmcdConfiguration.Factory)">setCmcdConfigurationFactory</a></code></li>
+</ul>
 </li>
 </ul>
 </section>
@@ -319,7 +326,8 @@ implements <a href="../MediaSourceFactory.html" title="interface in com.google.a
 <ul class="blockList">
 <li class="blockList">
 <h4>setForceUseRtpTcp</h4>
-<pre class="methodSignature">public&nbsp;<a href="RtspMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source.rtsp">RtspMediaSource.Factory</a>&nbsp;setForceUseRtpTcp&#8203;(boolean&nbsp;forceUseRtpTcp)</pre>
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="RtspMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source.rtsp">RtspMediaSource.Factory</a>&nbsp;setForceUseRtpTcp&#8203;(boolean&nbsp;forceUseRtpTcp)</pre>
 <div class="block">Sets whether to force using TCP as the default RTP transport.
 
  <p>The default value is <code>false</code>, the source will first try streaming RTSP with UDP. If
@@ -340,7 +348,8 @@ implements <a href="../MediaSourceFactory.html" title="interface in com.google.a
 <ul class="blockList">
 <li class="blockList">
 <h4>setUserAgent</h4>
-<pre class="methodSignature">public&nbsp;<a href="RtspMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source.rtsp">RtspMediaSource.Factory</a>&nbsp;setUserAgent&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;userAgent)</pre>
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="RtspMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source.rtsp">RtspMediaSource.Factory</a>&nbsp;setUserAgent&#8203;(<a href="https://developer.android.com/reference/java/lang/String.html" title="class or interface in java.lang" class="externalLink" target="_top">String</a>&nbsp;userAgent)</pre>
 <div class="block">Sets the user agent, the default value is <a href="../../ExoPlayerLibraryInfo.html#VERSION_SLASHY"><code>ExoPlayerLibraryInfo.VERSION_SLASHY</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -356,7 +365,8 @@ implements <a href="../MediaSourceFactory.html" title="interface in com.google.a
 <ul class="blockList">
 <li class="blockList">
 <h4>setSocketFactory</h4>
-<pre class="methodSignature">public&nbsp;<a href="RtspMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source.rtsp">RtspMediaSource.Factory</a>&nbsp;setSocketFactory&#8203;(<a href="https://developer.android.com/reference/javax/net/SocketFactory.html" title="class or interface in javax.net" class="externalLink" target="_top">SocketFactory</a>&nbsp;socketFactory)</pre>
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="RtspMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source.rtsp">RtspMediaSource.Factory</a>&nbsp;setSocketFactory&#8203;(<a href="https://developer.android.com/reference/javax/net/SocketFactory.html" title="class or interface in javax.net" class="externalLink" target="_top">SocketFactory</a>&nbsp;socketFactory)</pre>
 <div class="block">Sets a socket factory for <code>RtspClient</code>'s connection, the default value is <a href="https://developer.android.com/reference/javax/net/SocketFactory.html#getDefault()" title="class or interface in javax.net" class="externalLink" target="_top"><code>SocketFactory.getDefault()</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -372,7 +382,8 @@ implements <a href="../MediaSourceFactory.html" title="interface in com.google.a
 <ul class="blockList">
 <li class="blockList">
 <h4>setDebugLoggingEnabled</h4>
-<pre class="methodSignature">public&nbsp;<a href="RtspMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source.rtsp">RtspMediaSource.Factory</a>&nbsp;setDebugLoggingEnabled&#8203;(boolean&nbsp;debugLoggingEnabled)</pre>
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="RtspMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source.rtsp">RtspMediaSource.Factory</a>&nbsp;setDebugLoggingEnabled&#8203;(boolean&nbsp;debugLoggingEnabled)</pre>
 <div class="block">Sets whether to log RTSP messages, the default value is <code>false</code>.
 
  <p>This option presents a privacy risk, since it may expose sensitive information such as
@@ -391,7 +402,8 @@ implements <a href="../MediaSourceFactory.html" title="interface in com.google.a
 <ul class="blockList">
 <li class="blockList">
 <h4>setTimeoutMs</h4>
-<pre class="methodSignature">public&nbsp;<a href="RtspMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source.rtsp">RtspMediaSource.Factory</a>&nbsp;setTimeoutMs&#8203;(@IntRange(from=1L)
+<pre class="methodSignature">@CanIgnoreReturnValue
+public&nbsp;<a href="RtspMediaSource.Factory.html" title="class in com.google.android.exoplayer2.source.rtsp">RtspMediaSource.Factory</a>&nbsp;setTimeoutMs&#8203;(@IntRange(from=1L)
                                             long&nbsp;timeoutMs)</pre>
 <div class="block">Sets the timeout in milliseconds, the default value is <a href="RtspMediaSource.html#DEFAULT_TIMEOUT_MS"><code>RtspMediaSource.DEFAULT_TIMEOUT_MS</code></a>.
 
@@ -443,7 +455,8 @@ implements <a href="../MediaSourceFactory.html" title="interface in com.google.a
 <ul class="blockList">
 <li class="blockList">
 <h4>getSupportedTypes</h4>
-<pre class="methodSignature">public&nbsp;int[]&nbsp;getSupportedTypes()</pre>
+<pre class="methodSignature"><a href="../../C.ContentType.html" title="annotation in com.google.android.exoplayer2">@ContentType</a>
+public&nbsp;@com.google.android.exoplayer2.C.ContentType int[]&nbsp;getSupportedTypes()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../MediaSource.Factory.html#getSupportedTypes()">MediaSource.Factory</a></code></span></div>
 <div class="block">Returns the <a href="../../C.ContentType.html" title="annotation in com.google.android.exoplayer2"><code>content types</code></a> supported by media sources created by this
  factory.</div>

@@ -40,7 +40,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** A view for displaying subtitle {@link Cue}s. */
+/**
+ * A view for displaying subtitle {@link Cue}s.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class SubtitleView extends FrameLayout {
 
   /**
@@ -118,7 +126,7 @@ public final class SubtitleView extends FrameLayout {
 
   private List<Cue> cues;
   private CaptionStyleCompat style;
-  @Cue.TextSizeType private int defaultTextSizeType;
+  private @Cue.TextSizeType int defaultTextSizeType;
   private float defaultTextSize;
   private float bottomPaddingFraction;
   private boolean applyEmbeddedStyles;

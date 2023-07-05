@@ -10,12 +10,14 @@ track 0:
   total output bytes = 216000
   sample count = 54
   format 0:
+    peakBitrate = 1000000
     id = 1
     sampleMimeType = audio/eac3
     maxInputSize = 4030
     channelCount = 6
     sampleRate = 48000
     language = und
+    metadata = entries=[Creation time: 1579241726000]
   sample 0:
     time = 0
     flags = 1

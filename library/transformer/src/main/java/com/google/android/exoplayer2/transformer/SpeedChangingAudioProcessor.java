@@ -23,13 +23,20 @@ import com.google.android.exoplayer2.audio.AudioProcessor;
 import com.google.android.exoplayer2.audio.BaseAudioProcessor;
 import com.google.android.exoplayer2.audio.SonicAudioProcessor;
 import com.google.android.exoplayer2.util.Util;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.nio.ByteBuffer;
 
 /**
  * An {@link AudioProcessor} that changes the speed of audio samples depending on their timestamp.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
 // TODO(b/198772621): Consider making the processor inactive and skipping it in the processor chain
 //  when speed is 1.
+@Deprecated
 /* package */ final class SpeedChangingAudioProcessor extends BaseAudioProcessor {
 
   /** The speed provider that provides the speed for each timestamp. */
@@ -52,6 +59,7 @@ import java.nio.ByteBuffer;
   }
 
   @Override
+  @CanIgnoreReturnValue
   public AudioFormat onConfigure(AudioFormat inputAudioFormat)
       throws UnhandledAudioFormatException {
     return sonicAudioProcessor.configure(inputAudioFormat);
@@ -105,8 +113,10 @@ import java.nio.ByteBuffer;
         endOfStreamQueuedToSonic = true;
       }
     } else {
-      ByteBuffer buffer = replaceOutputBuffer(/* count= */ inputBuffer.remaining());
-      buffer.put(inputBuffer);
+      ByteBuffer buffer = replaceOutputBuffer(/* size= */ inputBuffer.remaining());
+      if (inputBuffer.hasRemaining()) {
+        buffer.put(inputBuffer);
+      }
       buffer.flip();
     }
     bytesRead += inputBuffer.position() - startPosition;

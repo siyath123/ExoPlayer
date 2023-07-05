@@ -32,7 +32,12 @@ import java.util.HashMap;
  * Composite {@link MediaSource} consisting of multiple child sources.
  *
  * @param <T> The type of the id used to identify prepared child sources.
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public abstract class CompositeMediaSource<T> extends BaseMediaSource {
 
   private final HashMap<T, MediaSourceAndListener<T>> childSources;
@@ -90,12 +95,12 @@ public abstract class CompositeMediaSource<T> extends BaseMediaSource {
   /**
    * Called when the source info of a child source has been refreshed.
    *
-   * @param id The unique id used to prepare the child source.
+   * @param childSourceId The unique id used to prepare the child source.
    * @param mediaSource The child source whose source info has been refreshed.
-   * @param timeline The timeline of the child source.
+   * @param newTimeline The timeline of the child source.
    */
   protected abstract void onChildSourceInfoRefreshed(
-      @UnknownNull T id, MediaSource mediaSource, Timeline timeline);
+      @UnknownNull T childSourceId, MediaSource mediaSource, Timeline newTimeline);
 
   /**
    * Prepares a child source.
@@ -159,11 +164,11 @@ public abstract class CompositeMediaSource<T> extends BaseMediaSource {
    * Returns the window index in the composite source corresponding to the specified window index in
    * a child source. The default implementation does not change the window index.
    *
-   * @param id The unique id used to prepare the child source.
+   * @param childSourceId The unique id used to prepare the child source.
    * @param windowIndex A window index of the child source.
    * @return The corresponding window index in the composite source.
    */
-  protected int getWindowIndexForChildWindowIndex(@UnknownNull T id, int windowIndex) {
+  protected int getWindowIndexForChildWindowIndex(@UnknownNull T childSourceId, int windowIndex) {
     return windowIndex;
   }
 
@@ -172,14 +177,14 @@ public abstract class CompositeMediaSource<T> extends BaseMediaSource {
    * MediaPeriodId} in a child source. The default implementation does not change the media period
    * id.
    *
-   * @param id The unique id used to prepare the child source.
+   * @param childSourceId The unique id used to prepare the child source.
    * @param mediaPeriodId A {@link MediaPeriodId} of the child source.
    * @return The corresponding {@link MediaPeriodId} in the composite source. Null if no
    *     corresponding media period id can be determined.
    */
   @Nullable
   protected MediaPeriodId getMediaPeriodIdForChildMediaPeriodId(
-      @UnknownNull T id, MediaPeriodId mediaPeriodId) {
+      @UnknownNull T childSourceId, MediaPeriodId mediaPeriodId) {
     return mediaPeriodId;
   }
 
@@ -188,13 +193,13 @@ public abstract class CompositeMediaSource<T> extends BaseMediaSource {
    * specified media time in the {@link MediaPeriod} of the child source. The default implementation
    * does not change the media time.
    *
-   * @param id The unique id used to prepare the child source.
+   * @param childSourceId The unique id used to prepare the child source.
    * @param mediaTimeMs A media time in the {@link MediaPeriod} of the child source, in
    *     milliseconds.
    * @return The corresponding media time in the {@link MediaPeriod} of the composite source, in
    *     milliseconds.
    */
-  protected long getMediaTimeForChildMediaTime(@UnknownNull T id, long mediaTimeMs) {
+  protected long getMediaTimeForChildMediaTime(@UnknownNull T childSourceId, long mediaTimeMs) {
     return mediaTimeMs;
   }
 
@@ -355,8 +360,7 @@ public abstract class CompositeMediaSource<T> extends BaseMediaSource {
       int windowIndex = getWindowIndexForChildWindowIndex(id, childWindowIndex);
       if (mediaSourceEventDispatcher.windowIndex != windowIndex
           || !Util.areEqual(mediaSourceEventDispatcher.mediaPeriodId, mediaPeriodId)) {
-        mediaSourceEventDispatcher =
-            createEventDispatcher(windowIndex, mediaPeriodId, /* mediaTimeOffsetMs= */ 0);
+        mediaSourceEventDispatcher = createEventDispatcher(windowIndex, mediaPeriodId);
       }
       if (drmEventDispatcher.windowIndex != windowIndex
           || !Util.areEqual(drmEventDispatcher.mediaPeriodId, mediaPeriodId)) {

@@ -19,6 +19,7 @@ package com.google.android.exoplayer2.source.rtsp;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 import static com.google.android.exoplayer2.util.Assertions.checkState;
 import static com.google.android.exoplayer2.util.Assertions.checkStateNotNull;
+import static com.google.android.exoplayer2.util.Util.usToMs;
 import static java.lang.Math.min;
 
 import android.net.Uri;
@@ -59,7 +60,15 @@ import javax.net.SocketFactory;
 import org.checkerframework.checker.nullness.compatqual.NullableType;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-/** A {@link MediaPeriod} that loads an RTSP stream. */
+/**
+ * A {@link MediaPeriod} that loads an RTSP stream.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 /* package */ final class RtspMediaPeriod implements MediaPeriod {
 
   /** Listener for information about the period. */
@@ -227,6 +236,12 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
 
     trackSelected = true;
+    if (positionUs != 0) {
+      // Track selection is performed only once in RTSP streams.
+      requestedSeekPositionUs = positionUs;
+      pendingSeekPositionUs = positionUs;
+      pendingSeekPositionUsForTcpRetry = positionUs;
+    }
     maybeSetupTracks();
     return positionUs;
   }
@@ -271,7 +286,6 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     //   2b.2. If RTSP PLAY (for the first seek) has not been sent, the new seek position will be
     //     used in the following PLAY request.
 
-    // TODO(internal: b/198620566) Handle initial seek.
     // TODO(internal: b/213153670) Handle dropped seek position.
     if (getBufferedPositionUs() == 0 && !isUsingRtpTcp) {
       // Stores the seek position for later, if no RTP packet is received when using UDP.
@@ -307,7 +321,22 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
 
     pendingSeekPositionUs = positionUs;
-    rtspClient.seekToUs(positionUs);
+
+    if (loadingFinished) {
+      for (int i = 0; i < rtspLoaderWrappers.size(); i++) {
+        rtspLoaderWrappers.get(i).resumeLoad();
+      }
+
+      if (isUsingRtpTcp) {
+        rtspClient.startPlayback(/* offsetMs= */ usToMs(positionUs));
+      } else {
+        rtspClient.seekToUs(positionUs);
+      }
+
+    } else {
+      rtspClient.seekToUs(positionUs);
+    }
+
     for (int i = 0; i < rtspLoaderWrappers.size(); i++) {
       rtspLoaderWrappers.get(i).seekTo(positionUs);
     }
@@ -511,7 +540,6 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
           // using TCP. Retrying will setup new loadables, so will not retry with the current
           // loadables.
           retryWithRtpTcp();
-          isUsingRtpTcp = true;
         }
         return;
       }
@@ -524,6 +552,8 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
           break;
         }
       }
+
+      rtspClient.signalPlaybackEnded();
     }
 
     @Override
@@ -569,7 +599,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
     @Override
     public void onRtspSetupCompleted() {
-      rtspClient.startPlayback(/* offsetMs= */ 0);
+      long offsetMs = 0;
+      if (pendingSeekPositionUs != C.TIME_UNSET) {
+        offsetMs = Util.usToMs(pendingSeekPositionUs);
+      } else if (pendingSeekPositionUsForTcpRetry != C.TIME_UNSET) {
+        offsetMs = Util.usToMs(pendingSeekPositionUsForTcpRetry);
+      }
+      rtspClient.startPlayback(offsetMs);
     }
 
     @Override
@@ -608,6 +644,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         if (isSeekPending() && pendingSeekPositionUs == requestedSeekPositionUs) {
           // Seek loadable only when all pending seeks are processed, or SampleQueues will report
           // inconsistent bufferedPosition.
+          // Seeks to the start position when the initial seek position is set.
           dataLoadable.seekToUs(startPositionUs, trackTiming.rtpTimestamp);
         }
       }
@@ -622,7 +659,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
           pendingSeekPositionUs = C.TIME_UNSET;
           seekToUs(requestedSeekPositionUs);
         }
-      } else if (pendingSeekPositionUsForTcpRetry != C.TIME_UNSET) {
+      } else if (pendingSeekPositionUsForTcpRetry != C.TIME_UNSET && isUsingRtpTcp) {
         seekToUs(pendingSeekPositionUsForTcpRetry);
         pendingSeekPositionUsForTcpRetry = C.TIME_UNSET;
       }
@@ -630,7 +667,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
     @Override
     public void onPlaybackError(RtspPlaybackException error) {
-      playbackException = error;
+      if (error instanceof RtspMediaSource.RtspUdpUnsupportedTransportException && !isUsingRtpTcp) {
+        // Retry playback with TCP if we receive RtspUdpUnsupportedTransportException, and we are
+        // not already using TCP. Retrying will setup new loadables.
+        retryWithRtpTcp();
+      } else {
+        playbackException = error;
+      }
     }
 
     @Override
@@ -654,6 +697,9 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   }
 
   private void retryWithRtpTcp() {
+    // Retry should only run once.
+    isUsingRtpTcp = true;
+
     rtspClient.retryWithRtpTcp();
 
     @Nullable
@@ -793,6 +839,14 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
         // Update loadingFinished every time loading is canceled.
         updateLoadingFinished();
       }
+    }
+
+    /** Resumes loading after {@linkplain #cancelLoad() loading is canceled}. */
+    public void resumeLoad() {
+      checkState(canceled);
+      canceled = false;
+      updateLoadingFinished();
+      startLoading();
     }
 
     /** Resets the {@link Loadable} and {@link SampleQueue} to prepare for an RTSP seek. */

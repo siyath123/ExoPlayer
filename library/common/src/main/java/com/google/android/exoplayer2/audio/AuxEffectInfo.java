@@ -27,7 +27,13 @@ import androidx.annotation.Nullable;
  * android.permission.MODIFY_AUDIO_SETTINGS} permission. Apps are responsible for retaining the
  * associated audio effect instance and releasing it when it's no longer needed. See the
  * documentation of {@link AudioEffect} for more information.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class AuxEffectInfo {
 
   /** Value for {@link #effectId} representing no auxiliary effect. */
@@ -50,12 +56,12 @@ public final class AuxEffectInfo {
    * Creates an instance with the given effect identifier and send level.
    *
    * @param effectId The effect identifier. This is the value returned by {@link
-   *     AudioEffect#getId()} on the effect, or {@value #NO_AUX_EFFECT_ID} which represents no
+   *     AudioEffect#getId()} on the effect, or {@link #NO_AUX_EFFECT_ID} which represents no
    *     effect. This value is passed to {@link AudioTrack#attachAuxEffect(int)} on the underlying
    *     audio track.
    * @param sendLevel The send level for the effect, where 0 represents no effect and a value of 1
-   *     is full send. If {@code effectId} is not {@value #NO_AUX_EFFECT_ID}, this value is passed
-   *     to {@link AudioTrack#setAuxEffectSendLevel(float)} on the underlying audio track.
+   *     is full send. If {@code effectId} is not {@link #NO_AUX_EFFECT_ID}, this value is passed to
+   *     {@link AudioTrack#setAuxEffectSendLevel(float)} on the underlying audio track.
    */
   public AuxEffectInfo(int effectId, float sendLevel) {
     this.effectId = effectId;

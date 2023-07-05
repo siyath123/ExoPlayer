@@ -36,7 +36,15 @@ import com.google.android.exoplayer2.util.ErrorMessageProvider;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoSize;
 
-/** Leanback {@code PlayerAdapter} implementation for {@link Player}. */
+/**
+ * Leanback {@code PlayerAdapter} implementation for {@link Player}.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class LeanbackPlayerAdapter extends PlayerAdapter implements Runnable {
 
   static {
@@ -93,6 +101,8 @@ public final class LeanbackPlayerAdapter extends PlayerAdapter implements Runnab
     player.addListener(playerListener);
   }
 
+  // dereference of possibly-null reference callback
+  @SuppressWarnings("nullness:dereference.of.nullable")
   @Override
   public void onDetachedFromHost() {
     player.removeListener(playerListener);
@@ -108,19 +118,16 @@ public final class LeanbackPlayerAdapter extends PlayerAdapter implements Runnab
   }
 
   @Override
-  public void setProgressUpdatingEnabled(boolean enabled) {
+  public void setProgressUpdatingEnabled(boolean enable) {
     handler.removeCallbacks(this);
-    if (enabled) {
+    if (enable) {
       handler.post(this);
     }
   }
 
   @Override
   public boolean isPlaying() {
-    int playbackState = player.getPlaybackState();
-    return playbackState != Player.STATE_IDLE
-        && playbackState != Player.STATE_ENDED
-        && player.getPlayWhenReady();
+    return !Util.shouldShowPlayButton(player);
   }
 
   @Override
@@ -134,30 +141,27 @@ public final class LeanbackPlayerAdapter extends PlayerAdapter implements Runnab
     return player.getPlaybackState() == Player.STATE_IDLE ? -1 : player.getCurrentPosition();
   }
 
+  // dereference of possibly-null reference getCallback()
+  @SuppressWarnings("nullness:dereference.of.nullable")
   @Override
   public void play() {
-    if (player.getPlaybackState() == Player.STATE_IDLE) {
-      player.prepare();
-    } else if (player.getPlaybackState() == Player.STATE_ENDED) {
-      player.seekToDefaultPosition(player.getCurrentMediaItemIndex());
-    }
-    if (player.isCommandAvailable(Player.COMMAND_PLAY_PAUSE)) {
-      player.play();
+    if (Util.handlePlayButtonAction(player)) {
       getCallback().onPlayStateChanged(this);
     }
   }
 
+  // dereference of possibly-null reference getCallback()
+  @SuppressWarnings("nullness:dereference.of.nullable")
   @Override
   public void pause() {
-    if (player.isCommandAvailable(Player.COMMAND_PLAY_PAUSE)) {
-      player.pause();
+    if (Util.handlePauseButtonAction(player)) {
       getCallback().onPlayStateChanged(this);
     }
   }
 
   @Override
-  public void seekTo(long positionMs) {
-    player.seekTo(player.getCurrentMediaItemIndex(), positionMs);
+  public void seekTo(long positionInMs) {
+    player.seekTo(player.getCurrentMediaItemIndex(), positionInMs);
   }
 
   @Override
@@ -173,6 +177,8 @@ public final class LeanbackPlayerAdapter extends PlayerAdapter implements Runnab
 
   // Runnable implementation.
 
+  // dereference of possibly-null reference callback
+  @SuppressWarnings("nullness:dereference.of.nullable")
   @Override
   public void run() {
     Callback callback = getCallback();
@@ -183,13 +189,19 @@ public final class LeanbackPlayerAdapter extends PlayerAdapter implements Runnab
 
   // Internal methods.
 
-  /* package */ void setVideoSurface(@Nullable Surface surface) {
+  /* package */
+  // incompatible argument for parameter callback of maybeNotifyPreparedStateChanged.
+  @SuppressWarnings("nullness:argument.type.incompatible")
+  void setVideoSurface(@Nullable Surface surface) {
     hasSurface = surface != null;
     player.setVideoSurface(surface);
     maybeNotifyPreparedStateChanged(getCallback());
   }
 
-  /* package */ void notifyStateChanged() {
+  /* package */
+  // incompatible argument for parameter callback of maybeNotifyPreparedStateChanged.
+  @SuppressWarnings("nullness:argument.type.incompatible")
+  void notifyStateChanged() {
     int playbackState = player.getPlaybackState();
     Callback callback = getCallback();
     maybeNotifyPreparedStateChanged(callback);
@@ -234,6 +246,8 @@ public final class LeanbackPlayerAdapter extends PlayerAdapter implements Runnab
 
     // Player.Listener implementation.
 
+    // dereference of possibly-null reference callback
+    @SuppressWarnings("nullness:dereference.of.nullable")
     @Override
     public void onPlayerError(PlaybackException error) {
       Callback callback = getCallback();
@@ -252,6 +266,8 @@ public final class LeanbackPlayerAdapter extends PlayerAdapter implements Runnab
       }
     }
 
+    // dereference of possibly-null reference callback
+    @SuppressWarnings("nullness:dereference.of.nullable")
     @Override
     public void onTimelineChanged(Timeline timeline, @TimelineChangeReason int reason) {
       Callback callback = getCallback();
@@ -260,6 +276,8 @@ public final class LeanbackPlayerAdapter extends PlayerAdapter implements Runnab
       callback.onBufferedPositionChanged(LeanbackPlayerAdapter.this);
     }
 
+    // dereference of possibly-null reference callback
+    @SuppressWarnings("nullness:dereference.of.nullable")
     @Override
     public void onPositionDiscontinuity(
         Player.PositionInfo oldPosition,
@@ -270,6 +288,8 @@ public final class LeanbackPlayerAdapter extends PlayerAdapter implements Runnab
       callback.onBufferedPositionChanged(LeanbackPlayerAdapter.this);
     }
 
+    // dereference of possibly-null reference getCallback()
+    @SuppressWarnings("nullness:dereference.of.nullable")
     @Override
     public void onVideoSizeChanged(VideoSize videoSize) {
       // There's no way to pass pixelWidthHeightRatio to leanback, so we scale the width that we

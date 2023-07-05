@@ -39,6 +39,7 @@ import com.google.android.exoplayer2.source.ads.AdsMediaSource;
 import com.google.android.exoplayer2.text.SubtitleDecoderFactory;
 import com.google.android.exoplayer2.text.SubtitleExtractor;
 import com.google.android.exoplayer2.ui.AdViewProvider;
+import com.google.android.exoplayer2.upstream.CmcdConfiguration;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
@@ -50,6 +51,7 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,17 +71,17 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
  *   <li>{@code DashMediaSource.Factory} if the item's {@link MediaItem.LocalConfiguration#uri uri}
  *       ends in '.mpd' or if its {@link MediaItem.LocalConfiguration#mimeType mimeType field} is
  *       explicitly set to {@link MimeTypes#APPLICATION_MPD} (Requires the <a
- *       href="https://exoplayer.dev/hello-world.html#add-exoplayer-modules">exoplayer-dash module
- *       to be added</a> to the app).
+ *       href="https://developer.android.com/guide/topics/media/exoplayer/hello-world#add-exoplayer-modules">exoplayer-dash
+ *       module to be added</a> to the app).
  *   <li>{@code HlsMediaSource.Factory} if the item's {@link MediaItem.LocalConfiguration#uri uri}
  *       ends in '.m3u8' or if its {@link MediaItem.LocalConfiguration#mimeType mimeType field} is
  *       explicitly set to {@link MimeTypes#APPLICATION_M3U8} (Requires the <a
- *       href="https://exoplayer.dev/hello-world.html#add-exoplayer-modules">exoplayer-hls module to
- *       be added</a> to the app).
+ *       href="https://developer.android.com/guide/topics/media/exoplayer/hello-world#add-exoplayer-modules">exoplayer-hls
+ *       module to be added</a> to the app).
  *   <li>{@code SsMediaSource.Factory} if the item's {@link MediaItem.LocalConfiguration#uri uri}
  *       ends in '.ism', '.ism/Manifest' or if its {@link MediaItem.LocalConfiguration#mimeType
  *       mimeType field} is explicitly set to {@link MimeTypes#APPLICATION_SS} (Requires the <a
- *       href="https://exoplayer.dev/hello-world.html#add-exoplayer-modules">
+ *       href="https://developer.android.com/guide/topics/media/exoplayer/hello-world#add-exoplayer-modules">
  *       exoplayer-smoothstreaming module to be added</a> to the app).
  *   <li>{@link ProgressiveMediaSource.Factory} serves as a fallback if the item's {@link
  *       MediaItem.LocalConfiguration#uri uri} doesn't match one of the above. It tries to infer the
@@ -93,8 +95,14 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
  * <p>To support media items with {@link MediaItem.LocalConfiguration#adsConfiguration ads
  * configuration}, {@link #setAdsLoaderProvider} and {@link #setAdViewProvider} need to be called to
  * configure the factory with the required providers.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
 @SuppressWarnings("deprecation") // Implement deprecated type for backwards compatibility.
+@Deprecated
 public final class DefaultMediaSourceFactory implements MediaSourceFactory {
 
   /**
@@ -190,6 +198,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    *     should be used for subtitles instead of {@link SingleSampleMediaSource}.
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaSourceFactory experimentalUseProgressiveMediaSourceForSubtitles(
       boolean useProgressiveMediaSourceForSubtitles) {
     this.useProgressiveMediaSourceForSubtitles = useProgressiveMediaSourceForSubtitles;
@@ -208,6 +217,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    * @deprecated Use {@link #setLocalAdInsertionComponents(AdsLoader.Provider, AdViewProvider)}
    *     instead.
    */
+  @CanIgnoreReturnValue
   @Deprecated
   public DefaultMediaSourceFactory setAdsLoaderProvider(
       @Nullable AdsLoader.Provider adsLoaderProvider) {
@@ -226,6 +236,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    * @deprecated Use {@link #setLocalAdInsertionComponents(AdsLoader.Provider, AdViewProvider)}
    *     instead.
    */
+  @CanIgnoreReturnValue
   @Deprecated
   public DefaultMediaSourceFactory setAdViewProvider(@Nullable AdViewProvider adViewProvider) {
     this.adViewProvider = adViewProvider;
@@ -243,6 +254,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    * @param adViewProvider A provider for information about views for the ad playback UI.
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaSourceFactory setLocalAdInsertionComponents(
       AdsLoader.Provider adsLoaderProvider, AdViewProvider adViewProvider) {
     this.adsLoaderProvider = checkNotNull(adsLoaderProvider);
@@ -259,6 +271,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    *
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaSourceFactory clearLocalAdInsertionComponents() {
     this.adsLoaderProvider = null;
     this.adViewProvider = null;
@@ -272,6 +285,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    * @param dataSourceFactory The {@link DataSource.Factory}.
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaSourceFactory setDataSourceFactory(DataSource.Factory dataSourceFactory) {
     this.dataSourceFactory = dataSourceFactory;
     delegateFactoryLoader.setDataSourceFactory(dataSourceFactory);
@@ -288,6 +302,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    *     content, or {@code null} to remove a previously set {@link MediaSource.Factory}.
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaSourceFactory setServerSideAdInsertionMediaSourceFactory(
       @Nullable MediaSource.Factory serverSideAdInsertionMediaSourceFactory) {
     this.serverSideAdInsertionMediaSourceFactory = serverSideAdInsertionMediaSourceFactory;
@@ -301,6 +316,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    *     use the media-defined default.
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaSourceFactory setLiveTargetOffsetMs(long liveTargetOffsetMs) {
     this.liveTargetOffsetMs = liveTargetOffsetMs;
     return this;
@@ -313,6 +329,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    *     C#TIME_UNSET} to use the media-defined default.
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaSourceFactory setLiveMinOffsetMs(long liveMinOffsetMs) {
     this.liveMinOffsetMs = liveMinOffsetMs;
     return this;
@@ -325,6 +342,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    *     C#TIME_UNSET} to use the media-defined default.
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaSourceFactory setLiveMaxOffsetMs(long liveMaxOffsetMs) {
     this.liveMaxOffsetMs = liveMaxOffsetMs;
     return this;
@@ -337,6 +355,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    *     C#RATE_UNSET} to use the media-defined default.
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaSourceFactory setLiveMinSpeed(float minSpeed) {
     this.liveMinSpeed = minSpeed;
     return this;
@@ -349,11 +368,21 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
    *     C#RATE_UNSET} to use the media-defined default.
    * @return This factory, for convenience.
    */
+  @CanIgnoreReturnValue
   public DefaultMediaSourceFactory setLiveMaxSpeed(float maxSpeed) {
     this.liveMaxSpeed = maxSpeed;
     return this;
   }
 
+  @CanIgnoreReturnValue
+  @Override
+  public DefaultMediaSourceFactory setCmcdConfigurationFactory(
+      CmcdConfiguration.Factory cmcdConfigurationFactory) {
+    delegateFactoryLoader.setCmcdConfigurationFactory(checkNotNull(cmcdConfigurationFactory));
+    return this;
+  }
+
+  @CanIgnoreReturnValue
   @Override
   public DefaultMediaSourceFactory setDrmSessionManagerProvider(
       DrmSessionManagerProvider drmSessionManagerProvider) {
@@ -366,6 +395,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
     return this;
   }
 
+  @CanIgnoreReturnValue
   @Override
   public DefaultMediaSourceFactory setLoadErrorHandlingPolicy(
       LoadErrorHandlingPolicy loadErrorHandlingPolicy) {
@@ -380,7 +410,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
   }
 
   @Override
-  public int[] getSupportedTypes() {
+  public @C.ContentType int[] getSupportedTypes() {
     return delegateFactoryLoader.getSupportedTypes();
   }
 
@@ -533,6 +563,7 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
     private final Map<Integer, MediaSource.Factory> mediaSourceFactories;
 
     private DataSource.@MonotonicNonNull Factory dataSourceFactory;
+    @Nullable private CmcdConfiguration.Factory cmcdConfigurationFactory;
     @Nullable private DrmSessionManagerProvider drmSessionManagerProvider;
     @Nullable private LoadErrorHandlingPolicy loadErrorHandlingPolicy;
 
@@ -562,6 +593,9 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
       }
 
       mediaSourceFactory = mediaSourceFactorySupplier.get();
+      if (cmcdConfigurationFactory != null) {
+        mediaSourceFactory.setCmcdConfigurationFactory(cmcdConfigurationFactory);
+      }
       if (drmSessionManagerProvider != null) {
         mediaSourceFactory.setDrmSessionManagerProvider(drmSessionManagerProvider);
       }
@@ -579,6 +613,13 @@ public final class DefaultMediaSourceFactory implements MediaSourceFactory {
         // exists on the interface.
         mediaSourceFactorySuppliers.clear();
         mediaSourceFactories.clear();
+      }
+    }
+
+    public void setCmcdConfigurationFactory(CmcdConfiguration.Factory cmcdConfigurationFactory) {
+      this.cmcdConfigurationFactory = cmcdConfigurationFactory;
+      for (MediaSource.Factory mediaSourceFactory : mediaSourceFactories.values()) {
+        mediaSourceFactory.setCmcdConfigurationFactory(cmcdConfigurationFactory);
       }
     }
 

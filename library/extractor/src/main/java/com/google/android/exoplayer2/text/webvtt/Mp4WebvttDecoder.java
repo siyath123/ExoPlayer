@@ -26,8 +26,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** A {@link SimpleSubtitleDecoder} for Webvtt embedded in a Mp4 container file. */
+/**
+ * A {@link SimpleSubtitleDecoder} for Webvtt embedded in a Mp4 container file.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
 @SuppressWarnings("ConstantField")
+@Deprecated
 public final class Mp4WebvttDecoder extends SimpleSubtitleDecoder {
 
   private static final int BOX_HEADER_SIZE = 8;
@@ -49,11 +57,11 @@ public final class Mp4WebvttDecoder extends SimpleSubtitleDecoder {
   }
 
   @Override
-  protected Subtitle decode(byte[] bytes, int length, boolean reset)
+  protected Subtitle decode(byte[] data, int length, boolean reset)
       throws SubtitleDecoderException {
     // Webvtt in Mp4 samples have boxes inside of them, so we have to do a traditional box parsing:
     // first 4 bytes size and then 4 bytes type.
-    sampleData.reset(bytes, length);
+    sampleData.reset(data, length);
     List<Cue> resultingCueList = new ArrayList<>();
     while (sampleData.bytesLeft() > 0) {
       if (sampleData.bytesLeft() < BOX_HEADER_SIZE) {

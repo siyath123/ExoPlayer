@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-apply from: "$gradle.ext.exoplayerSettingsDir/common_library_config.gradle"
+ apply from: "$gradle.ext.exoplayerSettingsDir/common_library_config.gradle"
 
 android {
     defaultConfig {
@@ -19,7 +19,6 @@ android {
         // "pm clear" command after each test invocation. This command ensures
         // that the app's state is completely cleared between tests.
         testInstrumentationRunnerArguments clearPackageData: 'true'
-        multiDexEnabled true
     }
 
     buildTypes {
@@ -28,18 +27,15 @@ android {
         }
     }
 
-    lint {
-        baseline = file("lint-baseline.xml")
-    }
-
     sourceSets {
-        androidTest.assets.srcDir '../../testdata/src/test/assets/'
-        test.assets.srcDir '../../testdata/src/test/assets/'
+ androidTest.assets.srcDir '../../testdata/src/test/assets/'
+ test.assets.srcDir '../../testdata/src/test/assets/'
     }
 }
 
 dependencies {
     api project(modulePrefix + 'library-common')
+    api project(modulePrefix + 'library-container')
     // TODO(b/203754886): Revisit which modules are exported as API dependencies.
     api project(modulePrefix + 'library-datasource')
     api project(modulePrefix + 'library-decoder')
@@ -59,6 +55,7 @@ dependencies {
         exclude module: modulePrefix.substring(1) + 'library-core'
     }
     androidTestImplementation 'com.squareup.okhttp3:mockwebserver:' + okhttpVersion
+    testCompileOnly 'org.checkerframework:checker-compat-qual:' + checkerframeworkCompatVersion
     testImplementation 'com.squareup.okhttp3:mockwebserver:' + okhttpVersion
     testImplementation 'org.robolectric:robolectric:' + robolectricVersion
     testImplementation project(modulePrefix + 'testutils')
@@ -71,7 +68,7 @@ ext {
 apply from: '../../javadoc_library.gradle'
 
 ext {
-    releaseArtifactId = 'exoplayer-core'
-    releaseDescription = 'The ExoPlayer library core module.'
+ releaseArtifactId = 'exoplayer-core'
+ releaseDescription = 'The ExoPlayer library core module.'
 }
 apply from: '../../publish.gradle'

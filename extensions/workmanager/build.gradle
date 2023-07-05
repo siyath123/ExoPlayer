@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-apply from: "$gradle.ext.exoplayerSettingsDir/common_library_config.gradle"
+ apply from: "$gradle.ext.exoplayerSettingsDir/common_library_config.gradle"
 
 dependencies {
     implementation project(modulePrefix + 'library-core')
-    implementation 'androidx.work:work-runtime:2.7.0'
+    implementation 'androidx.work:work-runtime:2.8.1'
     compileOnly 'org.jetbrains.kotlin:kotlin-annotations-jvm:' + kotlinAnnotationsVersion
 }
 
@@ -27,7 +27,7 @@ ext {
 apply from: '../../javadoc_library.gradle'
 
 ext {
-    releaseArtifactId = 'extension-workmanager'
-    releaseDescription = 'WorkManager extension for ExoPlayer.'
+ releaseArtifactId = 'extension-workmanager'
+ releaseDescription = 'WorkManager extension for ExoPlayer.'
 }
 apply from: '../../publish.gradle'

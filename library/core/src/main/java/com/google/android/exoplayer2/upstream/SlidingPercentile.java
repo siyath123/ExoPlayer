@@ -29,9 +29,19 @@ import java.util.Comparator;
  * rate observations. This is an alternative to sliding mean and exponential averaging which suffer
  * from susceptibility to outliers and slow adaptation to step functions.
  *
- * @see <a href="http://en.wikipedia.org/wiki/Moving_average">Wiki: Moving average</a>
- * @see <a href="http://en.wikipedia.org/wiki/Selection_algorithm">Wiki: Selection algorithm</a>
+ * <p>See the following Wikipedia articles:
+ *
+ * <ul>
+ *   <li><a href="http://en.wikipedia.org/wiki/Moving_average">Moving average</a>
+ *   <li><a href="http://en.wikipedia.org/wiki/Selection_algorithm">Selection algorithm</a>
+ * </ul>
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public class SlidingPercentile {
 
   // Orderings.

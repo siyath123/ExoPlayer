@@ -17,18 +17,24 @@ package com.google.android.exoplayer2.transformerdemo;
 
 import android.graphics.Matrix;
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.transformer.GlMatrixTransformation;
-import com.google.android.exoplayer2.transformer.MatrixTransformation;
+import com.google.android.exoplayer2.effect.GlMatrixTransformation;
+import com.google.android.exoplayer2.effect.MatrixTransformation;
 import com.google.android.exoplayer2.util.Util;
 
 /**
  * Factory for {@link GlMatrixTransformation GlMatrixTransformations} and {@link
  * MatrixTransformation MatrixTransformations} that create video effects by applying transformation
  * matrices to the individual video frames.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 /* package */ final class MatrixTransformationFactory {
   /**
-   * Returns a {@link MatrixTransformation} that rescales the frames over the first {@value
+   * Returns a {@link MatrixTransformation} that rescales the frames over the first {@link
    * #ZOOM_DURATION_SECONDS} seconds, such that the rectangle filled with the input frame increases
    * linearly in size from a single point to filling the full output frame.
    */

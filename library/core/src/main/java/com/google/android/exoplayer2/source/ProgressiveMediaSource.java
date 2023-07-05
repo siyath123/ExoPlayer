@@ -34,6 +34,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultLoadErrorHandlingPolicy;
 import com.google.android.exoplayer2.upstream.LoadErrorHandlingPolicy;
 import com.google.android.exoplayer2.upstream.TransferListener;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 
 /**
  * Provides one period that loads data from a {@link Uri} and extracted using an {@link Extractor}.
@@ -45,7 +46,13 @@ import com.google.android.exoplayer2.upstream.TransferListener;
  * used to extract samples from the input stream.
  *
  * <p>Note that the built-in extractor for FLV streams does not support seeking.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class ProgressiveMediaSource extends BaseMediaSource
     implements ProgressiveMediaPeriod.Listener {
 
@@ -153,6 +160,7 @@ public final class ProgressiveMediaSource extends BaseMediaSource
       this.continueLoadingCheckIntervalBytes = continueLoadingCheckIntervalBytes;
     }
 
+    @CanIgnoreReturnValue
     @Override
     public Factory setLoadErrorHandlingPolicy(LoadErrorHandlingPolicy loadErrorHandlingPolicy) {
       this.loadErrorHandlingPolicy =
@@ -174,11 +182,13 @@ public final class ProgressiveMediaSource extends BaseMediaSource
      *     MediaPeriod.Callback#onContinueLoadingRequested(SequenceableLoader)}.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setContinueLoadingCheckIntervalBytes(int continueLoadingCheckIntervalBytes) {
       this.continueLoadingCheckIntervalBytes = continueLoadingCheckIntervalBytes;
       return this;
     }
 
+    @CanIgnoreReturnValue
     @Override
     public Factory setDrmSessionManagerProvider(
         DrmSessionManagerProvider drmSessionManagerProvider) {
@@ -221,7 +231,7 @@ public final class ProgressiveMediaSource extends BaseMediaSource
     }
 
     @Override
-    public int[] getSupportedTypes() {
+    public @C.ContentType int[] getSupportedTypes() {
       return new int[] {C.CONTENT_TYPE_OTHER};
     }
   }
@@ -272,9 +282,9 @@ public final class ProgressiveMediaSource extends BaseMediaSource
   @Override
   protected void prepareSourceInternal(@Nullable TransferListener mediaTransferListener) {
     transferListener = mediaTransferListener;
-    drmSessionManager.prepare();
     drmSessionManager.setPlayer(
         /* playbackLooper= */ checkNotNull(Looper.myLooper()), getPlayerId());
+    drmSessionManager.prepare();
     notifySourceInfoRefreshed();
   }
 

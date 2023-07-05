@@ -43,7 +43,15 @@ import com.google.android.exoplayer2.util.Util;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-/** Paints subtitle {@link Cue}s. */
+/**
+ * Paints subtitle {@link Cue}s.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 /* package */ final class SubtitlePainter {
 
   private static final String TAG = "SubtitlePainter";
@@ -67,17 +75,17 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
   @Nullable private Alignment cueTextAlignment;
   @Nullable private Bitmap cueBitmap;
   private float cueLine;
-  @Cue.LineType private int cueLineType;
-  @Cue.AnchorType private int cueLineAnchor;
+  private @Cue.LineType int cueLineType;
+  private @Cue.AnchorType int cueLineAnchor;
   private float cuePosition;
-  @Cue.AnchorType private int cuePositionAnchor;
+  private @Cue.AnchorType int cuePositionAnchor;
   private float cueSize;
   private float cueBitmapHeight;
   private int foregroundColor;
   private int backgroundColor;
   private int windowColor;
   private int edgeColor;
-  @CaptionStyleCompat.EdgeType private int edgeType;
+  private @CaptionStyleCompat.EdgeType int edgeType;
   private float defaultTextSizePx;
   private float cueTextSizePx;
   private float bottomPaddingFraction;

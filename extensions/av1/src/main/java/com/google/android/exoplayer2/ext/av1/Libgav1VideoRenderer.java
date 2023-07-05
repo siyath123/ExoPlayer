@@ -32,7 +32,15 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.DecoderVideoRenderer;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 
-/** Decodes and renders video using libgav1 decoder. */
+/**
+ * Decodes and renders video using libgav1 decoder.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public class Libgav1VideoRenderer extends DecoderVideoRenderer {
 
   /**
@@ -138,8 +146,9 @@ public class Libgav1VideoRenderer extends DecoderVideoRenderer {
         C.FORMAT_HANDLED, ADAPTIVE_SEAMLESS, TUNNELING_NOT_SUPPORTED);
   }
 
+  /** {@inheritDoc} */
   @Override
-  protected Gav1Decoder createDecoder(Format format, @Nullable CryptoConfig cryptoConfig)
+  protected final Gav1Decoder createDecoder(Format format, @Nullable CryptoConfig cryptoConfig)
       throws Gav1DecoderException {
     TraceUtil.beginSection("createGav1Decoder");
     int initialInputBufferSize =

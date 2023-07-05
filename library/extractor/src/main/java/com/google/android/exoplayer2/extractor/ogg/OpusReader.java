@@ -30,7 +30,15 @@ import java.util.Arrays;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
-/** {@link StreamReader} to extract Opus data out of Ogg byte stream. */
+/**
+ * {@link StreamReader} to extract Opus data out of Ogg byte stream.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 /* package */ final class OpusReader extends StreamReader {
 
   private static final byte[] OPUS_ID_HEADER_SIGNATURE = {'O', 'p', 'u', 's', 'H', 'e', 'a', 'd'};
@@ -54,7 +62,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
   @Override
   protected long preparePayload(ParsableByteArray packet) {
-    return convertTimeToGranule(getPacketDurationUs(packet.getData()));
+    return convertTimeToGranule(OpusUtil.getPacketDurationUs(packet.getData()));
   }
 
   @Override
@@ -119,42 +127,6 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
       checkStateNotNull(setupData.format);
       return false;
     }
-  }
-
-  /**
-   * Returns the duration of the given audio packet.
-   *
-   * @param packet Contains audio data.
-   * @return Returns the duration of the given audio packet.
-   */
-  private long getPacketDurationUs(byte[] packet) {
-    int toc = packet[0] & 0xFF;
-    int frames;
-    switch (toc & 0x3) {
-      case 0:
-        frames = 1;
-        break;
-      case 1:
-      case 2:
-        frames = 2;
-        break;
-      default:
-        frames = packet[1] & 0x3F;
-        break;
-    }
-
-    int config = toc >> 3;
-    int length = config & 0x3;
-    if (config >= 16) {
-      length = 2500 << length;
-    } else if (config >= 12) {
-      length = 10000 << (length & 0x1);
-    } else if (length == 3) {
-      length = 60000;
-    } else {
-      length = 10000 << length;
-    }
-    return (long) frames * length;
   }
 
   /**

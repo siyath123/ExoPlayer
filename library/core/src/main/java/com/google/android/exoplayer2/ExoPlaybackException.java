@@ -38,7 +38,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Thrown when a non locally recoverable playback failure occurs. */
+/**
+ * Thrown when a non locally recoverable playback failure occurs.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class ExoPlaybackException extends PlaybackException {
 
   /**
@@ -125,6 +133,8 @@ public final class ExoPlaybackException extends PlaybackException {
    * Creates an instance of type {@link #TYPE_RENDERER}.
    *
    * @param cause The cause of the failure.
+   * @param rendererName The {@linkplain Renderer#getName() name} of the renderer in which the
+   *     failure occurred.
    * @param rendererIndex The index of the renderer in which the failure occurred.
    * @param rendererFormat The {@link Format} the renderer was using at the time of the exception,
    *     or null if the renderer wasn't using a {@link Format}.
@@ -240,17 +250,15 @@ public final class ExoPlaybackException extends PlaybackException {
 
   private ExoPlaybackException(Bundle bundle) {
     super(bundle);
-    type = bundle.getInt(keyForField(FIELD_TYPE), /* defaultValue= */ TYPE_UNEXPECTED);
-    rendererName = bundle.getString(keyForField(FIELD_RENDERER_NAME));
-    rendererIndex =
-        bundle.getInt(keyForField(FIELD_RENDERER_INDEX), /* defaultValue= */ C.INDEX_UNSET);
-    @Nullable Bundle rendererFormatBundle = bundle.getBundle(keyForField(FIELD_RENDERER_FORMAT));
+    type = bundle.getInt(FIELD_TYPE, /* defaultValue= */ TYPE_UNEXPECTED);
+    rendererName = bundle.getString(FIELD_RENDERER_NAME);
+    rendererIndex = bundle.getInt(FIELD_RENDERER_INDEX, /* defaultValue= */ C.INDEX_UNSET);
+    @Nullable Bundle rendererFormatBundle = bundle.getBundle(FIELD_RENDERER_FORMAT);
     rendererFormat =
         rendererFormatBundle == null ? null : Format.CREATOR.fromBundle(rendererFormatBundle);
     rendererFormatSupport =
-        bundle.getInt(
-            keyForField(FIELD_RENDERER_FORMAT_SUPPORT), /* defaultValue= */ C.FORMAT_HANDLED);
-    isRecoverable = bundle.getBoolean(keyForField(FIELD_IS_RECOVERABLE), /* defaultValue= */ false);
+        bundle.getInt(FIELD_RENDERER_FORMAT_SUPPORT, /* defaultValue= */ C.FORMAT_HANDLED);
+    isRecoverable = bundle.getBoolean(FIELD_IS_RECOVERABLE, /* defaultValue= */ false);
     mediaPeriodId = null;
   }
 
@@ -389,12 +397,17 @@ public final class ExoPlaybackException extends PlaybackException {
   /** Object that can restore {@link ExoPlaybackException} from a {@link Bundle}. */
   public static final Creator<ExoPlaybackException> CREATOR = ExoPlaybackException::new;
 
-  private static final int FIELD_TYPE = FIELD_CUSTOM_ID_BASE + 1;
-  private static final int FIELD_RENDERER_NAME = FIELD_CUSTOM_ID_BASE + 2;
-  private static final int FIELD_RENDERER_INDEX = FIELD_CUSTOM_ID_BASE + 3;
-  private static final int FIELD_RENDERER_FORMAT = FIELD_CUSTOM_ID_BASE + 4;
-  private static final int FIELD_RENDERER_FORMAT_SUPPORT = FIELD_CUSTOM_ID_BASE + 5;
-  private static final int FIELD_IS_RECOVERABLE = FIELD_CUSTOM_ID_BASE + 6;
+  private static final String FIELD_TYPE = Util.intToStringMaxRadix(FIELD_CUSTOM_ID_BASE + 1);
+  private static final String FIELD_RENDERER_NAME =
+      Util.intToStringMaxRadix(FIELD_CUSTOM_ID_BASE + 2);
+  private static final String FIELD_RENDERER_INDEX =
+      Util.intToStringMaxRadix(FIELD_CUSTOM_ID_BASE + 3);
+  private static final String FIELD_RENDERER_FORMAT =
+      Util.intToStringMaxRadix(FIELD_CUSTOM_ID_BASE + 4);
+  private static final String FIELD_RENDERER_FORMAT_SUPPORT =
+      Util.intToStringMaxRadix(FIELD_CUSTOM_ID_BASE + 5);
+  private static final String FIELD_IS_RECOVERABLE =
+      Util.intToStringMaxRadix(FIELD_CUSTOM_ID_BASE + 6);
 
   /**
    * {@inheritDoc}
@@ -405,14 +418,14 @@ public final class ExoPlaybackException extends PlaybackException {
   @Override
   public Bundle toBundle() {
     Bundle bundle = super.toBundle();
-    bundle.putInt(keyForField(FIELD_TYPE), type);
-    bundle.putString(keyForField(FIELD_RENDERER_NAME), rendererName);
-    bundle.putInt(keyForField(FIELD_RENDERER_INDEX), rendererIndex);
+    bundle.putInt(FIELD_TYPE, type);
+    bundle.putString(FIELD_RENDERER_NAME, rendererName);
+    bundle.putInt(FIELD_RENDERER_INDEX, rendererIndex);
     if (rendererFormat != null) {
-      bundle.putBundle(keyForField(FIELD_RENDERER_FORMAT), rendererFormat.toBundle());
+      bundle.putBundle(FIELD_RENDERER_FORMAT, rendererFormat.toBundle());
     }
-    bundle.putInt(keyForField(FIELD_RENDERER_FORMAT_SUPPORT), rendererFormatSupport);
-    bundle.putBoolean(keyForField(FIELD_IS_RECOVERABLE), isRecoverable);
+    bundle.putInt(FIELD_RENDERER_FORMAT_SUPPORT, rendererFormatSupport);
+    bundle.putBoolean(FIELD_IS_RECOVERABLE, isRecoverable);
     return bundle;
   }
 }

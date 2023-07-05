@@ -55,6 +55,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,7 +87,13 @@ import java.util.Set;
  * be registered via the {@link AdViewProvider} passed to the {@link AdsMediaSource}. See the <a
  * href="https://developers.google.com/interactive-media-ads/docs/sdks/android/client-side/omsdk">IMA
  * SDK Open Measurement documentation</a> for more information.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class ImaAdsLoader implements AdsLoader {
 
   static {
@@ -151,6 +158,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @param imaSdkSettings The {@link ImaSdkSettings}.
      * @return This builder, for convenience.
      */
+    @CanIgnoreReturnValue
     public Builder setImaSdkSettings(ImaSdkSettings imaSdkSettings) {
       this.imaSdkSettings = checkNotNull(imaSdkSettings);
       return this;
@@ -164,6 +172,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @param adErrorListener The ad error listener.
      * @return This builder, for convenience.
      */
+    @CanIgnoreReturnValue
     public Builder setAdErrorListener(AdErrorListener adErrorListener) {
       this.adErrorListener = checkNotNull(adErrorListener);
       return this;
@@ -176,6 +185,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @param adEventListener The ad event listener.
      * @return This builder, for convenience.
      */
+    @CanIgnoreReturnValue
     public Builder setAdEventListener(AdEventListener adEventListener) {
       this.adEventListener = checkNotNull(adEventListener);
       return this;
@@ -191,6 +201,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @return This builder, for convenience.
      * @see com.google.ads.interactivemedia.v3.api.player.VideoAdPlayer.VideoAdPlayerCallback
      */
+    @CanIgnoreReturnValue
     public Builder setVideoAdPlayerCallback(
         VideoAdPlayer.VideoAdPlayerCallback videoAdPlayerCallback) {
       this.videoAdPlayerCallback = checkNotNull(videoAdPlayerCallback);
@@ -204,6 +215,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @return This builder, for convenience.
      * @see AdsRenderingSettings#setUiElements(Set)
      */
+    @CanIgnoreReturnValue
     public Builder setAdUiElements(Set<UiElement> adUiElements) {
       this.adUiElements = ImmutableSet.copyOf(checkNotNull(adUiElements));
       return this;
@@ -216,6 +228,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @return This builder, for convenience.
      * @see AdDisplayContainer#setCompanionSlots(Collection)
      */
+    @CanIgnoreReturnValue
     public Builder setCompanionAdSlots(Collection<CompanionAdSlot> companionAdSlots) {
       this.companionAdSlots = ImmutableList.copyOf(checkNotNull(companionAdSlots));
       return this;
@@ -233,6 +246,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @return This builder, for convenience.
      * @see AdsRenderingSettings#setMimeTypes(List)
      */
+    @CanIgnoreReturnValue
     public Builder setAdMediaMimeTypes(List<String> adMediaMimeTypes) {
       this.adMediaMimeTypes = ImmutableList.copyOf(checkNotNull(adMediaMimeTypes));
       return this;
@@ -247,6 +261,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @return This builder, for convenience.
      * @see AdsRequest#setContinuousPlayback(boolean)
      */
+    @CanIgnoreReturnValue
     public Builder setEnableContinuousPlayback(boolean enableContinuousPlayback) {
       this.enableContinuousPlayback = enableContinuousPlayback;
       return this;
@@ -255,7 +270,7 @@ public final class ImaAdsLoader implements AdsLoader {
     /**
      * Sets the duration in milliseconds for which the player must buffer while preloading an ad
      * group before that ad group is skipped and marked as having failed to load. Pass {@link
-     * C#TIME_UNSET} if there should be no such timeout. The default value is {@value
+     * C#TIME_UNSET} if there should be no such timeout. The default value is {@link
      * #DEFAULT_AD_PRELOAD_TIMEOUT_MS} ms.
      *
      * <p>The purpose of this timeout is to avoid playback getting stuck in the unexpected case that
@@ -265,6 +280,7 @@ public final class ImaAdsLoader implements AdsLoader {
      *     C#TIME_UNSET} for no timeout.
      * @return This builder, for convenience.
      */
+    @CanIgnoreReturnValue
     public Builder setAdPreloadTimeoutMs(long adPreloadTimeoutMs) {
       checkArgument(adPreloadTimeoutMs == C.TIME_UNSET || adPreloadTimeoutMs > 0);
       this.adPreloadTimeoutMs = adPreloadTimeoutMs;
@@ -278,6 +294,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @return This builder, for convenience.
      * @see AdsRequest#setVastLoadTimeout(float)
      */
+    @CanIgnoreReturnValue
     public Builder setVastLoadTimeoutMs(@IntRange(from = 1) int vastLoadTimeoutMs) {
       checkArgument(vastLoadTimeoutMs > 0);
       this.vastLoadTimeoutMs = vastLoadTimeoutMs;
@@ -291,6 +308,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @return This builder, for convenience.
      * @see AdsRenderingSettings#setLoadVideoTimeout(int)
      */
+    @CanIgnoreReturnValue
     public Builder setMediaLoadTimeoutMs(@IntRange(from = 1) int mediaLoadTimeoutMs) {
       checkArgument(mediaLoadTimeoutMs > 0);
       this.mediaLoadTimeoutMs = mediaLoadTimeoutMs;
@@ -304,6 +322,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @return This builder, for convenience.
      * @see AdsRenderingSettings#setBitrateKbps(int)
      */
+    @CanIgnoreReturnValue
     public Builder setMaxMediaBitrate(@IntRange(from = 1) int bitrate) {
       checkArgument(bitrate > 0);
       this.mediaBitrate = bitrate;
@@ -319,6 +338,7 @@ public final class ImaAdsLoader implements AdsLoader {
      * @return This builder, for convenience.
      * @see AdsRenderingSettings#setFocusSkipButtonWhenAvailable(boolean)
      */
+    @CanIgnoreReturnValue
     public Builder setFocusSkipButtonWhenAvailable(boolean focusSkipButtonWhenAvailable) {
       this.focusSkipButtonWhenAvailable = focusSkipButtonWhenAvailable;
       return this;
@@ -334,6 +354,7 @@ public final class ImaAdsLoader implements AdsLoader {
      *     beginning playback.
      * @return This builder, for convenience.
      */
+    @CanIgnoreReturnValue
     public Builder setPlayAdBeforeStartPosition(boolean playAdBeforeStartPosition) {
       this.playAdBeforeStartPosition = playAdBeforeStartPosition;
       return this;
@@ -349,11 +370,13 @@ public final class ImaAdsLoader implements AdsLoader {
      * @return This builder, for convenience.
      * @see ImaSdkSettings#setDebugMode(boolean)
      */
+    @CanIgnoreReturnValue
     public Builder setDebugModeEnabled(boolean debugModeEnabled) {
       this.debugModeEnabled = debugModeEnabled;
       return this;
     }
 
+    @CanIgnoreReturnValue
     @VisibleForTesting
     /* package */ Builder setImaFactory(ImaUtil.ImaFactory imaFactory) {
       this.imaFactory = checkNotNull(imaFactory);

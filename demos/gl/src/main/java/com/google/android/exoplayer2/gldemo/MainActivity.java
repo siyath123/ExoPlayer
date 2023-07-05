@@ -15,6 +15,8 @@
  */
 package com.google.android.exoplayer2.gldemo;
 
+import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -48,7 +50,13 @@ import java.util.UUID;
 /**
  * Activity that demonstrates playback of video to an {@link android.opengl.GLSurfaceView} with
  * postprocessing of the video content using GL.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class MainActivity extends Activity {
 
   private static final String TAG = "MainActivity";
@@ -83,7 +91,8 @@ public final class MainActivity extends Activity {
     VideoProcessingGLSurfaceView videoProcessingGLSurfaceView =
         new VideoProcessingGLSurfaceView(
             context, requestSecureSurface, new BitmapOverlayVideoProcessor(context));
-    FrameLayout contentFrame = findViewById(R.id.exo_content_frame);
+    checkNotNull(playerView);
+    FrameLayout contentFrame = playerView.findViewById(R.id.exo_content_frame);
     contentFrame.addView(videoProcessingGLSurfaceView);
     this.videoProcessingGLSurfaceView = videoProcessingGLSurfaceView;
   }

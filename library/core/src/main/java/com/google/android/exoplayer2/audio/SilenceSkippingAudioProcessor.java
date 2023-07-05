@@ -22,6 +22,7 @@ import androidx.annotation.IntDef;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.Util;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,7 +32,13 @@ import java.nio.ByteBuffer;
 /**
  * An {@link AudioProcessor} that skips silence in the input stream. Input and output are 16-bit
  * PCM.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class SilenceSkippingAudioProcessor extends BaseAudioProcessor {
 
   /**
@@ -143,6 +150,7 @@ public final class SilenceSkippingAudioProcessor extends BaseAudioProcessor {
   // AudioProcessor implementation.
 
   @Override
+  @CanIgnoreReturnValue
   public AudioFormat onConfigure(AudioFormat inputAudioFormat)
       throws UnhandledAudioFormatException {
     if (inputAudioFormat.encoding != C.ENCODING_PCM_16BIT) {

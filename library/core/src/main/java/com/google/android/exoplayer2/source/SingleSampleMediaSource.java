@@ -31,10 +31,17 @@ import com.google.android.exoplayer2.upstream.LoadErrorHandlingPolicy;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.common.collect.ImmutableList;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 
 /**
  * Loads data at a given {@link Uri} as a single sample belonging to a single {@link MediaPeriod}.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class SingleSampleMediaSource extends BaseMediaSource {
 
   /** Factory for {@link SingleSampleMediaSource}. */
@@ -66,6 +73,7 @@ public final class SingleSampleMediaSource extends BaseMediaSource {
      * @param tag A tag for the media source.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setTag(@Nullable Object tag) {
       this.tag = tag;
       return this;
@@ -77,6 +85,7 @@ public final class SingleSampleMediaSource extends BaseMediaSource {
      *     #createMediaSource(MediaItem.SubtitleConfiguration, long)}). {@code trackId} will only be
      *     used if {@link MediaItem.SubtitleConfiguration#id} is {@code null}.
      */
+    @CanIgnoreReturnValue
     @Deprecated
     public Factory setTrackId(@Nullable String trackId) {
       this.trackId = trackId;
@@ -90,6 +99,7 @@ public final class SingleSampleMediaSource extends BaseMediaSource {
      * @param loadErrorHandlingPolicy A {@link LoadErrorHandlingPolicy}.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setLoadErrorHandlingPolicy(
         @Nullable LoadErrorHandlingPolicy loadErrorHandlingPolicy) {
       this.loadErrorHandlingPolicy =
@@ -108,6 +118,7 @@ public final class SingleSampleMediaSource extends BaseMediaSource {
      *     normally by {@link SampleStream#maybeThrowError()}.
      * @return This factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setTreatLoadErrorsAsEndOfStream(boolean treatLoadErrorsAsEndOfStream) {
       this.treatLoadErrorsAsEndOfStream = treatLoadErrorsAsEndOfStream;
       return this;

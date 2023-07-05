@@ -45,7 +45,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
  * Extracts data from the AVI container format.
  *
  * <p>Spec: https://docs.microsoft.com/en-us/windows/win32/directshow/avi-riff-file-reference.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class AviExtractor implements Extractor {
 
   private static final String TAG = "AviExtractor";
@@ -142,8 +148,8 @@ public final class AviExtractor implements Extractor {
     chunkHeaderHolder = new ChunkHeaderHolder();
     extractorOutput = new DummyExtractorOutput();
     chunkReaders = new ChunkReader[0];
-    moviStart = C.POSITION_UNSET;
-    moviEnd = C.POSITION_UNSET;
+    moviStart = C.INDEX_UNSET;
+    moviEnd = C.INDEX_UNSET;
     hdrlSize = C.LENGTH_UNSET;
     durationUs = C.TIME_UNSET;
   }
@@ -154,7 +160,7 @@ public final class AviExtractor implements Extractor {
   public void init(ExtractorOutput output) {
     this.state = STATE_SKIPPING_TO_HDRL;
     this.extractorOutput = output;
-    pendingReposition = C.POSITION_UNSET;
+    pendingReposition = C.INDEX_UNSET;
   }
 
   @Override
@@ -169,8 +175,8 @@ public final class AviExtractor implements Extractor {
   }
 
   @Override
-  public int read(ExtractorInput input, PositionHolder positionHolder) throws IOException {
-    if (resolvePendingReposition(input, positionHolder)) {
+  public int read(ExtractorInput input, PositionHolder seekPosition) throws IOException {
+    if (resolvePendingReposition(input, seekPosition)) {
       return RESULT_SEEK;
     }
     switch (state) {
@@ -206,7 +212,7 @@ public final class AviExtractor implements Extractor {
         state = STATE_FINDING_MOVI_HEADER;
         return RESULT_CONTINUE;
       case STATE_FINDING_MOVI_HEADER:
-        if (moviStart != C.POSITION_UNSET && input.getPosition() != moviStart) {
+        if (moviStart != C.INDEX_UNSET && input.getPosition() != moviStart) {
           pendingReposition = moviStart;
           return RESULT_CONTINUE;
         }
@@ -273,7 +279,7 @@ public final class AviExtractor implements Extractor {
 
   @Override
   public void seek(long position, long timeUs) {
-    pendingReposition = C.POSITION_UNSET;
+    pendingReposition = C.INDEX_UNSET;
     currentChunkReader = null;
     for (ChunkReader chunkReader : chunkReaders) {
       chunkReader.seekToPosition(position);
@@ -303,14 +309,14 @@ public final class AviExtractor implements Extractor {
    * {@link ExtractorInput#getPosition() current position}, but not further than {@link
    * #RELOAD_MINIMUM_SEEK_DISTANCE}.
    */
-  private boolean resolvePendingReposition(ExtractorInput input, PositionHolder positionHolder)
+  private boolean resolvePendingReposition(ExtractorInput input, PositionHolder seekPosition)
       throws IOException {
     boolean needSeek = false;
-    if (pendingReposition != C.POSITION_UNSET) {
+    if (pendingReposition != C.INDEX_UNSET) {
       long currentPosition = input.getPosition();
       if (pendingReposition < currentPosition
           || pendingReposition > currentPosition + RELOAD_MINIMUM_SEEK_DISTANCE) {
-        positionHolder.position = pendingReposition;
+        seekPosition.position = pendingReposition;
         needSeek = true;
       } else {
         // The distance to the target position is short enough that it makes sense to just skip the
@@ -318,7 +324,7 @@ public final class AviExtractor implements Extractor {
         input.skipFully((int) (pendingReposition - currentPosition));
       }
     }
-    pendingReposition = C.POSITION_UNSET;
+    pendingReposition = C.INDEX_UNSET;
     return needSeek;
   }
 

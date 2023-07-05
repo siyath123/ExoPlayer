@@ -30,7 +30,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** A compatibility wrapper for {@link CaptionStyle}. */
+/**
+ * A compatibility wrapper for {@link CaptionStyle}.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class CaptionStyleCompat {
 
   /**
@@ -93,7 +101,7 @@ public final class CaptionStyleCompat {
    *   <li>{@link #EDGE_TYPE_DEPRESSED}
    * </ul>
    */
-  @EdgeType public final int edgeType;
+  public final @EdgeType int edgeType;
 
   /** The preferred edge color, if using an edge type other than {@link #EDGE_TYPE_NONE}. */
   public final int edgeColor;

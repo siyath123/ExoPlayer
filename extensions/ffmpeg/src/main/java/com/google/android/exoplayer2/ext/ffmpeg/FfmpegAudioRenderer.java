@@ -35,7 +35,15 @@ import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.TraceUtil;
 import com.google.android.exoplayer2.util.Util;
 
-/** Decodes and renders audio using FFmpeg. */
+/**
+ * Decodes and renders audio using FFmpeg.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegAudioDecoder> {
 
   private static final String TAG = "FfmpegAudioRenderer";
@@ -104,10 +112,11 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegAudioD
   }
 
   @Override
-  public final @AdaptiveSupport int supportsMixedMimeTypeAdaptation() {
+  public @AdaptiveSupport int supportsMixedMimeTypeAdaptation() {
     return ADAPTIVE_NOT_SEAMLESS;
   }
 
+  /** {@inheritDoc} */
   @Override
   protected FfmpegAudioDecoder createDecoder(Format format, @Nullable CryptoConfig cryptoConfig)
       throws FfmpegDecoderException {
@@ -121,8 +130,9 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegAudioD
     return decoder;
   }
 
+  /** {@inheritDoc} */
   @Override
-  public Format getOutputFormat(FfmpegAudioDecoder decoder) {
+  protected Format getOutputFormat(FfmpegAudioDecoder decoder) {
     Assertions.checkNotNull(decoder);
     return new Format.Builder()
         .setSampleMimeType(MimeTypes.AUDIO_RAW)

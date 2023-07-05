@@ -68,7 +68,13 @@ import java.util.concurrent.Executor;
  * application's main thread. Registered listeners will be called on the same thread. In all cases
  * the `Looper` of the thread from which the manager must be accessed can be queried using {@link
  * #getApplicationLooper()}.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class DownloadManager {
 
   /** Listener for {@link DownloadManager} events. */
@@ -190,23 +196,6 @@ public final class DownloadManager {
   private boolean waitingForRequirements;
   private List<Download> downloads;
   private RequirementsWatcher requirementsWatcher;
-
-  /**
-   * Constructs a {@link DownloadManager}.
-   *
-   * @param context Any context.
-   * @param databaseProvider Provides the SQLite database in which downloads are persisted.
-   * @param cache A cache to be used to store downloaded data. The cache should be configured with
-   *     an {@link CacheEvictor} that will not evict downloaded content, for example {@link
-   *     NoOpCacheEvictor}.
-   * @param upstreamFactory A {@link Factory} for creating {@link DataSource}s for downloading data.
-   * @deprecated Use {@link #DownloadManager(Context, DatabaseProvider, Cache, Factory, Executor)}.
-   */
-  @Deprecated
-  public DownloadManager(
-      Context context, DatabaseProvider databaseProvider, Cache cache, Factory upstreamFactory) {
-    this(context, databaseProvider, cache, upstreamFactory, Runnable::run);
-  }
 
   /**
    * Constructs a {@link DownloadManager}.
@@ -531,6 +520,7 @@ public final class DownloadManager {
         Thread.currentThread().interrupt();
       }
       applicationHandler.removeCallbacksAndMessages(/* token= */ null);
+      requirementsWatcher.stop();
       // Reset state.
       downloads = Collections.emptyList();
       pendingMessages = 0;
@@ -707,6 +697,7 @@ public final class DownloadManager {
     private int maxParallelDownloads;
     private int minRetryCount;
     private int activeDownloadTaskCount;
+    private boolean hasActiveRemoveTask;
 
     public InternalHandler(
         HandlerThread thread,
@@ -1058,6 +1049,10 @@ public final class DownloadManager {
         return;
       }
 
+      if (hasActiveRemoveTask) {
+        return;
+      }
+
       // We can start a remove task.
       Downloader downloader = downloaderFactory.createDownloader(download.request);
       activeTask =
@@ -1069,6 +1064,7 @@ public final class DownloadManager {
               minRetryCount,
               /* internalHandler= */ this);
       activeTasks.put(download.request.id, activeTask);
+      hasActiveRemoveTask = true;
       activeTask.start();
     }
 
@@ -1098,7 +1094,9 @@ public final class DownloadManager {
       activeTasks.remove(downloadId);
 
       boolean isRemove = task.isRemove;
-      if (!isRemove && --activeDownloadTaskCount == 0) {
+      if (isRemove) {
+        hasActiveRemoveTask = false;
+      } else if (--activeDownloadTaskCount == 0) {
         removeMessages(MSG_UPDATE_PROGRESS);
       }
 

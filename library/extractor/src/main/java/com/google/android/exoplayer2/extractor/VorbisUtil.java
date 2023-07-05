@@ -30,7 +30,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/** Utility methods for parsing Vorbis streams. */
+/**
+ * Utility methods for parsing Vorbis streams.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class VorbisUtil {
 
   /** Vorbis comment header. */
@@ -50,8 +58,8 @@ public final class VorbisUtil {
   /**
    * Vorbis identification header.
    *
-   * @see <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-630004.2.2">Vorbis
-   *     spec/Identification header</a>
+   * <p>See the <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-630004.2.2">Vorbis
+   * spec/Identification header</a>
    */
   public static final class VorbisIdHeader {
 
@@ -133,8 +141,9 @@ public final class VorbisUtil {
   /**
    * Returns ilog(x), which is the index of the highest set bit in {@code x}.
    *
-   * @see <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-1190009.2.1">Vorbis
-   *     spec</a>
+   * <p>See the <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-1190009.2.1">Vorbis
+   * spec</a>
+   *
    * @param x the value of which the ilog should be calculated.
    * @return ilog(x)
    */
@@ -150,8 +159,9 @@ public final class VorbisUtil {
   /**
    * Reads a Vorbis identification header from {@code headerData}.
    *
-   * @see <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-630004.2.2">Vorbis
-   *     spec/Identification header</a>
+   * <p>See the <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-630004.2.2">Vorbis
+   * spec/Identification header</a>
+   *
    * @param headerData a {@link ParsableByteArray} wrapping the header data.
    * @return a {@link VorbisUtil.VorbisIdHeader} with meta data.
    * @throws ParserException thrown if invalid capture pattern is detected.
@@ -200,8 +210,9 @@ public final class VorbisUtil {
   /**
    * Reads a Vorbis comment header.
    *
-   * @see <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-640004.2.3">Vorbis
-   *     spec/Comment header</a>
+   * <p>See the <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-640004.2.3">Vorbis
+   * spec/Comment header</a>
+   *
    * @param headerData A {@link ParsableByteArray} wrapping the header data.
    * @return A {@link VorbisUtil.CommentHeader} with all the comments.
    * @throws ParserException If an error occurs parsing the comment header.
@@ -217,8 +228,9 @@ public final class VorbisUtil {
    *
    * <p>The data provided may not contain the Vorbis metadata common header and the framing bit.
    *
-   * @see <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-640004.2.3">Vorbis
-   *     spec/Comment header</a>
+   * <p>See the <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-640004.2.3">Vorbis
+   * spec/Comment header</a>
+   *
    * @param headerData A {@link ParsableByteArray} wrapping the header data.
    * @param hasMetadataHeader Whether the {@code headerData} contains a Vorbis metadata common
    *     header preceding the comment header.
@@ -347,8 +359,9 @@ public final class VorbisUtil {
    * That's why we need to partially decode or at least read the entire setup header to know where
    * to start reading the modes.
    *
-   * @see <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-650004.2.4">Vorbis
-   *     spec/Setup header</a>
+   * <p>See the <a href="https://www.xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-650004.2.4">Vorbis
+   * spec/Setup header</a>
+   *
    * @param headerData a {@link ParsableByteArray} containing setup header data.
    * @param channels the number of channels.
    * @return an array of {@link Mode}s.
@@ -365,7 +378,7 @@ public final class VorbisUtil {
     bitArray.skipBits(headerData.getPosition() * 8);
 
     for (int i = 0; i < numberOfBooks; i++) {
-      readBook(bitArray);
+      skipBook(bitArray);
     }
 
     int timeCount = bitArray.readBits(6) + 1;
@@ -529,7 +542,7 @@ public final class VorbisUtil {
     }
   }
 
-  private static CodeBook readBook(VorbisBitArray bitArray) throws ParserException {
+  private static void skipBook(VorbisBitArray bitArray) throws ParserException {
     if (bitArray.readBits(24) != 0x564342) {
       throw ParserException.createForMalformedContainer(
           "expected code book to start with [0x56, 0x43, 0x42] at " + bitArray.getPosition(),
@@ -537,30 +550,23 @@ public final class VorbisUtil {
     }
     int dimensions = bitArray.readBits(16);
     int entries = bitArray.readBits(24);
-    long[] lengthMap = new long[entries];
 
     boolean isOrdered = bitArray.readBit();
     if (!isOrdered) {
       boolean isSparse = bitArray.readBit();
-      for (int i = 0; i < lengthMap.length; i++) {
+      for (int i = 0; i < entries; i++) {
         if (isSparse) {
           if (bitArray.readBit()) {
-            lengthMap[i] = (long) (bitArray.readBits(5) + 1);
-          } else { // entry unused
-            lengthMap[i] = 0;
+            bitArray.skipBits(5); // lengthMap entry
           }
         } else { // not sparse
-          lengthMap[i] = (long) (bitArray.readBits(5) + 1);
+          bitArray.skipBits(5); // lengthMap entry
         }
       }
     } else {
-      int length = bitArray.readBits(5) + 1;
-      for (int i = 0; i < lengthMap.length; ) {
-        int num = bitArray.readBits(iLog(entries - i));
-        for (int j = 0; j < num && i < lengthMap.length; i++, j++) {
-          lengthMap[i] = length;
-        }
-        length++;
+      bitArray.skipBits(5); // length
+      for (int i = 0; i < entries; ) {
+        i += bitArray.readBits(iLog(entries - i)); // num
       }
     }
 
@@ -586,11 +592,11 @@ public final class VorbisUtil {
       // discard (no decoding required yet)
       bitArray.skipBits((int) (lookupValuesCount * valueBits));
     }
-    return new CodeBook(dimensions, entries, lengthMap, lookupType, isOrdered);
   }
 
   /**
-   * @see <a href="http://svn.xiph.org/trunk/vorbis/lib/sharedbook.c">_book_maptype1_quantvals</a>
+   * See the <a
+   * href="http://svn.xiph.org/trunk/vorbis/lib/sharedbook.c">_book_maptype1_quantvals</a>
    */
   private static long mapType1QuantValues(long entries, long dimension) {
     return (long) Math.floor(Math.pow(entries, 1.d / dimension));
@@ -598,23 +604,5 @@ public final class VorbisUtil {
 
   private VorbisUtil() {
     // Prevent instantiation.
-  }
-
-  private static final class CodeBook {
-
-    public final int dimensions;
-    public final int entries;
-    public final long[] lengthMap;
-    public final int lookupType;
-    public final boolean isOrdered;
-
-    public CodeBook(
-        int dimensions, int entries, long[] lengthMap, int lookupType, boolean isOrdered) {
-      this.dimensions = dimensions;
-      this.entries = entries;
-      this.lengthMap = lengthMap;
-      this.lookupType = lookupType;
-      this.isOrdered = isOrdered;
-    }
   }
 }

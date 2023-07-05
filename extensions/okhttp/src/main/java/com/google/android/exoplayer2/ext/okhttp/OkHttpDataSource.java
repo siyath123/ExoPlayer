@@ -39,6 +39,7 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.common.base.Predicate;
 import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -64,7 +65,13 @@ import okhttp3.ResponseBody;
  * <p>Note: HTTP request headers will be set using all parameters passed via (in order of decreasing
  * priority) the {@code dataSpec}, {@link #setRequestProperty} and the default parameters used to
  * construct the instance.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public class OkHttpDataSource extends BaseDataSource implements HttpDataSource {
 
   static {
@@ -93,6 +100,7 @@ public class OkHttpDataSource extends BaseDataSource implements HttpDataSource {
       defaultRequestProperties = new RequestProperties();
     }
 
+    @CanIgnoreReturnValue
     @Override
     public final Factory setDefaultRequestProperties(Map<String, String> defaultRequestProperties) {
       this.defaultRequestProperties.clearAndSet(defaultRequestProperties);
@@ -109,6 +117,7 @@ public class OkHttpDataSource extends BaseDataSource implements HttpDataSource {
      *     agent of the underlying {@link OkHttpClient}.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setUserAgent(@Nullable String userAgent) {
       this.userAgent = userAgent;
       return this;
@@ -122,6 +131,7 @@ public class OkHttpDataSource extends BaseDataSource implements HttpDataSource {
      * @param cacheControl The cache control that will be used.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setCacheControl(@Nullable CacheControl cacheControl) {
       this.cacheControl = cacheControl;
       return this;
@@ -138,6 +148,7 @@ public class OkHttpDataSource extends BaseDataSource implements HttpDataSource {
      *     predicate that was previously set.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setContentTypePredicate(@Nullable Predicate<String> contentTypePredicate) {
       this.contentTypePredicate = contentTypePredicate;
       return this;
@@ -153,6 +164,7 @@ public class OkHttpDataSource extends BaseDataSource implements HttpDataSource {
      * @param transferListener The listener that will be used.
      * @return This factory.
      */
+    @CanIgnoreReturnValue
     public Factory setTransferListener(@Nullable TransferListener transferListener) {
       this.transferListener = transferListener;
       return this;

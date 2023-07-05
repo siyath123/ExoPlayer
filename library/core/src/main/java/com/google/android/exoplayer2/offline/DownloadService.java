@@ -39,7 +39,22 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-/** A {@link Service} for downloading media. */
+/**
+ * A {@link Service} for downloading media.
+ *
+ * <p>Apps with target SDK 33 and greater need to add the {@code
+ * android.permission.POST_NOTIFICATIONS} permission to the manifest and request the permission at
+ * runtime before starting downloads. Without that permission granted by the user, notifications
+ * posted by this service are not displayed. See <a
+ * href="https://developer.android.com/develop/ui/views/notifications/notification-permission">the
+ * official UI guide</a> for more detailed information.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public abstract class DownloadService extends Service {
 
   /**
@@ -170,9 +185,11 @@ public abstract class DownloadService extends Service {
 
   private static final String TAG = "DownloadService";
 
-  // Keep a DownloadManagerHelper for each DownloadService as long as the process is running. The
-  // helper is needed to restart the DownloadService when there's no scheduler. Even when there is a
-  // scheduler, the DownloadManagerHelper is typically able to restart the DownloadService faster.
+  // Maps each concrete DownloadService subclass to a single DownloadManagerHelper instance. This
+  // ensures getDownloadManager is only called once per subclass, even if a new instance of the
+  // service is created. The DownloadManagerHelper wrapper also takes care of restarting the service
+  // when there's no scheduler, and is often able to restart the service faster than the scheduler
+  // even when there is one.
   private static final HashMap<Class<? extends DownloadService>, DownloadManagerHelper>
       downloadManagerHelpers = new HashMap<>();
 
@@ -221,23 +238,6 @@ public abstract class DownloadService extends Service {
         foregroundNotificationUpdateInterval,
         /* channelId= */ null,
         /* channelNameResourceId= */ 0,
-        /* channelDescriptionResourceId= */ 0);
-  }
-
-  /**
-   * @deprecated Use {@link #DownloadService(int, long, String, int, int)}.
-   */
-  @Deprecated
-  protected DownloadService(
-      int foregroundNotificationId,
-      long foregroundNotificationUpdateInterval,
-      @Nullable String channelId,
-      @StringRes int channelNameResourceId) {
-    this(
-        foregroundNotificationId,
-        foregroundNotificationUpdateInterval,
-        channelId,
-        channelNameResourceId,
         /* channelDescriptionResourceId= */ 0);
   }
 
@@ -571,6 +571,17 @@ public abstract class DownloadService extends Service {
     Util.startForegroundService(context, intent);
   }
 
+  /**
+   * Clear all {@linkplain DownloadManagerHelper download manager helpers} before restarting the
+   * service.
+   *
+   * <p>Calling this method is normally only required if an app supports downloading content for
+   * multiple users for which different download directories should be used.
+   */
+  public static void clearDownloadManagerHelpers() {
+    downloadManagerHelpers.clear();
+  }
+
   @Override
   public void onCreate() {
     if (channelId != null) {
@@ -710,8 +721,11 @@ public abstract class DownloadService extends Service {
   }
 
   /**
-   * Returns a {@link DownloadManager} to be used to downloaded content. Called only once in the
-   * life cycle of the process.
+   * Returns a {@link DownloadManager} to be used to downloaded content. For each concrete download
+   * service subclass, this is called once in the lifecycle of the process when {@link #onCreate} is
+   * called on the first instance of the service. If the service is destroyed and a new instance is
+   * created later, the new instance will use the previously returned {@link DownloadManager}
+   * without this method being called again.
    */
   protected abstract DownloadManager getDownloadManager();
 

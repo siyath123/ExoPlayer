@@ -70,7 +70,13 @@ import org.checkerframework.checker.nullness.compatqual.NullableType;
  * DashMediaSource mediaSource =
  *     new DashMediaSource.Factory(cacheDataSourceFactory).createMediaSource(mediaItem);
  * }</pre>
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class DashDownloader extends SegmentDownloader<DashManifest> {
 
   private final BaseUrlExclusionList baseUrlExclusionList;
@@ -98,7 +104,30 @@ public final class DashDownloader extends SegmentDownloader<DashManifest> {
    */
   public DashDownloader(
       MediaItem mediaItem, CacheDataSource.Factory cacheDataSourceFactory, Executor executor) {
-    this(mediaItem, new DashManifestParser(), cacheDataSourceFactory, executor);
+    this(
+        mediaItem,
+        new DashManifestParser(),
+        cacheDataSourceFactory,
+        executor,
+        DEFAULT_MAX_MERGED_SEGMENT_START_TIME_DIFF_MS);
+  }
+
+  /**
+   * @deprecated Use {@link DashDownloader#DashDownloader(MediaItem, Parser,
+   *     CacheDataSource.Factory, Executor, long)} instead.
+   */
+  @Deprecated
+  public DashDownloader(
+      MediaItem mediaItem,
+      Parser<DashManifest> manifestParser,
+      CacheDataSource.Factory cacheDataSourceFactory,
+      Executor executor) {
+    this(
+        mediaItem,
+        manifestParser,
+        cacheDataSourceFactory,
+        executor,
+        DEFAULT_MAX_MERGED_SEGMENT_START_TIME_DIFF_MS);
   }
 
   /**
@@ -111,13 +140,22 @@ public final class DashDownloader extends SegmentDownloader<DashManifest> {
    * @param executor An {@link Executor} used to make requests for the media being downloaded.
    *     Providing an {@link Executor} that uses multiple threads will speed up the download by
    *     allowing parts of it to be executed in parallel.
+   * @param maxMergedSegmentStartTimeDiffMs The maximum difference of the start time of two
+   *     segments, up to which the segments (of the same URI) should be merged into a single
+   *     download segment, in milliseconds.
    */
   public DashDownloader(
       MediaItem mediaItem,
       Parser<DashManifest> manifestParser,
       CacheDataSource.Factory cacheDataSourceFactory,
-      Executor executor) {
-    super(mediaItem, manifestParser, cacheDataSourceFactory, executor);
+      Executor executor,
+      long maxMergedSegmentStartTimeDiffMs) {
+    super(
+        mediaItem,
+        manifestParser,
+        cacheDataSourceFactory,
+        executor,
+        maxMergedSegmentStartTimeDiffMs);
     baseUrlExclusionList = new BaseUrlExclusionList();
   }
 

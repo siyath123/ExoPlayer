@@ -15,27 +15,31 @@
  */
 package com.google.android.exoplayer2.text;
 
-import static java.lang.annotation.ElementType.TYPE_USE;
-
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.Bundleable;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.util.BundleableUtil;
+import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Class to represent the state of active {@link Cue Cues} at a particular time. */
+/**
+ * Class to represent the state of active {@link Cue Cues} at a particular time.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class CueGroup implements Bundleable {
 
-  /** Empty {@link CueGroup}. */
-  public static final CueGroup EMPTY = new CueGroup(ImmutableList.of());
+  /** An empty group with no {@link Cue Cues} and presentation time of zero. */
+  public static final CueGroup EMPTY_TIME_ZERO =
+      new CueGroup(ImmutableList.of(), /* presentationTimeUs= */ 0);
 
   /**
    * The cues in this group.
@@ -46,43 +50,43 @@ public final class CueGroup implements Bundleable {
    * <p>This list may be empty if the group represents a state with no cues.
    */
   public final ImmutableList<Cue> cues;
+  /**
+   * The presentation time of the {@link #cues}, in microseconds.
+   *
+   * <p>This time is an offset from the start of the current {@link Timeline.Period}.
+   */
+  public final long presentationTimeUs;
 
   /** Creates a CueGroup. */
-  public CueGroup(List<Cue> cues) {
+  public CueGroup(List<Cue> cues, long presentationTimeUs) {
     this.cues = ImmutableList.copyOf(cues);
+    this.presentationTimeUs = presentationTimeUs;
   }
 
   // Bundleable implementation.
 
-  @Documented
-  @Retention(RetentionPolicy.SOURCE)
-  @Target(TYPE_USE)
-  @IntDef({FIELD_CUES})
-  private @interface FieldNumber {}
-
-  private static final int FIELD_CUES = 0;
+  private static final String FIELD_CUES = Util.intToStringMaxRadix(0);
+  private static final String FIELD_PRESENTATION_TIME_US = Util.intToStringMaxRadix(1);
 
   @Override
   public Bundle toBundle() {
     Bundle bundle = new Bundle();
     bundle.putParcelableArrayList(
-        keyForField(FIELD_CUES), BundleableUtil.toBundleArrayList(filterOutBitmapCues(cues)));
+        FIELD_CUES, BundleableUtil.toBundleArrayList(filterOutBitmapCues(cues)));
+    bundle.putLong(FIELD_PRESENTATION_TIME_US, presentationTimeUs);
     return bundle;
   }
 
   public static final Creator<CueGroup> CREATOR = CueGroup::fromBundle;
 
   private static final CueGroup fromBundle(Bundle bundle) {
-    @Nullable ArrayList<Bundle> cueBundles = bundle.getParcelableArrayList(keyForField(FIELD_CUES));
+    @Nullable ArrayList<Bundle> cueBundles = bundle.getParcelableArrayList(FIELD_CUES);
     List<Cue> cues =
         cueBundles == null
             ? ImmutableList.of()
             : BundleableUtil.fromBundleList(Cue.CREATOR, cueBundles);
-    return new CueGroup(cues);
-  }
-
-  private static String keyForField(@FieldNumber int field) {
-    return Integer.toString(field, Character.MAX_RADIX);
+    long presentationTimeUs = bundle.getLong(FIELD_PRESENTATION_TIME_US);
+    return new CueGroup(cues, presentationTimeUs);
   }
 
   /**

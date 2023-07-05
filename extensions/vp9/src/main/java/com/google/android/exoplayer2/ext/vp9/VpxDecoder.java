@@ -31,8 +31,16 @@ import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.Util;
 import java.nio.ByteBuffer;
 
-/** Vpx decoder. */
+/**
+ * Vpx decoder.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
 @VisibleForTesting(otherwise = PACKAGE_PRIVATE)
+@Deprecated
 public final class VpxDecoder
     extends SimpleDecoder<DecoderInputBuffer, VideoDecoderOutputBuffer, VpxDecoderException> {
 
@@ -99,13 +107,13 @@ public final class VpxDecoder
   }
 
   @Override
-  protected void releaseOutputBuffer(VideoDecoderOutputBuffer buffer) {
+  protected void releaseOutputBuffer(VideoDecoderOutputBuffer outputBuffer) {
     // Decode only frames do not acquire a reference on the internal decoder buffer and thus do not
     // require a call to vpxReleaseFrame.
-    if (outputMode == C.VIDEO_OUTPUT_MODE_SURFACE_YUV && !buffer.isDecodeOnly()) {
-      vpxReleaseFrame(vpxDecContext, buffer);
+    if (outputMode == C.VIDEO_OUTPUT_MODE_SURFACE_YUV && !outputBuffer.isDecodeOnly()) {
+      vpxReleaseFrame(vpxDecContext, outputBuffer);
     }
-    super.releaseOutputBuffer(buffer);
+    super.releaseOutputBuffer(outputBuffer);
   }
 
   @Override

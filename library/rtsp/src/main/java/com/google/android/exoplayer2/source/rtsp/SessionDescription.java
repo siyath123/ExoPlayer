@@ -24,6 +24,7 @@ import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.HashMap;
 
 /**
@@ -31,7 +32,13 @@ import java.util.HashMap;
  *
  * <p>SDP messages encapsulate information on the media play back session, including session
  * configuration information, formats of each playable track, etc. SDP is defined in RFC4566.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 /* package */ final class SessionDescription {
 
   /** Builder class for {@link SessionDescription}. */
@@ -64,6 +71,7 @@ import java.util.HashMap;
      * @param sessionName The {@link SessionDescription#sessionName}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setSessionName(String sessionName) {
       this.sessionName = sessionName;
       return this;
@@ -75,6 +83,7 @@ import java.util.HashMap;
      * @param sessionInfo The {@link SessionDescription#sessionInfo}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setSessionInfo(String sessionInfo) {
       this.sessionInfo = sessionInfo;
       return this;
@@ -86,6 +95,7 @@ import java.util.HashMap;
      * @param uri The {@link SessionDescription#uri}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setUri(Uri uri) {
       this.uri = uri;
       return this;
@@ -99,6 +109,7 @@ import java.util.HashMap;
      * @param origin The {@link SessionDescription#origin}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setOrigin(String origin) {
       this.origin = origin;
       return this;
@@ -110,6 +121,7 @@ import java.util.HashMap;
      * @param connection The {@link SessionDescription#connection}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setConnection(String connection) {
       this.connection = connection;
       return this;
@@ -121,6 +133,7 @@ import java.util.HashMap;
      * @param bitrate The {@link SessionDescription#bitrate} in bits per second.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setBitrate(int bitrate) {
       this.bitrate = bitrate;
       return this;
@@ -134,6 +147,7 @@ import java.util.HashMap;
      * @param timing The {@link SessionDescription#timing}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setTiming(String timing) {
       this.timing = timing;
       return this;
@@ -145,6 +159,7 @@ import java.util.HashMap;
      * @param key The {@link SessionDescription#key}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setKey(String key) {
       this.key = key;
       return this;
@@ -156,6 +171,7 @@ import java.util.HashMap;
      * @param emailAddress The {@link SessionDescription#emailAddress}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setEmailAddress(String emailAddress) {
       this.emailAddress = emailAddress;
       return this;
@@ -167,6 +183,7 @@ import java.util.HashMap;
      * @param phoneNumber The {@link SessionDescription#phoneNumber}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setPhoneNumber(String phoneNumber) {
       this.phoneNumber = phoneNumber;
       return this;
@@ -179,6 +196,7 @@ import java.util.HashMap;
      * @param attributeValue The value of the attribute.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder addAttribute(String attributeName, String attributeValue) {
       attributes.put(attributeName, attributeValue);
       return this;
@@ -190,6 +208,7 @@ import java.util.HashMap;
      * @param mediaDescription The {@link MediaDescription}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder addMediaDescription(MediaDescription mediaDescription) {
       mediaDescriptionListBuilder.add(mediaDescription);
       return this;

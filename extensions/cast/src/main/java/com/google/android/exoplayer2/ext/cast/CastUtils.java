@@ -23,12 +23,16 @@ import com.google.android.gms.cast.CastStatusCodes;
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaTrack;
 
-/** Utility methods for Cast integration. */
+/**
+ * Utility methods for Cast integration.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 /* package */ final class CastUtils {
-
-  /** The duration returned by {@link MediaInfo#getStreamDuration()} for live streams. */
-  // TODO: Remove once [Internal ref: b/171657375] is fixed.
-  private static final long LIVE_STREAM_DURATION = -1000;
 
   /**
    * Returns the duration in microseconds advertised by a media info, or {@link C#TIME_UNSET} if
@@ -42,9 +46,7 @@ import com.google.android.gms.cast.MediaTrack;
       return C.TIME_UNSET;
     }
     long durationMs = mediaInfo.getStreamDuration();
-    return durationMs != MediaInfo.UNKNOWN_DURATION && durationMs != LIVE_STREAM_DURATION
-        ? Util.msToUs(durationMs)
-        : C.TIME_UNSET;
+    return durationMs != MediaInfo.UNKNOWN_DURATION ? Util.msToUs(durationMs) : C.TIME_UNSET;
   }
 
   /**

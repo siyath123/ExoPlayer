@@ -45,6 +45,7 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -64,8 +65,14 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
  *
  * <p>This implementation supports pre-acquisition of sessions using {@link
  * #preacquireSession(DrmSessionEventListener.EventDispatcher, Format)}.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
 @RequiresApi(18)
+@Deprecated
 public class DefaultDrmSessionManager implements DrmSessionManager {
 
   /**
@@ -118,6 +125,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
      * @param keyRequestParameters A map with parameters.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setKeyRequestParameters(@Nullable Map<String, String> keyRequestParameters) {
       this.keyRequestParameters.clear();
       if (keyRequestParameters != null) {
@@ -133,6 +141,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
      * @param exoMediaDrmProvider The {@link ExoMediaDrm.Provider}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setUuidAndExoMediaDrmProvider(
         UUID uuid, ExoMediaDrm.Provider exoMediaDrmProvider) {
       this.uuid = checkNotNull(uuid);
@@ -150,6 +159,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
      *     sessions.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setMultiSession(boolean multiSession) {
       this.multiSession = multiSession;
       return this;
@@ -169,6 +179,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
      * @throws IllegalArgumentException If {@code useDrmSessionsForClearContentTrackTypes} contains
      *     track types other than {@link C#TRACK_TYPE_AUDIO} and {@link C#TRACK_TYPE_VIDEO}.
      */
+    @CanIgnoreReturnValue
     public Builder setUseDrmSessionsForClearContent(
         @C.TrackType int... useDrmSessionsForClearContentTrackTypes) {
       for (@C.TrackType int trackType : useDrmSessionsForClearContentTrackTypes) {
@@ -187,6 +198,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
      *     played when keys for the encrypted part of the content have yet to be loaded.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setPlayClearSamplesWithoutKeys(boolean playClearSamplesWithoutKeys) {
       this.playClearSamplesWithoutKeys = playClearSamplesWithoutKeys;
       return this;
@@ -198,6 +210,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
      * @param loadErrorHandlingPolicy A {@link LoadErrorHandlingPolicy}.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setLoadErrorHandlingPolicy(LoadErrorHandlingPolicy loadErrorHandlingPolicy) {
       this.loadErrorHandlingPolicy = checkNotNull(loadErrorHandlingPolicy);
       return this;
@@ -218,6 +231,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
      *     in milliseconds. Must be &gt; 0 or {@link C#TIME_UNSET} to disable keep-alive.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder setSessionKeepaliveMs(long sessionKeepaliveMs) {
       checkArgument(sessionKeepaliveMs > 0 || sessionKeepaliveMs == C.TIME_UNSET);
       this.sessionKeepaliveMs = sessionKeepaliveMs;
@@ -311,89 +325,6 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
 
   /* package */ @Nullable volatile MediaDrmHandler mediaDrmHandler;
 
-  /**
-   * @param uuid The UUID of the drm scheme.
-   * @param exoMediaDrm An underlying {@link ExoMediaDrm} for use by the manager.
-   * @param callback Performs key and provisioning requests.
-   * @param keyRequestParameters An optional map of parameters to pass as the last argument to
-   *     {@link ExoMediaDrm#getKeyRequest(byte[], List, int, HashMap)}. May be null.
-   * @deprecated Use {@link Builder} instead.
-   */
-  @SuppressWarnings("deprecation")
-  @Deprecated
-  public DefaultDrmSessionManager(
-      UUID uuid,
-      ExoMediaDrm exoMediaDrm,
-      MediaDrmCallback callback,
-      @Nullable HashMap<String, String> keyRequestParameters) {
-    this(
-        uuid,
-        exoMediaDrm,
-        callback,
-        keyRequestParameters == null ? new HashMap<>() : keyRequestParameters,
-        /* multiSession= */ false,
-        INITIAL_DRM_REQUEST_RETRY_COUNT);
-  }
-
-  /**
-   * @param uuid The UUID of the drm scheme.
-   * @param exoMediaDrm An underlying {@link ExoMediaDrm} for use by the manager.
-   * @param callback Performs key and provisioning requests.
-   * @param keyRequestParameters An optional map of parameters to pass as the last argument to
-   *     {@link ExoMediaDrm#getKeyRequest(byte[], List, int, HashMap)}. May be null.
-   * @param multiSession A boolean that specify whether multiple key session support is enabled.
-   *     Default is false.
-   * @deprecated Use {@link Builder} instead.
-   */
-  @SuppressWarnings("deprecation")
-  @Deprecated
-  public DefaultDrmSessionManager(
-      UUID uuid,
-      ExoMediaDrm exoMediaDrm,
-      MediaDrmCallback callback,
-      @Nullable HashMap<String, String> keyRequestParameters,
-      boolean multiSession) {
-    this(
-        uuid,
-        exoMediaDrm,
-        callback,
-        keyRequestParameters == null ? new HashMap<>() : keyRequestParameters,
-        multiSession,
-        INITIAL_DRM_REQUEST_RETRY_COUNT);
-  }
-
-  /**
-   * @param uuid The UUID of the drm scheme.
-   * @param exoMediaDrm An underlying {@link ExoMediaDrm} for use by the manager.
-   * @param callback Performs key and provisioning requests.
-   * @param keyRequestParameters An optional map of parameters to pass as the last argument to
-   *     {@link ExoMediaDrm#getKeyRequest(byte[], List, int, HashMap)}. May be null.
-   * @param multiSession A boolean that specify whether multiple key session support is enabled.
-   *     Default is false.
-   * @param initialDrmRequestRetryCount The number of times to retry for initial provisioning and
-   *     key request before reporting error.
-   * @deprecated Use {@link Builder} instead.
-   */
-  @Deprecated
-  public DefaultDrmSessionManager(
-      UUID uuid,
-      ExoMediaDrm exoMediaDrm,
-      MediaDrmCallback callback,
-      @Nullable HashMap<String, String> keyRequestParameters,
-      boolean multiSession,
-      int initialDrmRequestRetryCount) {
-    this(
-        uuid,
-        new ExoMediaDrm.AppManagedProvider(exoMediaDrm),
-        callback,
-        keyRequestParameters == null ? new HashMap<>() : keyRequestParameters,
-        multiSession,
-        /* useDrmSessionsForClearContentTrackTypes= */ new int[0],
-        /* playClearSamplesWithoutKeys= */ false,
-        new DefaultLoadErrorHandlingPolicy(initialDrmRequestRetryCount),
-        DEFAULT_SESSION_KEEPALIVE_MS);
-  }
-
   private DefaultDrmSessionManager(
       UUID uuid,
       ExoMediaDrm.Provider exoMediaDrmProvider,
@@ -460,6 +391,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
 
   @Override
   public final void prepare() {
+    verifyPlaybackThread(/* allowBeforeSetPlayer= */ true);
     if (prepareCallsCount++ != 0) {
       return;
     }
@@ -476,6 +408,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
 
   @Override
   public final void release() {
+    verifyPlaybackThread(/* allowBeforeSetPlayer= */ true);
     if (--prepareCallsCount != 0) {
       return;
     }
@@ -502,6 +435,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
   @Override
   public DrmSessionReference preacquireSession(
       @Nullable DrmSessionEventListener.EventDispatcher eventDispatcher, Format format) {
+    // Don't verify the playback thread, preacquireSession can be called from any thread.
     checkState(prepareCallsCount > 0);
     checkStateNotNull(playbackLooper);
     PreacquiredSessionReference preacquiredSessionReference =
@@ -514,6 +448,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
   @Nullable
   public DrmSession acquireSession(
       @Nullable DrmSessionEventListener.EventDispatcher eventDispatcher, Format format) {
+    verifyPlaybackThread(/* allowBeforeSetPlayer= */ false);
     checkState(prepareCallsCount > 0);
     checkStateNotNull(playbackLooper);
     return acquireSession(
@@ -588,6 +523,7 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
 
   @Override
   public @C.CryptoType int getCryptoType(Format format) {
+    verifyPlaybackThread(/* allowBeforeSetPlayer= */ false);
     @C.CryptoType int cryptoType = checkNotNull(exoMediaDrm).getCryptoType();
     if (format.drmInitData == null) {
       int trackType = MimeTypes.getTrackType(format.sampleMimeType);
@@ -803,6 +739,23 @@ public class DefaultDrmSessionManager implements DrmSessionManager {
       // This manager and all its sessions are fully released so we can release exoMediaDrm.
       checkNotNull(exoMediaDrm).release();
       exoMediaDrm = null;
+    }
+  }
+
+  private void verifyPlaybackThread(boolean allowBeforeSetPlayer) {
+    if (allowBeforeSetPlayer && playbackLooper == null) {
+      Log.w(
+          TAG,
+          "DefaultDrmSessionManager accessed before setPlayer(), possibly on the wrong thread.",
+          new IllegalStateException());
+    } else if (Thread.currentThread() != checkNotNull(playbackLooper).getThread()) {
+      Log.w(
+          TAG,
+          "DefaultDrmSessionManager accessed on the wrong thread.\nCurrent thread: "
+              + Thread.currentThread().getName()
+              + "\nExpected thread: "
+              + playbackLooper.getThread().getName(),
+          new IllegalStateException());
     }
   }
 

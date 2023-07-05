@@ -32,15 +32,25 @@ import java.util.List;
 /**
  * Holder for FLAC metadata.
  *
- * @see <a href="https://xiph.org/flac/format.html#metadata_block_streaminfo">FLAC format
- *     METADATA_BLOCK_STREAMINFO</a>
- * @see <a href="https://xiph.org/flac/format.html#metadata_block_seektable">FLAC format
- *     METADATA_BLOCK_SEEKTABLE</a>
- * @see <a href="https://xiph.org/flac/format.html#metadata_block_vorbis_comment">FLAC format
- *     METADATA_BLOCK_VORBIS_COMMENT</a>
- * @see <a href="https://xiph.org/flac/format.html#metadata_block_picture">FLAC format
- *     METADATA_BLOCK_PICTURE</a>
+ * <p>See the following spec references:
+ *
+ * <ul>
+ *   <li><a href="https://xiph.org/flac/format.html#metadata_block_streaminfo">FLAC format
+ *       METADATA_BLOCK_STREAMINFO</a>
+ *   <li><a href="https://xiph.org/flac/format.html#metadata_block_seektable">FLAC format
+ *       METADATA_BLOCK_SEEKTABLE</a>
+ *   <li><a href="https://xiph.org/flac/format.html#metadata_block_vorbis_comment">FLAC format
+ *       METADATA_BLOCK_VORBIS_COMMENT</a>
+ *   <li><a href="https://xiph.org/flac/format.html#metadata_block_picture">FLAC format
+ *       METADATA_BLOCK_PICTURE</a>
+ * </ul>
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class FlacStreamMetadata {
 
   /** A FLAC seek table. */

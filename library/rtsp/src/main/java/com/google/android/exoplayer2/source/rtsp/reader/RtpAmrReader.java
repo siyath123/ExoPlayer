@@ -15,6 +15,7 @@
  */
 package com.google.android.exoplayer2.source.rtsp.reader;
 
+import static com.google.android.exoplayer2.source.rtsp.reader.RtpReaderUtils.toSampleTimeUs;
 import static com.google.android.exoplayer2.util.Assertions.checkArgument;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 import static com.google.android.exoplayer2.util.Assertions.checkStateNotNull;
@@ -33,7 +34,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 /**
  * Parses an AMR byte stream carried on RTP packets and extracts individual samples. Interleaving
  * mode is not supported. Refer to RFC4867 for more details.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 /* package */ final class RtpAmrReader implements RtpPayloadReader {
   private static final String TAG = "RtpAmrReader";
   /**
@@ -182,15 +189,5 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     return isWideBand
         ? AMR_WB_FRAME_TYPE_INDEX_TO_FRAME_SIZE[frameType]
         : AMR_NB_FRAME_TYPE_INDEX_TO_FRAME_SIZE[frameType];
-  }
-
-  /** Returns the correct sample time from RTP timestamp, accounting for the AMR sampling rate. */
-  private static long toSampleTimeUs(
-      long startTimeOffsetUs, long rtpTimestamp, long firstReceivedRtpTimestamp, int sampleRate) {
-    return startTimeOffsetUs
-        + Util.scaleLargeTimestamp(
-            rtpTimestamp - firstReceivedRtpTimestamp,
-            /* multiplier= */ C.MICROS_PER_SECOND,
-            /* divisor= */ sampleRate);
   }
 }

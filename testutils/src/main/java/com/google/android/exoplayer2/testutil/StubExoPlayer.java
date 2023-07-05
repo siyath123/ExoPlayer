@@ -15,6 +15,7 @@
  */
 package com.google.android.exoplayer2.testutil;
 
+import android.media.AudioDeviceInfo;
 import android.os.Looper;
 import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -35,6 +36,7 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.util.Clock;
+import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.PriorityTaskManager;
 import com.google.android.exoplayer2.video.VideoFrameMetadataListener;
 import com.google.android.exoplayer2.video.spherical.CameraMotionListener;
@@ -123,15 +125,6 @@ public class StubExoPlayer extends StubPlayer implements ExoPlayer {
 
   @Override
   public ExoPlaybackException getPlayerError() {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * @deprecated Use {@link #prepare()} instead.
-   */
-  @Deprecated
-  @Override
-  public void retry() {
     throw new UnsupportedOperationException();
   }
 
@@ -235,12 +228,22 @@ public class StubExoPlayer extends StubPlayer implements ExoPlayer {
   }
 
   @Override
+  public void setPreferredAudioDevice(@Nullable AudioDeviceInfo audioDeviceInfo) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public void setSkipSilenceEnabled(boolean skipSilenceEnabled) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public boolean getSkipSilenceEnabled() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void setVideoEffects(List<Effect> videoEffects) {
     throw new UnsupportedOperationException();
   }
 
@@ -382,15 +385,6 @@ public class StubExoPlayer extends StubPlayer implements ExoPlayer {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * @deprecated Use {@link #setWakeMode(int)} instead.
-   */
-  @Deprecated
-  @Override
-  public void setHandleWakeLock(boolean handleWakeLock) {
-    throw new UnsupportedOperationException();
-  }
-
   @Override
   public void setWakeMode(int wakeMode) {
     throw new UnsupportedOperationException();
@@ -408,6 +402,11 @@ public class StubExoPlayer extends StubPlayer implements ExoPlayer {
 
   @Override
   public boolean experimentalIsSleepingForOffload() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean isTunnelingEnabled() {
     throw new UnsupportedOperationException();
   }
 }

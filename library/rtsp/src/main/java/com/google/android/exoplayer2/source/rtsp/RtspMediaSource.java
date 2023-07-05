@@ -38,10 +38,19 @@ import com.google.android.exoplayer2.upstream.Allocator;
 import com.google.android.exoplayer2.upstream.LoadErrorHandlingPolicy;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.IOException;
 import javax.net.SocketFactory;
 
-/** An Rtsp {@link MediaSource} */
+/**
+ * An Rtsp {@link MediaSource}
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class RtspMediaSource extends BaseMediaSource {
 
   static {
@@ -87,6 +96,7 @@ public final class RtspMediaSource extends BaseMediaSource {
      * @param forceUseRtpTcp Whether force to use TCP for streaming.
      * @return This Factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setForceUseRtpTcp(boolean forceUseRtpTcp) {
       this.forceUseRtpTcp = forceUseRtpTcp;
       return this;
@@ -98,6 +108,7 @@ public final class RtspMediaSource extends BaseMediaSource {
      * @param userAgent The user agent.
      * @return This Factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setUserAgent(String userAgent) {
       this.userAgent = userAgent;
       return this;
@@ -110,6 +121,7 @@ public final class RtspMediaSource extends BaseMediaSource {
      * @param socketFactory A socket factory.
      * @return This Factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setSocketFactory(SocketFactory socketFactory) {
       this.socketFactory = socketFactory;
       return this;
@@ -124,6 +136,7 @@ public final class RtspMediaSource extends BaseMediaSource {
      * @param debugLoggingEnabled Whether to log RTSP messages.
      * @return This Factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setDebugLoggingEnabled(boolean debugLoggingEnabled) {
       this.debugLoggingEnabled = debugLoggingEnabled;
       return this;
@@ -138,6 +151,7 @@ public final class RtspMediaSource extends BaseMediaSource {
      * @param timeoutMs The timeout measured in milliseconds.
      * @return This Factory, for convenience.
      */
+    @CanIgnoreReturnValue
     public Factory setTimeoutMs(@IntRange(from = 1) long timeoutMs) {
       checkArgument(timeoutMs > 0);
       this.timeoutMs = timeoutMs;
@@ -158,7 +172,7 @@ public final class RtspMediaSource extends BaseMediaSource {
     }
 
     @Override
-    public int[] getSupportedTypes() {
+    public @C.ContentType int[] getSupportedTypes() {
       return new int[] {C.CONTENT_TYPE_RTSP};
     }
 
@@ -184,7 +198,7 @@ public final class RtspMediaSource extends BaseMediaSource {
   }
 
   /** Thrown when an exception or error is encountered during loading an RTSP stream. */
-  public static final class RtspPlaybackException extends IOException {
+  public static class RtspPlaybackException extends IOException {
     public RtspPlaybackException(String message) {
       super(message);
     }
@@ -195,6 +209,13 @@ public final class RtspMediaSource extends BaseMediaSource {
 
     public RtspPlaybackException(String message, Throwable e) {
       super(message, e);
+    }
+  }
+
+  /** Thrown when an RTSP Unsupported Transport error (461) is encountered during RTSP Setup. */
+  public static final class RtspUdpUnsupportedTransportException extends RtspPlaybackException {
+    public RtspUdpUnsupportedTransportException(String message) {
+      super(message);
     }
   }
 

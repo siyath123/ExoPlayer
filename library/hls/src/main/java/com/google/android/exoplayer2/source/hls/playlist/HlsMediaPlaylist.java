@@ -36,7 +36,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/** Represents an HLS media playlist. */
+/**
+ * Represents an HLS media playlist.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class HlsMediaPlaylist extends HlsPlaylist {
 
   /** Server control attributes. */
@@ -460,16 +468,20 @@ public final class HlsMediaPlaylist extends HlsPlaylist {
   public final ServerControl serverControl;
 
   /**
+   * Constructs an instance.
+   *
    * @param playlistType See {@link #playlistType}.
    * @param baseUri See {@link #baseUri}.
    * @param tags See {@link #tags}.
    * @param startOffsetUs See {@link #startOffsetUs}.
+   * @param preciseStart See {@link #preciseStart}.
    * @param startTimeUs See {@link #startTimeUs}.
    * @param hasDiscontinuitySequence See {@link #hasDiscontinuitySequence}.
    * @param discontinuitySequence See {@link #discontinuitySequence}.
    * @param mediaSequence See {@link #mediaSequence}.
    * @param version See {@link #version}.
    * @param targetDurationUs See {@link #targetDurationUs}.
+   * @param partTargetDurationUs See {@link #partTargetDurationUs}.
    * @param hasIndependentSegments See {@link #hasIndependentSegments}.
    * @param hasEndTag See {@link #hasEndTag}.
    * @param hasProgramDateTime See {@link #hasProgramDateTime}.

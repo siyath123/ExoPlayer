@@ -56,7 +56,13 @@ import java.util.concurrent.Executor;
  * SsMediaSource mediaSource =
  *     new SsMediaSource.Factory(cacheDataSourceFactory).createMediaSource(mediaItem);
  * }</pre>
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class SsDownloader extends SegmentDownloader<SsManifest> {
 
   /**
@@ -91,7 +97,26 @@ public final class SsDownloader extends SegmentDownloader<SsManifest> {
             .build(),
         new SsManifestParser(),
         cacheDataSourceFactory,
-        executor);
+        executor,
+        DEFAULT_MAX_MERGED_SEGMENT_START_TIME_DIFF_MS);
+  }
+
+  /**
+   * @deprecated Use {@link SsDownloader#SsDownloader(MediaItem, Parser, CacheDataSource.Factory,
+   *     Executor, long)} instead.
+   */
+  @Deprecated
+  public SsDownloader(
+      MediaItem mediaItem,
+      Parser<SsManifest> manifestParser,
+      CacheDataSource.Factory cacheDataSourceFactory,
+      Executor executor) {
+    this(
+        mediaItem,
+        manifestParser,
+        cacheDataSourceFactory,
+        executor,
+        DEFAULT_MAX_MERGED_SEGMENT_START_TIME_DIFF_MS);
   }
 
   /**
@@ -104,18 +129,27 @@ public final class SsDownloader extends SegmentDownloader<SsManifest> {
    * @param executor An {@link Executor} used to make requests for the media being downloaded.
    *     Providing an {@link Executor} that uses multiple threads will speed up the download by
    *     allowing parts of it to be executed in parallel.
+   * @param maxMergedSegmentStartTimeDiffMs The maximum difference of the start time of two
+   *     segments, up to which the segments (of the same URI) should be merged into a single
+   *     download segment, in milliseconds.
    */
   public SsDownloader(
       MediaItem mediaItem,
       Parser<SsManifest> manifestParser,
       CacheDataSource.Factory cacheDataSourceFactory,
-      Executor executor) {
-    super(mediaItem, manifestParser, cacheDataSourceFactory, executor);
+      Executor executor,
+      long maxMergedSegmentStartTimeDiffMs) {
+    super(
+        mediaItem,
+        manifestParser,
+        cacheDataSourceFactory,
+        executor,
+        maxMergedSegmentStartTimeDiffMs);
   }
 
   @Override
   protected List<Segment> getSegments(
-      DataSource dataSource, SsManifest manifest, boolean allowIncompleteList) {
+      DataSource dataSource, SsManifest manifest, boolean removing) {
     ArrayList<Segment> segments = new ArrayList<>();
     for (StreamElement streamElement : manifest.streamElements) {
       for (int i = 0; i < streamElement.formats.length; i++) {

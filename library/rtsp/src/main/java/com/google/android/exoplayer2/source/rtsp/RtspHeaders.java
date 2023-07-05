@@ -22,6 +22,7 @@ import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +32,13 @@ import java.util.Map;
  * <p>{@link Builder} must be used to construct an instance. Use {@link #get} to query header values
  * with case-insensitive header names. The extra spaces around header names and values are trimmed.
  * Contrary to HTTP, RTSP does not allow ambiguous/arbitrary header names (RFC 2326 Section 12).
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 /* package */ final class RtspHeaders {
 
   public static final String ACCEPT = "Accept";
@@ -113,6 +120,7 @@ import java.util.Map;
      * @param headerValue The value of the header.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder add(String headerName, String headerValue) {
       namesAndValuesBuilder.put(convertToStandardHeaderName(headerName.trim()), headerValue.trim());
       return this;
@@ -125,6 +133,7 @@ import java.util.Map;
      *     &lt;headerValue&gt;
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder addAll(List<String> headers) {
       for (int i = 0; i < headers.size(); i++) {
         String[] header = Util.splitAtFirst(headers.get(i), ":\\s?");
@@ -142,6 +151,7 @@ import java.util.Map;
      *     header values.
      * @return This builder.
      */
+    @CanIgnoreReturnValue
     public Builder addAll(Map<String, String> headers) {
       for (Map.Entry<String, String> header : headers.entrySet()) {
         add(header.getKey(), header.getValue());

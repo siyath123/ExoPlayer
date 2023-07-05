@@ -39,7 +39,15 @@ import java.util.List;
 import org.checkerframework.checker.nullness.compatqual.NullableType;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-/** Merges multiple {@link MediaPeriod}s. */
+/**
+ * Merges multiple {@link MediaPeriod}s.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 /* package */ final class MergingMediaPeriod implements MediaPeriod, MediaPeriod.Callback {
 
   private final MediaPeriod[] periods;
@@ -117,17 +125,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     for (int i = 0; i < selections.length; i++) {
       Integer streamChildIndex = streams[i] == null ? null : streamPeriodIndices.get(streams[i]);
       streamChildIndices[i] = streamChildIndex == null ? C.INDEX_UNSET : streamChildIndex;
-      selectionChildIndices[i] = C.INDEX_UNSET;
       if (selections[i] != null) {
         TrackGroup mergedTrackGroup = selections[i].getTrackGroup();
-        TrackGroup childTrackGroup =
-            checkNotNull(childTrackGroupByMergedTrackGroup.get(mergedTrackGroup));
-        for (int j = 0; j < periods.length; j++) {
-          if (periods[j].getTrackGroups().indexOf(childTrackGroup) != C.INDEX_UNSET) {
-            selectionChildIndices[i] = j;
-            break;
-          }
-        }
+        // mergedTrackGroup.id is 'periods array index' + ":" + childTrackGroup.id
+        selectionChildIndices[i] =
+            Integer.parseInt(mergedTrackGroup.id.substring(0, mergedTrackGroup.id.indexOf(":")));
+      } else {
+        selectionChildIndices[i] = C.INDEX_UNSET;
       }
     }
     streamPeriodIndices.clear();
@@ -599,13 +603,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     }
 
     @Override
-    public boolean blacklist(int index, long exclusionDurationMs) {
-      return trackSelection.blacklist(index, exclusionDurationMs);
+    public boolean excludeTrack(int index, long exclusionDurationMs) {
+      return trackSelection.excludeTrack(index, exclusionDurationMs);
     }
 
     @Override
-    public boolean isBlacklisted(int index, long nowMs) {
-      return trackSelection.isBlacklisted(index, nowMs);
+    public boolean isTrackExcluded(int index, long nowMs) {
+      return trackSelection.isTrackExcluded(index, nowMs);
     }
 
     @Override

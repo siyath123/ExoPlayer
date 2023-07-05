@@ -1,5 +1,534 @@
 # Release notes
 
+### 2.19.0 (2023-07-05)
+
+This is the last planned release of the `com.google.android.exoplayer2`
+artifacts. This project is now deprecated. All users should migrate to
+`androidx.media3` (which contains the same ExoPlayer code). See
+[the migration guide](https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide)
+for more details, including a script to help with the migration.
+
+This release corresponds to the
+[AndroidX Media3 1.1.0 release](https://github.com/androidx/media/releases/tag/1.1.0).
+
+*   Common Library:
+    *   Add suppression reason for unsuitable audio route and play when ready
+        change reason for suppressed too long.
+        ([#15](https://github.com/androidx/media/issues/15)).
+    *   Add commands to Player:
+        *   `COMMAND_GET_METADATA`
+        *   `COMMAND_SET_PLAYLIST_METADATA`
+        *   `COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS`
+        *   `COMMAND_ADJUST_DEVICE_VOLUME_WITH_FLAGS`
+    *   Add overloaded methods to Player which allow users to specify volume
+        flags:
+        *   `void setDeviceVolume(int, int)`
+        *   `void increaseDeviceVolume(int)`
+        *   `void decreaseDeviceVolume(int)`
+        *   `void setDeviceMuted(boolean, int)`
+    *   Add `Builder` for `DeviceInfo` and deprecate existing constructor.
+    *   Add `DeviceInfo.routingControllerId` to specify the routing controller
+        ID for remote playbacks.
+    *   Add `Player.replaceMediaItem(s)` as a shortcut to adding and removing
+        items at the same position
+        ([#8046](https://github.com/google/ExoPlayer/issues/8046)).
+*   ExoPlayer:
+    *   Allow ExoPlayer to have control of device volume methods only if
+        explicitly opted in. Use
+        `ExoPlayer.Builder.setDeviceVolumeControlEnabled` to have access to:
+        *   `getDeviceVolume()`
+        *   `isDeviceMuted()`
+        *   `setDeviceVolume(int)` and `setDeviceVolume(int, int)`
+        *   `increaseDeviceVolume(int)` and `increaseDeviceVolume(int, int)`
+        *   `decreaseDeviceVolume(int)` and `decreaseDeviceVolume(int, int)`
+    *   Add `FilteringMediaSource` that allows to filter available track types
+        from a `MediaSource`.
+    *   Add support for including Common Media Client Data (CMCD) in the
+        outgoing requests of adaptive streaming formats DASH, HLS, and
+        SmoothStreaming. The following fields, `br`, `bl`, `cid`, `rtp`, and
+        `sid`, have been incorporated
+        ([#8699](https://github.com/google/ExoPlayer/issues/8699)). API
+        structure and API methods:
+        *   CMCD logging is disabled by default, use
+            `MediaSource.Factory.setCmcdConfigurationFactory(CmcdConfiguration.Factory
+            cmcdConfigurationFactory)` to enable it.
+        *   All keys are enabled by default, override
+            `CmcdConfiguration.RequestConfig.isKeyAllowed(String key)` to filter
+            out which keys are logged.
+        *   Override `CmcdConfiguration.RequestConfig.getCustomData()` to enable
+            custom key logging.
+    *   Add additional action to manifest of main demo to make it easier to
+        start the demo app with a custom `*.exolist.json` file
+        ([#439](https://github.com/androidx/media/pull/439)).
+    *   Add `ExoPlayer.setVideoEffects()` for using `Effect` during video
+        playback.
+    *   Update `SampleQueue` to store `sourceId` as a `long` rather than an
+        `int`. This changes the signatures of public methods
+        `SampleQueue.sourceId` and `SampleQueue.peekSourceId`.
+    *   Add parameters to `LoadControl` methods `shouldStartPlayback` and
+        `onTracksSelected` that allow associating these methods with the
+        relevant `MediaPeriod`.
+    *   Change signature of
+        `ServerSideAdInsertionMediaSource.setAdPlaybackStates(Map<Object,
+        AdPlaybackState>)` by adding a timeline parameter that contains the
+        periods with the UIDs used as keys in the map. This is required to avoid
+        concurrency issues with multi-period live streams.
+    *   Deprecate `EventDispatcher.withParameters(int windowIndex, @Nullable
+        MediaPeriodId mediaPeriodId, long mediaTimeOffsetMs)` and
+        `BaseMediaSource.createEventDispatcher(..., long mediaTimeOffsetMs)`.
+        The variant of the methods without the `mediaTimeOffsetUs` can be called
+        instead. Note that even for the deprecated variants, the offset is not
+        anymore added to `startTimeUs` and `endTimeUs` of the `MediaLoadData`
+        objects that are dispatched by the dispatcher.
+    *   Rename `ExoTrackSelection.blacklist` to `excludeTrack` and
+        `isBlacklisted` to `isTrackExcluded`.
+    *   Fix inconsistent behavior between `ExoPlayer.setMediaItem(s)` and
+        `addMediaItem(s)` when called on an empty playlist.
+*   Transformer:
+    *   Remove `Transformer.Builder.setMediaSourceFactory(MediaSource.Factory)`.
+        Use `ExoPlayerAssetLoader.Factory(MediaSource.Factory)` and
+        `Transformer.Builder.setAssetLoaderFactory(AssetLoader.Factory)`
+        instead.
+    *   Remove `Transformer.startTransformation(MediaItem,
+        ParcelFileDescriptor)`.
+    *   Fix a bug where transformation could get stuck (leading to muxer
+        timeout) if the end of the video stream was signaled at the moment when
+        an input frame was pending processing.
+    *   Query codecs via `MediaCodecList` instead of using
+        `findDecoder/EncoderForFormat` utilities, to expand support.
+    *   Remove B-frame configuration in `DefaultEncoderFactory` because it
+        doesn't work on some devices.
+*   Track selection:
+    *   Add
+        `DefaultTrackSelector.Parameters.allowInvalidateSelectionsForRendererCapabilitiesChange`
+        which is disabled by default. When enabled, the `DefaultTrackSelector`
+        will trigger a new track selection when the renderer capabilities
+        changed.
+*   Extractors:
+    *   Ogg: Fix bug when seeking in files with a long duration
+        ([#391](https://github.com/androidx/media/issues/391)).
+    *   FMP4: Fix issue where `TimestampAdjuster` initializes a wrong timestamp
+        offset with metadata sample time from emsg atom
+        ([#356](https://github.com/androidx/media/issues/356)).
+*   Audio:
+    *   Fix bug where some playbacks fail when tunneling is enabled and
+        `AudioProcessors` are active, e.g. for gapless trimming
+        ([#10847](https://github.com/google/ExoPlayer/issues/10847)).
+    *   Encapsulate Opus frames in Ogg packets in direct playbacks (offload).
+    *   Extrapolate current position during sleep with offload scheduling.
+    *   Add `Renderer.release()` and `AudioSink.release()` for releasing the
+        resources at the end of player's lifecycle.
+    *   Listen to audio capabilities changes in `DefaultAudioSink`. Add a
+        required parameter `context` in the constructor of `DefaultAudioSink`,
+        with which the `DefaultAudioSink` will register as the listener to the
+        `AudioCapabilitiesReceiver` and update its `audioCapabilities` property
+        when informed with a capabilities change.
+    *   Propagate audio capabilities changes via a new event
+        `onAudioCapabilitiesChanged` in `AudioSink.Listener` interface, and a
+        new interface `RendererCapabilities.Listener` which triggers
+        `onRendererCapabilitiesChanged` events.
+    *   Add `ChannelMixingAudioProcessor` for applying scaling/mixing to audio
+        channels.
+    *   Add new int value `DISCARD_REASON_AUDIO_BYPASS_POSSIBLE` to
+        `DecoderDiscardReasons` to discard audio decoder when bypass mode is
+        possible after audio capabilities change.
+    *   Add direct playback support for DTS Express and DTS:X
+        ([#335](https://github.com/androidx/media/pull/335)).
+*   Video:
+    *   Make `MediaCodecVideoRenderer` report a `VideoSize` with a width and
+        height of 0 when the renderer is disabled.
+        `Player.Listener.onVideoSizeChanged` is called accordingly when
+        `Player.getVideoSize()` changes. With this change, ExoPlayer's video
+        size with `MediaCodecVideoRenderer` has a width and height of 0 when
+        `Player.getCurrentTracks` does not support video, or the size of the
+        supported video track is not yet determined.
+*   DRM:
+    *   Reduce the visibility of several internal-only methods on
+        `DefaultDrmSession` that aren't expected to be called from outside the
+        DRM package:
+        *   `void onMediaDrmEvent(int)`
+        *   `void provision()`
+        *   `void onProvisionCompleted()`
+        *   `onProvisionError(Exception, boolean)`
+*   Muxer:
+    *   Add a new muxer library which can be used to create an MP4 container
+        file.
+*   IMA extension:
+    *   Enable multi-period live DASH streams for DAI. Please note that the
+        current implementation does not yet support seeking in live streams
+        ([#10912](https://github.com/google/ExoPlayer/issues/10912)).
+    *   Fix a bug where a new ad group is inserted in live streams because the
+        calculated content position in consecutive timelines varies slightly.
+*   UI:
+    *   Add Util methods `shouldShowPlayButton` and
+        `handlePlayPauseButtonAction` to write custom UI elements with a
+        play/pause button.
+*   RTSP Extension:
+    *   For MPEG4-LATM, use default profile-level-id value if absent in Describe
+        Response SDP message
+        ([#302](https://github.com/androidx/media/issues/302)).
+    *   Use base Uri for relative path resolution from the RTSP session if
+        present in DESCRIBE response header
+        ([#11160](https://github.com/google/ExoPlayer/issues/11160)).
+*   DASH Extension:
+    *   Remove the media time offset from `MediaLoadData.startTimeMs` and
+        `MediaLoadData.endTimeMs` for multi period DASH streams.
+    *   Fix a bug where re-preparing a multi-period live Dash media source
+        produced a `IndexOutOfBoundsException`
+        ([#10838](https://github.com/google/ExoPlayer/issues/10838)).
+*   HLS Extension:
+    *   Add
+        `HlsMediaSource.Factory.setTimestampAdjusterInitializationTimeoutMs(long)`
+        to set a timeout for the loading thread to wait for the
+        `TimestampAdjuster` to initialize. If the initialization doesn't
+        complete before the timeout, a `PlaybackException` is thrown to avoid
+        the playback endless stalling. The timeout is set to zero by default
+        ([#323](https://github.com/androidx/media/issues//323)).
+*   Test Utilities:
+    *   Check for URI scheme case insensitivity in `DataSourceContractTest`.
+*   Remove deprecated symbols:
+    *   Remove `DefaultAudioSink` constructors, use `DefaultAudioSink.Builder`
+        instead.
+    *   Remove `HlsMasterPlaylist`, use `HlsMultivariantPlaylist` instead.
+    *   Remove `Player.stop(boolean)`. Use `Player.stop()` and
+        `Player.clearMediaItems()` (if `reset` is `true`) instead.
+    *   Remove two deprecated `SimpleCache` constructors, use a non-deprecated
+        constructor that takes a `DatabaseProvider` instead for better
+        performance.
+    *   Remove `DefaultBandwidthMeter` constructor, use
+        `DefaultBandwidthMeter.Builder` instead.
+    *   Remove `DefaultDrmSessionManager` constructors, use
+        `DefaultDrmSessionManager.Builder` instead.
+    *   Remove two deprecated `HttpDataSource.InvalidResponseCodeException`
+        constructors, use a non-deprecated constructor that accepts additional
+        fields(`cause`, `responseBody`) to enhance error logging.
+    *   Remove `DownloadHelper.forProgressive`, `DownloadHelper.forHls`,
+        `DownloadHelper.forDash`, and `DownloadHelper.forSmoothStreaming`, use
+        `DownloadHelper.forMediaItem` instead.
+    *   Remove deprecated `DownloadService` constructor, use a non deprecated
+        constructor that includes the option to provide a
+        `channelDescriptionResourceId` parameter.
+    *   Remove deprecated String constants for Charsets (`ASCII_NAME`,
+        `UTF8_NAME`, `ISO88591_NAME`, `UTF16_NAME` and `UTF16LE_NAME`), use
+        Kotlin Charsets from the `kotlin.text` package, the
+        `java.nio.charset.StandardCharsets` or the
+        `com.google.common.base.Charsets` instead.
+    *   Remove deprecated `WorkManagerScheduler` constructor, use a non
+        deprecated constructor that includes the option to provide a `Context`
+        parameter instead.
+    *   Remove the deprecated methods `createVideoSampleFormat`,
+        `createAudioSampleFormat`, `createContainerFormat`, and
+        `createSampleFormat`, which were used to instantiate the `Format` class.
+        Instead use `Format.Builder` for creating instances of `Format`.
+    *   Remove the deprecated methods `copyWithMaxInputSize`,
+        `copyWithSubsampleOffsetUs`, `copyWithLabel`,
+        `copyWithManifestFormatInfo`, `copyWithGaplessInfo`,
+        `copyWithFrameRate`, `copyWithDrmInitData`, `copyWithMetadata`,
+        `copyWithBitrate` and `copyWithVideoSize`, use `Format.buildUpon()` and
+        setter methods instead.
+    *   Remove deprecated `ExoPlayer.retry()`, use `prepare()` instead.
+    *   Remove deprecated zero-arg `DefaultTrackSelector` constructor, use
+        `DefaultTrackSelector(Context)` instead.
+    *   Remove deprecated `OfflineLicenseHelper` constructor, use
+        `OfflineLicenseHelper(DefaultDrmSessionManager,
+        DrmSessionEventListener.EventDispatcher)` instead.
+    *   Remove deprecated `DownloadManager` constructor, use the constructor
+        that takes an `Executor` instead.
+    *   Remove deprecated `Cue` constructors, use `Cue.Builder` instead.
+    *   Remove deprecated `OfflineLicenseHelper` constructor, use
+        `OfflineLicenseHelper(DefaultDrmSessionManager,
+        DrmSessionEventListener.EventDispatcher)` instead.
+    *   Remove four deprecated `AnalyticsListener` methods:
+        *   `onDecoderEnabled`, use `onAudioEnabled` and/or `onVideoEnabled`
+            instead.
+        *   `onDecoderInitialized`, use `onAudioDecoderInitialized` and/or
+            `onVideoDecoderInitialized` instead.
+        *   `onDecoderInputFormatChanged`, use `onAudioInputFormatChanged`
+            and/or `onVideoInputFormatChanged` instead.
+        *   `onDecoderDisabled`, use `onAudioDisabled` and/or `onVideoDisabled`
+            instead.
+    *   Remove the deprecated `Player.Listener.onSeekProcessed` and
+        `AnalyticsListener.onSeekProcessed`, use `onPositionDiscontinuity` with
+        `DISCONTINUITY_REASON_SEEK` instead.
+    *   Remove `ExoPlayer.setHandleWakeLock(boolean)`, use `setWakeMode(int)`
+        instead.
+    *   Remove deprecated
+        `DefaultLoadControl.Builder.createDefaultLoadControl()`, use `build()`
+        instead.
+    *   Remove deprecated `MediaItem.PlaybackProperties`, use
+        `MediaItem.LocalConfiguration` instead. Deprecated field
+        `MediaItem.playbackProperties` is now of type
+        `MediaItem.LocalConfiguration`.
+
+### 2.18.7 (2023-05-18)
+
+This release corresponds to the
+[AndroidX Media3 1.0.2 release](https://github.com/androidx/media/releases/tag/1.0.2).
+
+*   Core library:
+    *   Add `Buffer.isLastSample()` that denotes if `Buffer` contains flag
+        `C.BUFFER_FLAG_LAST_SAMPLE`.
+    *   Fix issue where last frame may not be rendered if the last sample with
+        frames is dequeued without reading the 'end of stream' sample.
+        ([#11079](https://github.com/google/ExoPlayer/issues/11079)).
+*   Extractors:
+    *   Fix parsing of H.265 SPS in MPEG-TS files by re-using the parsing logic
+        already used by RTSP and MP4 extractors
+        ([#303](https://github.com/androidx/media/issues/303)).
+*   Text:
+    *   SSA: Add support for UTF-16 files if they start with a byte order mark
+        ([#319](https://github.com/androidx/media/issues/319)).
+
+### 2.18.6 (2023-04-18)
+
+This release corresponds to the
+[AndroidX Media3 1.0.1 release](https://github.com/androidx/media/releases/tag/1.0.1).
+
+*   Core library:
+    *   Reset target live stream override when seeking to default position
+        ([#11051](https://github.com/google/ExoPlayer/pull/11051)).
+    *   Fix bug where empty sample streams in the media could cause playback to
+        be stuck.
+*   DASH:
+    *   Fix handling of empty segment timelines
+        ([#11014](https://github.com/google/ExoPlayer/issues/11014)).
+*   RTSP:
+    *   Retry with TCP if RTSP Setup with UDP fails with RTSP Error 461
+        UnsupportedTransport
+        ([#11069](https://github.com/google/ExoPlayer/issues/11069)).
+
+### 2.18.5 (2023-03-22)
+
+This release corresponds to the
+[AndroidX Media3 1.0.0 release](https://github.com/androidx/media/releases/tag/1.0.0).
+
+*   Migration script
+    *   Fix bug where backup files for each touched file were left in a migrated
+        project on OSX.
+
+### 2.18.4 (2023-03-02)
+
+This release corresponds to the
+[AndroidX Media3 1.0.0-rc02 release](https://github.com/androidx/media/releases/tag/1.0.0-rc02).
+
+*   Core library:
+    *   Fix network type detection on API 33
+        ([#10970](https://github.com/google/ExoPlayer/issues/10970)).
+    *   Fix `NullPointerException` when calling `ExoPlayer.isTunnelingEnabled`
+        ([#10977](https://github.com/google/ExoPlayer/issues/10977)).
+*   Downloads:
+    *   Make the maximum difference of the start time of two segments to be
+        merged configurable in `SegmentDownloader` and subclasses
+        ([#248](https://github.com/androidx/media/pull/248)).
+*   Audio:
+    *   Fix broken gapless MP3 playback on Samsung devices
+        ([#8594](https://github.com/google/ExoPlayer/issues/8594)).
+    *   Fix bug where playback speeds set immediately after disabling audio may
+        be overridden by a previous speed change
+        ([#10882](https://github.com/google/ExoPlayer/issues/10882)).
+*   Video:
+    *   Map HEVC HDR10 format to `HEVCProfileMain10HDR10` instead of
+        `HEVCProfileMain10`.
+    *   Add workaround for a device issue on Chromecast with Google TV and
+        Lenovo M10 FHD Plus that causes 60fps AVC streams to be marked as
+        unsupported
+        ([#10898](https://github.com/google/ExoPlayer/issues/10898)).
+    *   Fix frame release performance issues when playing media with a frame
+        rate far higher than the screen refresh rate.
+*   Cast:
+    *   Fix transient `STATE_IDLE` when transitioning between media items
+        ([#245](https://github.com/androidx/media/issues/245)).
+*   RTSP:
+    *   Catch the IllegalArgumentException thrown in parsing of invalid RTSP
+        Describe response messages
+        ([#10971](https://github.com/google/ExoPlayer/issues/10971)).
+*   IMA extension:
+    *   Fix a bug which prevented DAI streams without any ads from starting
+        because the first (and in the case without ads the only) `LOADED` event
+        wasn't received.
+
+### 2.18.3 (2023-02-16)
+
+This release corresponds to the
+[AndroidX Media3 1.0.0-rc01 release](https://github.com/androidx/media/releases/tag/1.0.0-rc01).
+
+*   Core library:
+    *   Tweak the renderer's decoder ordering logic to uphold the
+        `MediaCodecSelector`'s preferences, even if a decoder reports it may not
+        be able to play the media performantly. For example with default
+        selector, hardware decoder with only functional support will be
+        preferred over software decoder that fully supports the format
+        ([#10604](https://github.com/google/ExoPlayer/issues/10604)).
+    *   Add `ExoPlayer.Builder.setPlaybackLooper` that sets a pre-existing
+        playback thread for a new ExoPlayer instance.
+    *   Allow download manager helpers to be cleared
+        ([#10776](https://github.com/google/ExoPlayer/issues/10776)).
+    *   Add parameter to `BasePlayer.seekTo` to also indicate the command used
+        for seeking.
+    *   Use theme when loading drawables on API 21+
+        ([#220](https://github.com/androidx/media/issues/220)).
+    *   Add `ConcatenatingMediaSource2` that allows combining multiple media
+        items into a single window
+        ([#247](https://github.com/androidx/media/issues/247)).
+*   Extractors:
+    *   Throw a `ParserException` instead of a `NullPointerException` if the
+        sample table (stbl) is missing a required sample description (stsd) when
+        parsing trak atoms.
+    *   Correctly skip samples when seeking directly to a sync frame in fMP4
+        ([#10941](https://github.com/google/ExoPlayer/issues/10941)).
+*   Audio:
+    *   Use the compressed audio format bitrate to calculate the min buffer size
+        for `AudioTrack` in direct playbacks (passthrough).
+*   Text:
+    *   Fix `TextRenderer` passing an invalid (negative) index to
+        `Subtitle.getEventTime` if a subtitle file contains no cues.
+    *   SubRip: Add support for UTF-16 files if they start with a byte order
+        mark.
+*   Metadata:
+    *   Parse multiple null-separated values from ID3 frames, as permitted by
+        ID3 v2.4.
+    *   Add `MediaMetadata.mediaType` to denote the type of content or the type
+        of folder described by the metadata.
+    *   Add `MediaMetadata.isBrowsable` as a replacement for
+        `MediaMetadata.folderType`. The folder type will be deprecated in the
+        next release.
+*   DASH:
+    *   Add full parsing for image adaptation sets, including tile counts
+        ([#3752](https://github.com/google/ExoPlayer/issues/3752)).
+*   UI:
+    *   Fix the deprecated
+        `StyledPlayerView.setControllerVisibilityListener(StyledPlayerControlView.VisibilityListener)`
+        to ensure visibility changes are passed to the registered listener
+        ([#229](https://github.com/androidx/media/issues/229)).
+    *   Fix the ordering of the center player controls in `StyledPlayerView`
+        when using a right-to-left (RTL) layout
+        ([#227](https://github.com/androidx/media/issues/227)).
+*   Cast extension:
+    *   Bump Cast SDK version to 21.2.0.
+*   IMA extension:
+    *   Remove player listener of the `ImaServerSideAdInsertionMediaSource` on
+        the application thread to avoid threading issues.
+    *   Add a property `focusSkipButtonWhenAvailable` to the
+        `ImaServerSideAdInsertionMediaSource.AdsLoader.Builder` to request
+        focusing the skip button on TV devices and set it to true by default.
+    *   Add a method `focusSkipButton()` to the
+        `ImaServerSideAdInsertionMediaSource.AdsLoader` to programmatically
+        request to focus the skip button.
+    *   Fix a bug which prevented playback from starting for a DAI stream
+        without any ads.
+    *   Bump IMA SDK version to 3.29.0.
+*   Demo app:
+    *   Request notification permission for download notifications at runtime
+        ([#10884](https://github.com/google/ExoPlayer/issues/10884)).
+
+### 2.18.2 (2022-11-22)
+
+This release corresponds to the
+[AndroidX Media3 1.0.0-beta03 release](https://github.com/androidx/media/releases/tag/1.0.0-beta03).
+
+*   Core library:
+    *   Add `ExoPlayer.isTunnelingEnabled` to check if tunneling is enabled for
+        the currently selected tracks
+        ([#2518](https://github.com/google/ExoPlayer/issues/2518)).
+    *   Add `WrappingMediaSource` to simplify wrapping a single `MediaSource`
+        ([#7279](https://github.com/google/ExoPlayer/issues/7279)).
+    *   Discard back buffer before playback gets stuck due to insufficient
+        available memory.
+    *   Close the Tracing "doSomeWork" block when offload is enabled.
+    *   Fix session tracking problem with fast seeks in `PlaybackStatsListener`
+        ([#180](https://github.com/androidx/media/issues/180)).
+    *   Send missing `onMediaItemTransition` callback when calling `seekToNext`
+        or `seekToPrevious` in a single-item playlist
+        ([#10667](https://github.com/google/ExoPlayer/issues/10667)).
+    *   Add `Player.getSurfaceSize` that returns the size of the surface on
+        which the video is rendered.
+    *   Fix bug where removing listeners during the player release can cause an
+        `IllegalStateException`
+        ([#10758](https://github.com/google/ExoPlayer/issues/10758)).
+*   Build:
+    *   Enforce minimum `compileSdkVersion` to avoid compilation errors
+        ([#10684](https://github.com/google/ExoPlayer/issues/10684)).
+*   Track selection:
+    *   Prefer other tracks to Dolby Vision if display does not support it.
+        ([#8944](https://github.com/google/ExoPlayer/issues/8944)).
+*   Downloads:
+    *   Fix potential infinite loop in `ProgressiveDownloader` caused by
+        simultaneous download and playback with the same `PriorityTaskManager`
+        ([#10570](https://github.com/google/ExoPlayer/pull/10570)).
+    *   Make download notification appear immediately
+        ([#183](https://github.com/androidx/media/pull/183)).
+    *   Limit parallel download removals to 1 to avoid excessive thread creation
+        ([#10458](https://github.com/google/ExoPlayer/issues/10458)).
+*   Video:
+    *   Try alternative decoder for Dolby Vision if display does not support it.
+        ([#9794](https://github.com/google/ExoPlayer/issues/9794)).
+*   Audio:
+    *   Use `SingleThreadExecutor` for releasing `AudioTrack` instances to avoid
+        OutOfMemory errors when releasing multiple players at the same time
+        ([#10057](https://github.com/google/ExoPlayer/issues/10057)).
+    *   Adds `AudioOffloadListener.onExperimentalOffloadedPlayback` for the
+        AudioTrack offload state.
+        ([#134](https://github.com/androidx/media/issues/134)).
+    *   Make `AudioTrackBufferSizeProvider` a public interface.
+    *   Add `ExoPlayer.setPreferredAudioDevice` to set the preferred audio
+        output device ([#135](https://github.com/androidx/media/issues/135)).
+    *   Map 8-channel and 12-channel audio to the 7.1 and 7.1.4 channel masks
+        respectively on all Android versions
+        ([#10701](https://github.com/google/ExoPlayer/issues/10701)).
+*   Metadata:
+    *   `MetadataRenderer` can now be configured to render metadata as soon as
+        they are available. Create an instance with
+        `MetadataRenderer(MetadataOutput, Looper, MetadataDecoderFactory,
+        boolean)` to specify whether the renderer will output metadata early or
+        in sync with the player position.
+*   DRM:
+    *   Work around a bug in the Android 13 ClearKey implementation that returns
+        a non-empty but invalid license URL.
+    *   Fix `setMediaDrmSession failed: session not opened` error when switching
+        between DRM schemes in a playlist (e.g. Widevine to ClearKey).
+*   Text:
+    *   CEA-608: Ensure service switch commands on field 2 are handled correctly
+        ([#10666](https://github.com/google/ExoPlayer/issues/10666)).
+*   DASH:
+    *   Parse `EventStream.presentationTimeOffset` from manifests
+        ([#10460](https://github.com/google/ExoPlayer/issues/10460)).
+*   UI:
+    *   Use current overrides of the player as preset in
+        `TrackSelectionDialogBuilder`
+        ([#10429](https://github.com/google/ExoPlayer/issues/10429)).
+*   RTSP:
+    *   Add H263 fragmented packet handling
+        ([#119](https://github.com/androidx/media/pull/119)).
+    *   Add support for MP4A-LATM
+        ([#162](https://github.com/androidx/media/pull/162)).
+*   IMA:
+    *   Add timeout for loading ad information to handle cases where the IMA SDK
+        gets stuck loading an ad
+        ([#10510](https://github.com/google/ExoPlayer/issues/10510)).
+    *   Prevent skipping mid-roll ads when seeking to the end of the content
+        ([#10685](https://github.com/google/ExoPlayer/issues/10685)).
+    *   Correctly calculate window duration for live streams with server-side
+        inserted ads, for example IMA DAI
+        ([#10764](https://github.com/google/ExoPlayer/issues/10764)).
+*   FFmpeg extension:
+    *   Add newly required flags to link FFmpeg libraries with NDK 23.1.7779620
+        and above ([#9933](https://github.com/google/ExoPlayer/issues/9933)).
+*   AV1 extension:
+    *   Update CMake version to avoid incompatibilities with the latest Android
+        Studio releases
+        ([#9933](https://github.com/google/ExoPlayer/issues/9933)).
+*   Cast extension:
+    *   Implement `getDeviceInfo()` to be able to identify `CastPlayer` when
+        controlling playback with a `MediaController`
+        ([#142](https://github.com/androidx/media/issues/142)).
+*   Transformer:
+    *   Add muxer watchdog timer to detect when generating an output sample is
+        too slow.
+*   Remove deprecated symbols:
+    *   Remove `Transformer.Builder.setOutputMimeType(String)`. This feature has
+        been removed. The MIME type will always be MP4 when the default muxer is
+        used.
+
 ### 2.18.1 (2022-07-21)
 
 This release corresponds to the

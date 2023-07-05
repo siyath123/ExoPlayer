@@ -28,8 +28,16 @@ import com.google.android.exoplayer2.decoder.VideoDecoderOutputBuffer;
 import com.google.android.exoplayer2.util.Util;
 import java.nio.ByteBuffer;
 
-/** Gav1 decoder. */
+/**
+ * Gav1 decoder.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
 @VisibleForTesting(otherwise = PACKAGE_PRIVATE)
+@Deprecated
 public final class Gav1Decoder
     extends SimpleDecoder<DecoderInputBuffer, VideoDecoderOutputBuffer, Gav1DecoderException> {
 
@@ -136,13 +144,13 @@ public final class Gav1Decoder
   }
 
   @Override
-  protected void releaseOutputBuffer(VideoDecoderOutputBuffer buffer) {
+  protected void releaseOutputBuffer(VideoDecoderOutputBuffer outputBuffer) {
     // Decode only frames do not acquire a reference on the internal decoder buffer and thus do not
     // require a call to gav1ReleaseFrame.
-    if (buffer.mode == C.VIDEO_OUTPUT_MODE_SURFACE_YUV && !buffer.isDecodeOnly()) {
-      gav1ReleaseFrame(gav1DecoderContext, buffer);
+    if (outputBuffer.mode == C.VIDEO_OUTPUT_MODE_SURFACE_YUV && !outputBuffer.isDecodeOnly()) {
+      gav1ReleaseFrame(gav1DecoderContext, outputBuffer);
     }
-    super.releaseOutputBuffer(buffer);
+    super.releaseOutputBuffer(outputBuffer);
   }
 
   /**

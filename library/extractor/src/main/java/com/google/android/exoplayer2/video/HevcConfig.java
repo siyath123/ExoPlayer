@@ -16,6 +16,7 @@
 package com.google.android.exoplayer2.video;
 
 import androidx.annotation.Nullable;
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.ParserException;
 import com.google.android.exoplayer2.util.CodecSpecificDataUtil;
@@ -24,7 +25,15 @@ import com.google.android.exoplayer2.util.ParsableByteArray;
 import java.util.Collections;
 import java.util.List;
 
-/** HEVC configuration data. */
+/**
+ * HEVC configuration data.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class HevcConfig {
 
   /**
@@ -45,7 +54,7 @@ public final class HevcConfig {
       int csdLength = 0;
       int csdStartPosition = data.getPosition();
       for (int i = 0; i < numberOfArrays; i++) {
-        data.skipBytes(1); // completeness (1), nal_unit_type (7)
+        data.skipBytes(1); // completeness (1), reserved (1), nal_unit_type (6)
         int numberOfNalUnits = data.readUnsignedShort();
         for (int j = 0; j < numberOfNalUnits; j++) {
           int nalUnitLength = data.readUnsignedShort();
@@ -60,10 +69,14 @@ public final class HevcConfig {
       int bufferPosition = 0;
       int width = Format.NO_VALUE;
       int height = Format.NO_VALUE;
+      @C.ColorSpace int colorSpace = Format.NO_VALUE;
+      @C.ColorRange int colorRange = Format.NO_VALUE;
+      @C.ColorTransfer int colorTransfer = Format.NO_VALUE;
       float pixelWidthHeightRatio = 1;
       @Nullable String codecs = null;
       for (int i = 0; i < numberOfArrays; i++) {
-        int nalUnitType = data.readUnsignedByte() & 0x7F; // completeness (1), nal_unit_type (7)
+        int nalUnitType =
+            data.readUnsignedByte() & 0x3F; // completeness (1), reserved (1), nal_unit_type (6)
         int numberOfNalUnits = data.readUnsignedShort();
         for (int j = 0; j < numberOfNalUnits; j++) {
           int nalUnitLength = data.readUnsignedShort();
@@ -82,6 +95,9 @@ public final class HevcConfig {
                     buffer, bufferPosition, bufferPosition + nalUnitLength);
             width = spsData.width;
             height = spsData.height;
+            colorSpace = spsData.colorSpace;
+            colorRange = spsData.colorRange;
+            colorTransfer = spsData.colorTransfer;
             pixelWidthHeightRatio = spsData.pixelWidthHeightRatio;
             codecs =
                 CodecSpecificDataUtil.buildHevcCodecString(
@@ -100,7 +116,15 @@ public final class HevcConfig {
       List<byte[]> initializationData =
           csdLength == 0 ? Collections.emptyList() : Collections.singletonList(buffer);
       return new HevcConfig(
-          initializationData, lengthSizeMinusOne + 1, width, height, pixelWidthHeightRatio, codecs);
+          initializationData,
+          lengthSizeMinusOne + 1,
+          width,
+          height,
+          colorSpace,
+          colorRange,
+          colorTransfer,
+          pixelWidthHeightRatio,
+          codecs);
     } catch (ArrayIndexOutOfBoundsException e) {
       throw ParserException.createForMalformedContainer("Error parsing HEVC config", e);
     }
@@ -124,6 +148,22 @@ public final class HevcConfig {
   /** The height of each decoded frame, or {@link Format#NO_VALUE} if unknown. */
   public final int height;
 
+  /**
+   * The {@link C.ColorSpace} of the video or {@link Format#NO_VALUE} if unknown or not applicable.
+   */
+  public final @C.ColorSpace int colorSpace;
+
+  /**
+   * The {@link C.ColorRange} of the video or {@link Format#NO_VALUE} if unknown or not applicable.
+   */
+  public final @C.ColorRange int colorRange;
+
+  /**
+   * The {@link C.ColorTransfer} of the video or {@link Format#NO_VALUE} if unknown or not
+   * applicable.
+   */
+  public final @C.ColorTransfer int colorTransfer;
+
   /** The pixel width to height ratio. */
   public final float pixelWidthHeightRatio;
 
@@ -139,12 +179,18 @@ public final class HevcConfig {
       int nalUnitLengthFieldLength,
       int width,
       int height,
+      @C.ColorSpace int colorSpace,
+      @C.ColorRange int colorRange,
+      @C.ColorTransfer int colorTransfer,
       float pixelWidthHeightRatio,
       @Nullable String codecs) {
     this.initializationData = initializationData;
     this.nalUnitLengthFieldLength = nalUnitLengthFieldLength;
     this.width = width;
     this.height = height;
+    this.colorSpace = colorSpace;
+    this.colorRange = colorRange;
+    this.colorTransfer = colorTransfer;
     this.pixelWidthHeightRatio = pixelWidthHeightRatio;
     this.codecs = codecs;
   }

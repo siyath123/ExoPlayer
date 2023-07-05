@@ -61,7 +61,13 @@ import java.util.concurrent.Executor;
  * HlsMediaSource mediaSource =
  *     new HlsMediaSource.Factory(cacheDataSourceFactory).createMediaSource(mediaItem);
  * }</pre>
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class HlsDownloader extends SegmentDownloader<HlsPlaylist> {
 
   /**
@@ -87,7 +93,30 @@ public final class HlsDownloader extends SegmentDownloader<HlsPlaylist> {
    */
   public HlsDownloader(
       MediaItem mediaItem, CacheDataSource.Factory cacheDataSourceFactory, Executor executor) {
-    this(mediaItem, new HlsPlaylistParser(), cacheDataSourceFactory, executor);
+    this(
+        mediaItem,
+        new HlsPlaylistParser(),
+        cacheDataSourceFactory,
+        executor,
+        DEFAULT_MAX_MERGED_SEGMENT_START_TIME_DIFF_MS);
+  }
+
+  /**
+   * @deprecated Use {@link HlsDownloader#HlsDownloader(MediaItem, Parser, CacheDataSource.Factory,
+   *     Executor, long)} instead.
+   */
+  @Deprecated
+  public HlsDownloader(
+      MediaItem mediaItem,
+      Parser<HlsPlaylist> manifestParser,
+      CacheDataSource.Factory cacheDataSourceFactory,
+      Executor executor) {
+    this(
+        mediaItem,
+        manifestParser,
+        cacheDataSourceFactory,
+        executor,
+        DEFAULT_MAX_MERGED_SEGMENT_START_TIME_DIFF_MS);
   }
 
   /**
@@ -100,25 +129,34 @@ public final class HlsDownloader extends SegmentDownloader<HlsPlaylist> {
    * @param executor An {@link Executor} used to make requests for the media being downloaded.
    *     Providing an {@link Executor} that uses multiple threads will speed up the download by
    *     allowing parts of it to be executed in parallel.
+   * @param maxMergedSegmentStartTimeDiffMs The maximum difference of the start time of two
+   *     segments, up to which the segments (of the same URI) should be merged into a single
+   *     download segment, in milliseconds.
    */
   public HlsDownloader(
       MediaItem mediaItem,
       Parser<HlsPlaylist> manifestParser,
       CacheDataSource.Factory cacheDataSourceFactory,
-      Executor executor) {
-    super(mediaItem, manifestParser, cacheDataSourceFactory, executor);
+      Executor executor,
+      long maxMergedSegmentStartTimeDiffMs) {
+    super(
+        mediaItem,
+        manifestParser,
+        cacheDataSourceFactory,
+        executor,
+        maxMergedSegmentStartTimeDiffMs);
   }
 
   @Override
-  protected List<Segment> getSegments(DataSource dataSource, HlsPlaylist playlist, boolean removing)
+  protected List<Segment> getSegments(DataSource dataSource, HlsPlaylist manifest, boolean removing)
       throws IOException, InterruptedException {
     ArrayList<DataSpec> mediaPlaylistDataSpecs = new ArrayList<>();
-    if (playlist instanceof HlsMultivariantPlaylist) {
-      HlsMultivariantPlaylist multivariantPlaylist = (HlsMultivariantPlaylist) playlist;
+    if (manifest instanceof HlsMultivariantPlaylist) {
+      HlsMultivariantPlaylist multivariantPlaylist = (HlsMultivariantPlaylist) manifest;
       addMediaPlaylistDataSpecs(multivariantPlaylist.mediaPlaylistUrls, mediaPlaylistDataSpecs);
     } else {
       mediaPlaylistDataSpecs.add(
-          SegmentDownloader.getCompressibleDataSpec(Uri.parse(playlist.baseUri)));
+          SegmentDownloader.getCompressibleDataSpec(Uri.parse(manifest.baseUri)));
     }
 
     ArrayList<Segment> segments = new ArrayList<>();

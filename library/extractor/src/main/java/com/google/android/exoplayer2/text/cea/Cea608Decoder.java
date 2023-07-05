@@ -46,7 +46,15 @@ import java.util.Collections;
 import java.util.List;
 import org.checkerframework.checker.nullness.compatqual.NullableType;
 
-/** A {@link SubtitleDecoder} for CEA-608 (also known as "line 21 captions" and "EIA-608"). */
+/**
+ * A {@link SubtitleDecoder} for CEA-608 (also known as "line 21 captions" and "EIA-608").
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public final class Cea608Decoder extends CeaDecoder {
 
   /**
@@ -458,8 +466,8 @@ public final class Cea608Decoder extends CeaDecoder {
     ccData.reset(subtitleData.array(), subtitleData.limit());
     boolean captionDataProcessed = false;
     while (ccData.bytesLeft() >= packetLength) {
-      byte ccHeader =
-          packetLength == 2 ? CC_IMPLICIT_DATA_HEADER : (byte) ccData.readUnsignedByte();
+      int ccHeader = packetLength == 2 ? CC_IMPLICIT_DATA_HEADER : ccData.readUnsignedByte();
+
       int ccByte1 = ccData.readUnsignedByte();
       int ccByte2 = ccData.readUnsignedByte();
 
@@ -872,8 +880,8 @@ public final class Cea608Decoder extends CeaDecoder {
   }
 
   private static boolean isServiceSwitchCommand(byte cc1) {
-    // cc1 - 0|0|0|1|C|1|0|0
-    return (cc1 & 0xF7) == 0x14;
+    // cc1 - 0|0|0|1|C|1|0|F
+    return (cc1 & 0xF6) == 0x14;
   }
 
   private static final class CueBuilder {

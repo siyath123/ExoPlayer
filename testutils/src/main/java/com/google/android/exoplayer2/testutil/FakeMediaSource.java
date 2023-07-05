@@ -213,9 +213,9 @@ public class FakeMediaSource extends BaseMediaSource {
   public synchronized void prepareSourceInternal(@Nullable TransferListener mediaTransferListener) {
     assertThat(preparedSource).isFalse();
     transferListener = mediaTransferListener;
-    drmSessionManager.prepare();
     drmSessionManager.setPlayer(
         /* playbackLooper= */ checkNotNull(Looper.myLooper()), getPlayerId());
+    drmSessionManager.prepare();
     preparedSource = true;
     releasedSource = false;
     sourceInfoRefreshHandler = Util.createHandlerForCurrentLooper();
@@ -237,7 +237,7 @@ public class FakeMediaSource extends BaseMediaSource {
     Assertions.checkArgument(periodIndex != C.INDEX_UNSET);
     Period period = timeline.getPeriod(periodIndex, new Period());
     MediaSourceEventListener.EventDispatcher mediaSourceEventDispatcher =
-        createEventDispatcher(period.windowIndex, id, period.getPositionInWindowMs());
+        createEventDispatcher(period.windowIndex, id);
     DrmSessionEventListener.EventDispatcher drmEventDispatcher =
         createDrmEventDispatcher(period.windowIndex, id);
     MediaPeriod mediaPeriod =
@@ -337,6 +337,7 @@ public class FakeMediaSource extends BaseMediaSource {
    * @param allocator An {@link Allocator} from which to obtain media buffer allocations.
    * @param mediaSourceEventDispatcher An {@link MediaSourceEventListener.EventDispatcher} to
    *     dispatch media source events.
+   * @param drmSessionManager A {@link DrmSessionManager} to allow DRM interactions.
    * @param drmEventDispatcher An {@link MediaSourceEventListener.EventDispatcher} to dispatch DRM
    *     events.
    * @param transferListener The transfer listener which should be informed of any data transfers.
@@ -387,7 +388,7 @@ public class FakeMediaSource extends BaseMediaSource {
               C.SELECTION_REASON_UNKNOWN,
               /* trackSelectionData= */ null,
               /* mediaStartTimeMs= */ C.TIME_UNSET,
-              /* mediaEndTimeMs = */ C.TIME_UNSET);
+              /* mediaEndTimeMs= */ C.TIME_UNSET);
       long elapsedRealTimeMs = SystemClock.elapsedRealtime();
       MediaSourceEventListener.EventDispatcher eventDispatcher =
           createEventDispatcher(/* mediaPeriodId= */ null);

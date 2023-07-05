@@ -118,7 +118,7 @@ public class FakeMediaPeriod implements MediaPeriod {
         mediaSourceEventDispatcher,
         DrmSessionManager.DRM_UNSUPPORTED,
         new DrmSessionEventListener.EventDispatcher(),
-        /* deferOnPrepared */ false);
+        /* deferOnPrepared= */ false);
   }
 
   /**
@@ -232,7 +232,7 @@ public class FakeMediaPeriod implements MediaPeriod {
         C.SELECTION_REASON_UNKNOWN,
         /* trackSelectionData= */ null,
         /* mediaStartTimeUs= */ 0,
-        /* mediaEndTimeUs = */ C.TIME_UNSET);
+        /* mediaEndTimeUs= */ C.TIME_UNSET);
     prepareCallback = callback;
     if (deferOnPrepared) {
       playerHandler = Util.createHandlerForCurrentLooper();
@@ -336,7 +336,8 @@ public class FakeMediaPeriod implements MediaPeriod {
     lastSeekPositionUs = seekPositionUs;
     boolean seekedInsideStreams = true;
     for (FakeSampleStream sampleStream : sampleStreams) {
-      seekedInsideStreams &= sampleStream.seekToUs(seekPositionUs);
+      seekedInsideStreams &=
+          sampleStream.seekToUs(seekPositionUs, /* allowTimeBeyondBuffer= */ false);
     }
     if (!seekedInsideStreams) {
       for (FakeSampleStream sampleStream : sampleStreams) {
@@ -373,6 +374,7 @@ public class FakeMediaPeriod implements MediaPeriod {
   /**
    * Creates a new {@link FakeSampleStream}.
    *
+   * @param allocator An {@link Allocator} from which to obtain media buffer allocations.
    * @param mediaSourceEventDispatcher A {@link MediaSourceEventListener.EventDispatcher} to notify
    *     of media events.
    * @param drmSessionManager A {@link DrmSessionManager} for DRM interactions.
@@ -416,7 +418,7 @@ public class FakeMediaPeriod implements MediaPeriod {
         C.SELECTION_REASON_UNKNOWN,
         /* trackSelectionData= */ null,
         /* mediaStartTimeUs= */ 0,
-        /* mediaEndTimeUs = */ C.TIME_UNSET);
+        /* mediaEndTimeUs= */ C.TIME_UNSET);
   }
 
   private boolean isLoadingFinished() {

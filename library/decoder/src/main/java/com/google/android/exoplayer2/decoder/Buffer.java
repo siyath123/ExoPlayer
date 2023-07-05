@@ -17,7 +17,15 @@ package com.google.android.exoplayer2.decoder;
 
 import com.google.android.exoplayer2.C;
 
-/** Base class for buffers with flags. */
+/**
+ * Base class for buffers with flags.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public abstract class Buffer {
 
   private @C.BufferFlags int flags;
@@ -45,6 +53,11 @@ public abstract class Buffer {
   /** Returns whether the {@link C#BUFFER_FLAG_KEY_FRAME} flag is set. */
   public final boolean isKeyFrame() {
     return getFlag(C.BUFFER_FLAG_KEY_FRAME);
+  }
+
+  /** Returns whether the {@link C#BUFFER_FLAG_LAST_SAMPLE} flag is set. */
+  public final boolean isLastSample() {
+    return getFlag(C.BUFFER_FLAG_LAST_SAMPLE);
   }
 
   /** Returns whether the {@link C#BUFFER_FLAG_HAS_SUPPLEMENTAL_DATA} flag is set. */

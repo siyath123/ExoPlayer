@@ -32,7 +32,15 @@ import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.List;
 
-/** Parses TS packet payload data. */
+/**
+ * Parses TS packet payload data.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
+ */
+@Deprecated
 public interface TsPayloadReader {
 
   /** Factory of {@link TsPayloadReader} instances. */
@@ -176,6 +184,14 @@ public interface TsPayloadReader {
 
   /**
    * Contextual flags indicating the presence of indicators in the TS packet or PES packet headers.
+   *
+   * <p>The individual flag values are:
+   *
+   * <ul>
+   *   <li>{@link #FLAG_PAYLOAD_UNIT_START_INDICATOR}
+   *   <li>{@link #FLAG_RANDOM_ACCESS_INDICATOR}
+   *   <li>{@link #FLAG_DATA_ALIGNMENT_INDICATOR}
+   * </ul>
    */
   @Documented
   @Retention(RetentionPolicy.SOURCE)

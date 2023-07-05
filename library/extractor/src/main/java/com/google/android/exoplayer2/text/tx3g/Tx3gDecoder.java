@@ -26,6 +26,7 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.text.style.TypefaceSpan;
 import android.text.style.UnderlineSpan;
+import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.SimpleSubtitleDecoder;
@@ -35,19 +36,23 @@ import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.ParsableByteArray;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.base.Charsets;
+import java.nio.charset.Charset;
 import java.util.List;
 
 /**
  * A {@link SimpleSubtitleDecoder} for tx3g.
  *
  * <p>Currently supports parsing of a single text track with embedded styles.
+ *
+ * @deprecated com.google.android.exoplayer2 is deprecated. Please migrate to androidx.media3 (which
+ *     contains the same ExoPlayer code). See <a
+ *     href="https://developer.android.com/guide/topics/media/media3/getting-started/migration-guide">the
+ *     migration guide</a> for more details, including a script to help with the migration.
  */
+@Deprecated
 public final class Tx3gDecoder extends SimpleSubtitleDecoder {
 
   private static final String TAG = "Tx3gDecoder";
-
-  private static final char BOM_UTF16_BE = '\uFEFF';
-  private static final char BOM_UTF16_LE = '\uFFFE';
 
   private static final int TYPE_STYL = 0x7374796c;
   private static final int TYPE_TBOX = 0x74626f78;
@@ -55,7 +60,6 @@ public final class Tx3gDecoder extends SimpleSubtitleDecoder {
 
   private static final int SIZE_ATOM_HEADER = 8;
   private static final int SIZE_SHORT = 2;
-  private static final int SIZE_BOM_UTF16 = 2;
   private static final int SIZE_STYLE_RECORD = 12;
 
   private static final int FONT_FACE_BOLD = 0x0001;
@@ -123,9 +127,9 @@ public final class Tx3gDecoder extends SimpleSubtitleDecoder {
   }
 
   @Override
-  protected Subtitle decode(byte[] bytes, int length, boolean reset)
+  protected Subtitle decode(byte[] data, int length, boolean reset)
       throws SubtitleDecoderException {
-    parsableByteArray.reset(bytes, length);
+    parsableByteArray.reset(data, length);
     String cueTextString = readSubtitleText(parsableByteArray);
     if (cueTextString.isEmpty()) {
       return Tx3gSubtitle.EMPTY;
@@ -171,13 +175,11 @@ public final class Tx3gDecoder extends SimpleSubtitleDecoder {
     if (textLength == 0) {
       return "";
     }
-    if (parsableByteArray.bytesLeft() >= SIZE_BOM_UTF16) {
-      char firstChar = parsableByteArray.peekChar();
-      if (firstChar == BOM_UTF16_BE || firstChar == BOM_UTF16_LE) {
-        return parsableByteArray.readString(textLength, Charsets.UTF_16);
-      }
-    }
-    return parsableByteArray.readString(textLength, Charsets.UTF_8);
+    int textStartPosition = parsableByteArray.getPosition();
+    @Nullable Charset charset = parsableByteArray.readUtfCharsetFromBom();
+    int bomSize = parsableByteArray.getPosition() - textStartPosition;
+    return parsableByteArray.readString(
+        textLength - bomSize, charset != null ? charset : Charsets.UTF_8);
   }
 
   private void applyStyleRecord(ParsableByteArray parsableByteArray, SpannableStringBuilder cueText)
